@@ -1,0 +1,46 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:graphColoring="clr-namespace:GraphColoring">
+    <Style x:Key="CustomTileStyle" TargetType="Button">
+        <Setter Property="BorderBrush" Value="Black" />
+        <Setter Property="Background" Value="#3f3f3f" />
+        <Setter Property="Opacity" Value="1" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Margin" Value="3,5,3,0" />
+        <Setter Property="FontFamily" Value="Cooper Std Black" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Style.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+        </Style.Resources>
+    </Style>
+    <Style x:Key="OpacityPanel" TargetType="Grid">
+        <Setter Property="Margin" Value="0,0,0,0" />
+        <Setter Property="Background">
+            <Setter.Value>
+                <SolidColorBrush Color="Black" Opacity="0.2" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="80" ShadowDepth="30" RenderingBias="Quality" Direction="320"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="StatPanel" TargetType="StackPanel">
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="DockPanel.Dock" Value="Bottom" />
+        <Setter Property="Background" Value="Black" />
+    </Style>
+    <Style x:Key="ContentPanel" TargetType="Grid">
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="DockPanel.Dock" Value="Bottom" />
+        <Setter Property="Background" Value="White" />
+        <Setter Property="Margin" Value="10,10,10,10" />
+    </Style>
+</ResourceDictionary>
