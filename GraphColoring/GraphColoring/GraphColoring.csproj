@@ -54,9 +54,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="FileReader.cs" />
-    <Compile Include="GraphOld.cs" />
-    <Compile Include="Tile.xaml.cs">
+    <Compile Include="Algorithm\ChromaticNumber.cs" />
+    <Compile Include="Structures\Graph.cs" />
+    <Compile Include="Structures\GraphOld.cs" />
+    <Compile Include="UserControls\Tile.xaml.cs">
       <DependentUpon>Tile.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\Algorithm.xaml.cs">
@@ -68,6 +69,7 @@
     <Compile Include="UserControls\LoadData.xaml.cs">
       <DependentUpon>LoadData.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Structures\Vertex.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -80,11 +82,11 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Style.xaml">
+    <Page Include="Style\Style.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Tile.xaml">
+    <Page Include="UserControls\Tile.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -128,6 +130,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

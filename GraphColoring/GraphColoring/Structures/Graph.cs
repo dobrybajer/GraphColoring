@@ -11,15 +11,29 @@ namespace GraphColoring
     {
         public List<Vertex> vertex;
 
+        public List<int> GetNeighboursOfVertex(int i)
+        {
+            return vertex.ElementAt(i).Neighbours;
+        }
+
         public List<Vertex> wVertex
         {
             get { return vertex; }
             set { vertex = value; }
         }
 
+        private int _vertexCount;
+
+        public int VertexCount
+        {
+            get { return _vertexCount; }
+            set { _vertexCount = value; }
+        }
+
         public Graph(List<Vertex> vertex)
         {
             this.vertex = vertex;
+            this.VertexCount = vertex.Count();
         }
 
         public static Graph ReadGraph(string path)
