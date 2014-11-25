@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GraphColoring
 {
-    class Vertex
+    public class Vertex
     {
         int color;
         List<int> neighbours;

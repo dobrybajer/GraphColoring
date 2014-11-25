@@ -52,7 +52,7 @@ namespace GraphColoring
                     break;
                 case "M2":
                     Content.Children.Clear();
-                    Content.Children.Add(new Algorithm());
+                    //Content.Children.Add();
                     break;
                 case "M3":
                     Content.Children.Clear();
@@ -93,7 +93,18 @@ namespace GraphColoring
 
         private void CPU1_OnClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Element '" + (sender as MenuItem).Header + "' nie jest obsługiwany w bieżącej wersji.");
+            if (!string.IsNullOrEmpty(lastPath))
+            {
+                Graph g = Graph.ReadGraph(lastPath);
+                Algorithm.ChromaticNumber.BuildingIndependentSets(g);
+                int k = Algorithm.ChromaticNumber.FindChromaticNumber(g);
+                MessageBox.Show(string.Format("Kolorowanie grafu jest nie większe niż: {0}", k));
+            }
+            else
+            {
+                MessageBox.Show("Jak byś podał graf na wejściu, to ja bym policzył :(");
+            }
+            
         }
 
         private void CPU2_OnClick(object sender, RoutedEventArgs e)

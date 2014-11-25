@@ -7,7 +7,7 @@ using System.IO;
 
 namespace GraphColoring
 {
-    class Graph
+    public class Graph
     {
         public List<Vertex> vertex;
 
@@ -16,7 +16,7 @@ namespace GraphColoring
             return vertex.ElementAt(i).Neighbours;
         }
 
-        public List<Vertex> wVertex
+        public List<Vertex> WVertex
         {
             get { return vertex; }
             set { vertex = value; }

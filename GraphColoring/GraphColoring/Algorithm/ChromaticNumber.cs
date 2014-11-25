@@ -3,23 +3,23 @@ using System.Linq;
 
 namespace GraphColoring.Algorithm
 {
-    class ChromaticNumber
+    public static class ChromaticNumber
     {
         /// <summary>
         /// Aktualnie przetwarzany podgraf (podzbiór zbioru wszystkich wierzchołków).
         /// </summary>
-        public List<List<int>> ActualVertices = new List<List<int>>();
+        public static List<List<int>> ActualVertices = new List<List<int>>();
 
         /// <summary>
         /// Ilość wierzchołków w grafie.
         /// </summary>
-        public int N;
+        public static int N;
 
         /// <summary>
         /// Tablica o rozmiarze 2^N zawierająca ilość niezależnych zbiorów dla każdego podzbioru zbioru N-elementowego (1. kolumna) oraz
         /// liczbę elementów w danym podzbiorze (2. kolumna).
         /// </summary>
-        public int[,] IndependentSets = null;
+        public static int[,] IndependentSets = null;
 
         /// <summary>
         /// Funkcja podnosząca liczbę do podanej potęgi. Ze względu na operacje na typie long, ma większy zakres potęgowania niż Math.Pow.
@@ -27,7 +27,7 @@ namespace GraphColoring.Algorithm
         /// <param name="a">Podstawa potęgi.</param>
         /// <param name="n">Wykładnik potęgi.</param>
         /// <returns>Wynik potęgowania.</returns>
-        public long Pow(int a, int n)
+        public static long Pow(int a, int n)
         {
             long s = 1;
 
@@ -44,7 +44,7 @@ namespace GraphColoring.Algorithm
         /// Zapisanie w globalnej tablicy, zbiorów niezależnych dla 2^N podzbiorów wierzchołków grafu wejściowego.
         /// </summary>
         /// <param name="g">Wejściowy graf.</param>
-        public void BuildingIndependentSets(Graph g)
+        public static void BuildingIndependentSets(Graph g)
         {
             N = g.VertexCount;
 
@@ -87,7 +87,7 @@ namespace GraphColoring.Algorithm
                                 lastIndex2 -= 1 << e;
                         }
 
-                        var nextIndex = lastIndex + 1 << i;
+                        var nextIndex = lastIndex + (1 << i);
                         
                         // Liczba zbiorów niezależnych w aktualnie przetwarzanym podzbiorze
                         IndependentSets[nextIndex, 0] = IndependentSets[lastIndex, 0] + IndependentSets[lastIndex2, 0] + 1;
@@ -107,7 +107,7 @@ namespace GraphColoring.Algorithm
         /// </summary>
         /// <param name="g">Wejściowy graf.</param>
         /// <returns>Wartość minimalnego k-kolorowania bądź 0, jeśli takiego kolorowania nie ma (sic!)</returns>
-        public int FindChromaticNumber(Graph g)
+        public static int FindChromaticNumber(Graph g)
         {
             BuildingIndependentSets(g);
 
@@ -127,7 +127,7 @@ namespace GraphColoring.Algorithm
         /// <param name="g">Wejściowy graf.</param>
         /// <param name="k">Liczba kolorów dla danego kolorowania grafu.</param>
         /// <returns>True - graf jest k-kolorowalny, false - w p.p.</returns>
-        public bool IsChromaticNumber(Graph g, int k)
+        public static bool IsChromaticNumber(Graph g, int k)
         {
             BuildingIndependentSets(g);
 
