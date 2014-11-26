@@ -1,96 +1,68 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+using GraphColoring.Algorithm;
 
-namespace GraphColoring
+namespace GraphColoring.Structures
 {
     public class Graph
     {
-        public List<Vertex> vertex;
+        /// <summary>
+        /// Pole przechowujące listę wierzchołków danego grafu.
+        /// </summary>
+        private readonly List<Vertex> _vertices;
 
+        /// <summary>
+        /// Metoda zwracająca sąsiadów wierzchołka i.
+        /// </summary>
+        /// <param name="i">Wierzchołek, dla którego szukamy sąsiadów.</param>
+        /// <returns>Listą numerów sąsiadów danego wierzchołka.</returns>
         public List<int> GetNeighboursOfVertex(int i)
         {
-            return vertex.ElementAt(i).Neighbours;
+            return _vertices.ElementAt(i).Neighbours;
         }
 
-        public List<Vertex> WVertex
+        /// <summary>
+        /// Właściwość zwracająca listę wierzchołków danego grafu.
+        /// </summary>
+        public List<Vertex> Vertices
         {
-            get { return vertex; }
-            set { vertex = value; }
+            get { return _vertices; }
         }
 
-        private int _vertexCount;
-
+        /// <summary>
+        /// Właściwość zwracająca liczbę wierzchołków danego grafu.
+        /// </summary>
         public int VertexCount
         {
-            get { return _vertexCount; }
-            set { _vertexCount = value; }
+            get { return _vertices.Count; }
         }
 
-        public Graph(List<Vertex> vertex)
+        /// <summary>
+        /// Konstruktor. Na podstawie listy wierzchołków tworzy obiekt grafu.
+        /// </summary>
+        /// <param name="vertices">Lista wierzchołków danego grafu.</param>
+        public Graph(List<Vertex> vertices)
         {
-            this.vertex = vertex;
-            this.VertexCount = vertex.Count();
+            _vertices = vertices;
         }
 
-        public static Graph ReadGraph(string path)
+        /// <summary>
+        /// Metoda wykonująca algorytm znajdywania k-kolorowania grafu.
+        /// </summary>
+        /// <returns>Liczba K-kolorowania grafu.</returns>
+        public int GetChromaticNumber()
         {
-            List<Vertex> nGraph = new List<Vertex>();
-            String line;
-
-            try
-            {
-                using (StreamReader sr = new StreamReader(path))
-                {
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        nGraph.Add(new Vertex(creatNeighbours(line)));
-                    }
-                    sr.Close();
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Nie udało sie odczytać pliku :(");
-                Console.WriteLine(e.Message);
-            }
-            return new Graph(nGraph);
+            return ChromaticNumber.FindChromaticNumber(this);
         }
 
-        public static void WriteGraph(string path, Graph graph)
+        /// <summary>
+        /// Metoda wykonująca algorytm sprawdzania czy dany graf jest k-kolorowalny.
+        /// </summary>
+        /// <param name="k">Parametr k-kolorowania grafu.</param>
+        /// <returns>Prawda jeśli graf jest k-kolorowalny, fałsz w p.p.</returns>
+        public bool CheckChromaticNumber(int k)
         {
-            List<Vertex> nGraph = new List<Vertex>();
-            String line;
-            try
-            {
-                using (StreamWriter sw = new StreamWriter(path))
-                {
-                    foreach (var el in graph.vertex)
-                    {
-                        line = "Color: " + el.Color.ToString() + "; Neighbour: ";
-                        foreach (var elm in el.Neighbours)
-                            line += elm.ToString() + ",";
-                        sw.WriteLine(line.TrimEnd(','));
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Nie udało sie zapisać pliku :(");
-                Console.WriteLine(e.Message);
-            }
-        }
-
-        private static List<int> creatNeighbours(String neighbours)
-        {
-            List<int> tmp = new List<int>();
-            string[] value = neighbours.Split(';');
-            foreach (string el in value)
-                tmp.Add(Int32.Parse(el));
-            return tmp;
+            return ChromaticNumber.IsChromaticNumber(this, k);
         }
     }
 }

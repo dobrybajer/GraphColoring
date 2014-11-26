@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using GraphColoring.Properties;
+using GraphColoring.Structures;
 using GraphColoring.UserControls;
 using Microsoft.Win32;
 using Help = GraphColoring.UserControls.Help;
@@ -29,7 +30,6 @@ namespace GraphColoring
     /// </summary>
     public partial class MainWindow : Window
     {
-        private GraphOld graph;
         private string lastPath;
 
         public MainWindow()
@@ -78,7 +78,6 @@ namespace GraphColoring
             if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 lastPath=openFileDialog1.InitialDirectory + openFileDialog1.FileName;
-                graph = new GraphOld(lastPath);
             }
             else
             {
@@ -95,14 +94,12 @@ namespace GraphColoring
         {
             if (!string.IsNullOrEmpty(lastPath))
             {
-                Graph g = Graph.ReadGraph(lastPath);
-                Algorithm.ChromaticNumber.BuildingIndependentSets(g);
-                int k = Algorithm.ChromaticNumber.FindChromaticNumber(g);
-                MessageBox.Show(string.Format("Kolorowanie grafu jest nie większe niż: {0}", k));
+                var g = FileProcessing.ReadFile(lastPath);
+                g.GetChromaticNumber();
             }
             else
             {
-                MessageBox.Show("Jak byś podał graf na wejściu, to ja bym policzył :(");
+                MessageBox.Show("Jakbyś podał graf na wejściu, to ja bym policzył :(");
             }
             
         }

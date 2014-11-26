@@ -55,8 +55,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Algorithm\ChromaticNumber.cs" />
+    <Compile Include="Structures\FileProcessing.cs" />
     <Compile Include="Structures\Graph.cs" />
-    <Compile Include="Structures\GraphOld.cs" />
     <Compile Include="UserControls\Tile.xaml.cs">
       <DependentUpon>Tile.xaml</DependentUpon>
     </Compile>

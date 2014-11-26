@@ -1,31 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace GraphColoring
+namespace GraphColoring.Structures
 {
     public class Vertex
     {
-        int color;
-        List<int> neighbours;
+        /// <summary>
+        /// Sąsiedzi (wierzchołki połączone krawędzią) z danym wierzchołkiem.
+        /// </summary>
+        public List<int> Neighbours { get; set; }
 
-        public int Color
-        {
-            get { return color; }
-            set { color = value; }
-        }
-        public List<int> Neighbours
-        {
-            get { return neighbours; }
-            set { neighbours = value; }
-        }
-
+        /// <summary>
+        /// Konstruktor. Na podstawie danej listy liczb, tworzy listę sąsiadów danego wierzchołka.
+        /// </summary>
+        /// <param name="neighbours">Lista składająca się z numerów wierzchołków (liczby).</param>
         public Vertex(List<int> neighbours)
         {
-            this.color = 0;
-            this.neighbours = neighbours;
+            Neighbours = neighbours;
         }
 
     }
