@@ -126,7 +126,7 @@ namespace GraphColoring.Algorithm
 
                 watch.Stop();
                 MessageBox.Show(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}ms", k, watch.ElapsedMilliseconds));
-             
+ 
                 return k;
             }
             return -1;
