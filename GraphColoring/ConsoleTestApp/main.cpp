@@ -1,4 +1,4 @@
-#include<iostream>
+#include <iostream>
 #include <Windows.h>
 
 #include "Algorithm.h" 
@@ -25,7 +25,12 @@ double get_cpu_time()
 
 int main()
 {
-	string path = "../TestFiles/GraphExample15_2.txt";
+	// https://sites.google.com/site/graphcoloring/vertex-coloring - przyk³ady grafów z ich liczb¹ chromatyczn¹
+	// http://mat.gsia.cmu.edu/COLOR/instances.html - grafy w postaci krawêdziowej
+	// dla Myciel3 poprawny wynik to 4, a dla Myciel4 wynik to 5
+
+	//string path = "../TestFiles/GraphExampleMyciel4.txt";
+	string path = "../TestFiles/GraphExample22.txt";
 	Graph g = Graph::ReadGraph(path);
 	ChromaticNumber cn = ChromaticNumber();
 
@@ -42,8 +47,8 @@ int main()
 
 	cout << "Wall Time = " << wall1 - wall0 << " seconds" << endl;
 	cout << "CPU Time  = " << cpu1 - cpu0 << " seconds" << endl;
-	
-	cin.get();//pause console to see the message
+
+	cin.get();
 
 	return 0;
 }

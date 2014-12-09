@@ -1,5 +1,9 @@
 #include "Algorithm.h"
 #include "Graph.h"
+#include <vector>
+#include <iostream>
+
+using namespace std;
 
 namespace version_cpu
 {
@@ -8,8 +12,7 @@ namespace version_cpu
 
 	}
 	
-	// Sprawdziæ czy mo¿na lepiej
-	unsigned long Pow(int a, int n)
+	unsigned long ChromaticNumber::Pow(int a, int n)
 	{
 		unsigned long result = 1;
 
@@ -25,65 +28,50 @@ namespace version_cpu
 		return result;
 	}
 
-	// Final
-	int sgnPow(int n)
+	int ChromaticNumber::sgnPow(int n)
 	{
 		return (n & 1) == 0 ? 1 : -1;
 	}
 
-	// Sprawdziæ, dlaczego to dzia³a
-	int BitCount(int u)
+	void ChromaticNumber::CreateActualVertices(int row, int col)
 	{
-		int uCount = u - ((u >> 1) & 033333333333) - ((u >> 2) & 011111111111);
-		return ((uCount + (uCount >> 3)) & 030707070707) % 63;
+		if (actualVertices != 0)
+		{
+			for (int i = 0; i < actualVerticesRowCount; ++i)
+			{
+				delete[] actualVertices[i];
+			}
+			delete[] actualVertices;
+		}
+
+		actualVertices = new int*[row];
+		for (int i = 0; i < row; ++i)
+			actualVertices[i] = new int[col] {0};
+
+		actualVerticesRowCount = row;
+		actualVerticesColCount = col;
 	}
 
-	// Sprawdziæ, czy mo¿na lepiej
-	int Combination_n_of_k(int n, int k)
-	{
-		if (k > n) return 0;
-
-		int r = 1;
-		for (int d = 1; d <= k; ++d)
-		{
-			r *= n--;
-			r /= d;
-		}
-		return r;
-	} 
-
-	int** CreateNewVertices(int row, int col)
+	int** ChromaticNumber::CreateNewVertices(int row, int col)
 	{
 		int** nVertices = new int*[row];
 		for (int i = 0; i < row; ++i)
-			nVertices[i] = new int[col]();
+			nVertices[i] = new int[col] {0};
 
 		return nVertices;
 	}
 
-	void ChromaticNumber::CreateActualVertices(int row, int col)
+	int choose(int n, int k) 
 	{
-		actualVertices = new int*[row];
-
-		for (int i = 0; i < row; ++i)
-			actualVertices[i] = new int[col] ();
-
-		actualVerticesRowCount = row;
-		actualVerticesColCount = col;
-	}
-
-	void ChromaticNumber::UpdateActualVertices(int** newVertices, int row, int col)
-	{
-		for (int i = 0; i < actualVerticesRowCount; ++i)
-		{
-			delete[] actualVertices[i];
+		if (k > n) {
+			return 0;
 		}
-		delete[] actualVertices;
-
-		actualVertices = newVertices;
-
-		actualVerticesRowCount = row;
-		actualVerticesColCount = col;
+		int r = 1;
+		for (int d = 1; d <= k; ++d) {
+			r *= n--;
+			r /= d;
+		}
+		return r;
 	}
 
 	void ChromaticNumber::BuildingIndependentSets(Graph g)
@@ -93,14 +81,18 @@ namespace version_cpu
 		int* offset = g.GetNeighborsCount();
 
 		// Inicjalizacja macierzy o rozmiarze 2^N (wartoœci pocz¹tkowe 0)
-		independentSets = new int[1 << n] ();
+		independentSets = new int*[1 << n];
+		for (int i = 0; i < (1 << n); ++i)
+			independentSets[i] = new int[2] {0};
 
 		// Krok 1 algorytmu: przypisanie wartoœci 1 (iloœæ niezale¿nych zbiorów) dla podzbiorów 1-elementowych, oraz dodanie ich do aktualnie przetwarzanych elementów (1 poziom tworzenia wszystkich podzbiorów)
 		CreateActualVertices(n, 1);
 		
 		for (int i = 0; i < n; ++i)
 		{
-			independentSets[1 << i] = 1;
+			independentSets[1 << i][0] = 1;
+			independentSets[1 << i][1] = 1;
+
 			actualVertices[i][0] = i;
 		}
 
@@ -108,9 +100,8 @@ namespace version_cpu
 		// Zaczynamy od 1, bo krok pierwszy wykonany wy¿ej.
 		for (int el = 1; el < n; el++)
 		{
+			int row = choose(n, el + 1);
 			int col = el + 1;
-			int row = Combination_n_of_k(n, col);
-			
 			int** newVertices = CreateNewVertices(row, col);
 			int l = 0;
 
@@ -142,7 +133,8 @@ namespace version_cpu
 					int nextIndex = lastIndex + (1 << j);
 
 					// Liczba zbiorów niezale¿nych w aktualnie przetwarzanym podzbiorze
-					independentSets[nextIndex] = independentSets[lastIndex] + independentSets[lastIndex2] + 1;
+					independentSets[nextIndex][0] = independentSets[lastIndex][0] + independentSets[lastIndex2][0] + 1;
+					independentSets[nextIndex][1] = el + 1;
 
 					for (int k = 0; k < el; ++k)
 						newVertices[l][k] = actualVertices[i][k];
@@ -152,24 +144,25 @@ namespace version_cpu
 					l++;
 				}
 			}
-			UpdateActualVertices(newVertices, row, col);
+			
+			actualVertices = newVertices;
+			actualVerticesColCount = col;
+			actualVerticesRowCount = row;
 		}
 	}
-
+	/**/
 	int ChromaticNumber::FindChromaticNumber(Graph g)
 	{
 		BuildingIndependentSets(g);
 		int n = g.GetVerticesCount();
-	
+		
 		for (int k = 1; k <= n; ++k)
 		{
 			unsigned long s = 0;
-			int PowerNumber = Pow(2, n);
-			// Czy mo¿na omin¹æ u¿ycie funkcji BitCount ?
-			for (int i = 0; i < PowerNumber; ++i) s += (sgnPow(BitCount(i)) * Pow(independentSets[i], k));
-			
+			for (int i = 0; i < Pow(2, n); ++i) s += sgnPow(n - independentSets[i][1]) * Pow(independentSets[i][0], k);
+
 			if (s <= 0) continue;
-		
+
 			return k;
 		}
 		

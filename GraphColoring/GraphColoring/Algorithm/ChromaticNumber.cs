@@ -116,7 +116,12 @@ namespace GraphColoring.Algorithm
             var watch = Stopwatch.StartNew();
 
             BuildingIndependentSets(g);
-
+            string str = "";
+            for (int i = 0; i < (1 << g.VertexCount); ++i)
+            {
+                str = str + _independentSets[i,0] + "\n";
+            }
+            MessageBox.Show(str);
             for (var k = 1; k <= _n; ++k)
             {
                 long s = 0;
