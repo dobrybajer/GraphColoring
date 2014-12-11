@@ -162,12 +162,12 @@ cudaError_t runCuda(int *c, int *a,   int sizec, int sizea);
 			unsigned long s = 0;
 			int PowerNumber = Pow(2, n);
 			// Czy mo¿na omin¹æ u¿ycie funkcji BitCount ?
-			for (int i = 0; i < PowerNumber; ++i) s += (sgnPow(BitCount(i)) * Pow(independentSets[i], index));
+			for (int i = 0; i < PowerNumber; ++i) s += (sgnPow(BitCount(i)) * Pow(independentSets[i], index+1));
 			
 			if (s > 0)
 				wynik[index]=index;
 			else
-				wynik[index]=-1;
+				wynik[index]=s;
 		
 	}
 #pragma endregion Algorithm
@@ -183,6 +183,11 @@ int main()
 
 	int* independentSet = BuildingIndependentSets(graph.GetVerticesCount(),graph.GetVertices(),graph.GetNeighborsCount());
 
+	/*for (int i = 0; i <roz; i++)
+	{
+		cout<<independentSet[i]<<" ";
+	}
+	cout<<endl;*/
 	int* tabWyn=new int[graph.GetVerticesCount()];
 
 	cudaError_t cudaStatus = runCuda(tabWyn, independentSet, graph.GetVerticesCount(),roz);
@@ -193,13 +198,16 @@ int main()
 
 	int wynik =0;
 	for(int i =0 ; i<graph.GetVerticesCount();i++)
-		if(tabWyn[i]!=-1)
+		if(tabWyn[i]!=-1 && tabWyn[i]!=0)
 		{
-			wynik = tabWyn[i];
+			wynik = tabWyn[i]+1;
 			break;
 		}
 
-	cout<<"Potrzeba "<<wynik<<" kolorow"<<endl;
+		for(int i=0;i<graph.GetVerticesCount();i++)
+			cout<<" "<<tabWyn[i];
+
+	cout<<endl<<"Potrzeba "<<wynik<<" kolorow"<<endl;
 	
 
     // cudaDeviceReset must be called before exiting in order for profiling and
