@@ -1,22 +1,27 @@
-#include <list>
-#include <iostream>
-#include <fstream>
-#include <conio.h>
+#ifndef GRAPH_H
+#define GRAPH_H
 
-using namespace std;
+#include <string>
 
-class Graph
+
+namespace version_cpu
 {
-public:
-	int ** vertex;
-	int *neighbourCount;
-	int _vertexCount;
-	Graph();
-	Graph(int vertexCount);
-	Graph(int ** _vertex);
-	static Graph ReadGraph(string path);
-	static void WriteGraph(string path, Graph graph);
-	int getVertexCount();
-	~Graph(void);
-	//static int * creatNeighbours(string neighbours,int& neigh);
-};
+	class Graph
+	{
+	private:
+		int* vertices;
+		int* neighborsCount;
+		int verticesCount;
+
+	public:
+		 Graph();
+		 Graph(int*, int*, int);
+
+		 int* GetVertices();
+		 int* GetNeighborsCount();
+		 int GetVerticesCount();
+
+		 static Graph ReadGraph(std::string path);
+	};
+}
+#endif
