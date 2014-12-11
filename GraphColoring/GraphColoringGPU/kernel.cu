@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <Windows.h>
 
 using namespace version_cpu;
 using namespace std;
@@ -172,6 +173,23 @@ cudaError_t runCuda(int *c, int *a,   int sizec, int sizea);
 	}
 #pragma endregion Algorithm
 
+double get_wall_time()
+{
+	LARGE_INTEGER time, freq;
+	if (!QueryPerformanceFrequency(&freq)) { return 0; }
+	if (!QueryPerformanceCounter(&time)) { return 0; }
+	return (double)time.QuadPart / freq.QuadPart;
+}
+
+double get_cpu_time()
+{
+	FILETIME a, b, c, d;
+	if (GetProcessTimes(GetCurrentProcess(), &a, &b, &c, &d) != 0)
+		return (double)(d.dwLowDateTime | ((unsigned long long)d.dwHighDateTime << 32)) * 0.0000001;
+	else 
+		return 0;
+}
+
 int main()
 {
 	Graph graph = Graph();
@@ -179,6 +197,9 @@ int main()
 
 	int roz=0;
 
+	double wall0 = get_wall_time();
+	double cpu0 = get_cpu_time();
+	{
 	roz=1<<graph.GetVerticesCount();
 
 	int* independentSet = BuildingIndependentSets(graph.GetVerticesCount(),graph.GetVertices(),graph.GetNeighborsCount());
@@ -204,10 +225,11 @@ int main()
 			break;
 		}
 
-		for(int i=0;i<graph.GetVerticesCount();i++)
-			cout<<" "<<tabWyn[i];
+	//	for(int i=0;i<graph.GetVerticesCount();i++)
+	//		cout<<" "<<tabWyn[i];
 
 	cout<<endl<<"Potrzeba "<<wynik<<" kolorow"<<endl;
+	
 	
 
     // cudaDeviceReset must be called before exiting in order for profiling and
@@ -218,7 +240,14 @@ int main()
         return 1;
     }
 
-    return 0;
+	}
+	double wall1 = get_wall_time();
+	double cpu1 = get_cpu_time();
+
+	cout << "Wall Time = " << wall1 - wall0 << " seconds" << endl;
+	cout << "GPU Time  = " << cpu1 - cpu0 << " seconds" << endl;
+
+	return 0;
 }
 
 // Helper function for using CUDA to add vectors in parallel.
