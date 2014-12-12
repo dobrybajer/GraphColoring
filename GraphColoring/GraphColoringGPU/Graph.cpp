@@ -1,96 +1,81 @@
 #include "Graph.h"
-#include <iostream>
 #include <fstream>
-#include <conio.h>
 #include <string>
 #include <vector>
 #include <sstream>
+
 using namespace std;
 
-Graph::Graph(){}
-
-Graph::Graph(int vertexCount )
+namespace version_cpu
 {
-	vertex = new int * [vertexCount];
-	_vertexCount = vertexCount;
-}
+	Graph::Graph()
+	{
 
-Graph::Graph(int ** _vertex)
-{
-	vertex =_vertex;
-}
+	}
 
-Graph Graph::ReadGraph(string path)
-{
-	Graph graph;
-	int ** nGraph;
-	int * count;
-    string line;
-	fstream plik;
-	int size=0;
-	int i=0;
-		plik.open( path, ios::in | ios::out );
-		if( plik.good() )
-		{				
-			getline( plik, line );		
-			nGraph= new int*[stoi(line)];
-			count = new int[stoi(line)];
-			size=stoi(line);
-			while( !plik.eof() )
+	Graph::Graph(int* _vertices, int* _neighborsCount, int _size)
+	{
+		vertices = _vertices;
+		neighborsCount = _neighborsCount;
+		verticesCount = _size;
+	}
+
+	int* Graph::GetVertices()
+	{
+		return vertices;
+	}
+
+	int* Graph::GetNeighborsCount()
+	{
+		return neighborsCount;
+	}
+
+	int Graph::GetVerticesCount()
+	{
+		return verticesCount;
+	}
+
+	Graph Graph::ReadGraph(string path)
+	{
+		fstream plik;
+		plik.open(path, ios::in | ios::out);
+
+		if (plik.good())
+		{
+			string line;
+			getline(plik, line);
+
+			int size = stoi(line);
+			int i = 0, k = 0;
+			int* nNeighborsCount = new int[size];
+			vector<string> el;
+
+			while (!plik.eof())
 			{
-				getline( plik, line );
-				int *tmp;
-				vector <string> el;
+				getline(plik, line);
+
 				stringstream ss(line);
 				string item;
-				int val;
-				while (getline(ss, item, ',')) 
+
+				while (getline(ss, item, ','))
 					el.push_back(item);
-				nGraph[i] = new int[el.size()];
-				count[i]= el.size();
-				for(int j=0;j<el.size();j++)
-					nGraph[i][j]=stoi(el[j]);
-	//			cout << line << endl;
+
+				nNeighborsCount[i] = el.size();
+
+				k = el.size();
 				i++;
 			}
 			plik.close();
-		} else cout << "Error! Nie udalo otworzyc sie pliku!" << endl;		
-		graph=Graph(nGraph);
-		graph._vertexCount=size;
-		graph.neighbourCount=count;
-		return graph;
-}
-	
-static void WriteGraph(string path, Graph graph)
-{
 
-}
+			int* nVertices = new int[k];
 
-int Graph::getVertexCount()
-{
-	return _vertexCount;
-}
+			for (int i = 0; i < k; i++)
+				nVertices[i] = stoi(el[i]);
 
-////int * Graph::creatNeighbours(string neighbours,int& neigh )
-//{
-//	int *tmp;
-//	vector <string> el;
-//    stringstream ss(neighbours);
-//    string item;
-//	int val;
-//    while (getline(ss, item, ',')) 
-//        el.push_back(item);
-//
-//	tmp = new int[el.size()+1];
-//
-//	for(int i=0;i<el.size();i++)
-//		tmp[i]=stoi(el[i]);
-//	
-//	return tmp;	
-//}
+			return Graph(nVertices, nNeighborsCount, size);
+		}
+		else throw new logic_error("Podczas otwierania pliku wyst¹pi³ b³¹d");
 
-
-Graph::~Graph(void)
-{
-
+		return Graph();
+	}
 }
