@@ -1,49 +1,55 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using GraphColoring.Algorithm;
+﻿using GraphColoring.Algorithm;
 
 namespace GraphColoring.Structures
 {
+    /// <summary>
+    /// Publiczna klasa przechowująca informację o grafie w obiekcie.
+    /// </summary>
     public class Graph
     {
         /// <summary>
-        /// Pole przechowujące listę wierzchołków danego grafu.
+        /// Pole przechowujące listę sąsiadów dla wszystkich wierzchołków po kolei.
         /// </summary>
-        private readonly List<Vertex> _vertices;
+        private readonly int[] _vertices;
 
         /// <summary>
-        /// Metoda zwracająca sąsiadów wierzchołka i.
+        /// Pole przechowujące listę indeksów ostatniego sąsiada danego wierzchołka. Indeksy odnoszą się do tablicy  "_vertices"
         /// </summary>
-        /// <param name="i">Wierzchołek, dla którego szukamy sąsiadów.</param>
-        /// <returns>Listą numerów sąsiadów danego wierzchołka.</returns>
-        public List<int> GetNeighboursOfVertex(int i)
-        {
-            return _vertices.ElementAt(i).Neighbours;
-        }
+        private readonly int[] _neighboursCount;
 
         /// <summary>
-        /// Właściwość zwracająca listę wierzchołków danego grafu.
+        /// Właściwość zwracająca listę sąsiadów dla wszystkich wierzchołków po kolei.
         /// </summary>
-        public List<Vertex> Vertices
+        public int[] Vertices
         {
             get { return _vertices; }
         }
 
         /// <summary>
+        /// Właściwość zwracająca listę indeksów ostatniego sąsiada danego wierzchołka.
+        /// </summary>
+        public int[] NeighboursCount
+        {
+            get { return _neighboursCount; }
+        }
+
+        /// <summary>
         /// Właściwość zwracająca liczbę wierzchołków danego grafu.
         /// </summary>
-        public int VertexCount
+        public int VerticesCount
         {
-            get { return _vertices.Count; }
+            get { return _neighboursCount.Length; }
         }
 
         /// <summary>
         /// Konstruktor. Na podstawie listy wierzchołków tworzy obiekt grafu.
         /// </summary>
-        /// <param name="vertices">Lista wierzchołków danego grafu.</param>
-        public Graph(List<Vertex> vertices)
+        /// <param name="vertices">Lista sąsiadów każdego z wierzchołków danego grafu.</param>
+        /// <param name="neighboursCount">Lista ostatnich numerów sąsiadów wierzchołka z tablicy "vertices".</param>
+        public Graph(int[] vertices, int[] neighboursCount)
         {
             _vertices = vertices;
+            _neighboursCount = neighboursCount;
         }
 
         /// <summary>
@@ -52,17 +58,7 @@ namespace GraphColoring.Structures
         /// <returns>Liczba K-kolorowania grafu.</returns>
         public int GetChromaticNumber()
         {
-            return ChromaticNumber.FindChromaticNumber(this);
-        }
-
-        /// <summary>
-        /// Metoda wykonująca algorytm sprawdzania czy dany graf jest k-kolorowalny.
-        /// </summary>
-        /// <param name="k">Parametr k-kolorowania grafu.</param>
-        /// <returns>Prawda jeśli graf jest k-kolorowalny, fałsz w p.p.</returns>
-        public bool CheckChromaticNumber(int k)
-        {
-            return ChromaticNumber.IsChromaticNumber(this, k);
+            return ChromaticNumber.FindChromaticNumber(Vertices, NeighboursCount, VerticesCount);
         }
     }
 }

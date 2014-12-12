@@ -45,7 +45,7 @@
             <graphColoring:Tile Tag="M3" Grid.Column="2" Text="Pomoc" Click="Tile_Click" ></graphColoring:Tile>
             <graphColoring:Tile Tag="M4" Grid.Column="3" Text="Wyjście" Click="Tile_Click"></graphColoring:Tile>
         </Grid>-->
-        <Grid Grid.Row="1" Name="Content" Style="{StaticResource ContentPanel}" Height="Auto"/>
+        <Grid Grid.Row="1" Name="ContentPanel" Style="{StaticResource ContentPanel}" Height="Auto"/>
         <StackPanel Grid.Row="2" Name="StatusPanel" Style="{StaticResource StatPanel}">
             
         </StackPanel>

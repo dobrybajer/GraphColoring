@@ -1,13 +1,7 @@
 #include "Algorithm.h"
-#include "Graph.h"
 
 namespace version_cpu
 {
-	ChromaticNumber::ChromaticNumber()
-	{
-
-	}
-	
 	// Sprawdziæ czy mo¿na lepiej
 	unsigned long Pow(int a, int n)
 	{
@@ -52,7 +46,7 @@ namespace version_cpu
 		return r;
 	} 
 
-	int** CreateNewVertices(int row, int col)
+	int** CreateVertices(int row, int col)
 	{
 		int** nVertices = new int*[row];
 		for (int i = 0; i < row; ++i)
@@ -61,42 +55,23 @@ namespace version_cpu
 		return nVertices;
 	}
 
-	void ChromaticNumber::CreateActualVertices(int row, int col)
+	int* BuildingIndependentSets(int* vertices, int* offset, int n)
 	{
-		actualVertices = new int*[row];
+		int* independentSets;
+		int** actualVertices;
+		int** newVertices;
 
-		for (int i = 0; i < row; ++i)
-			actualVertices[i] = new int[col] ();
-
-		actualVerticesRowCount = row;
-		actualVerticesColCount = col;
-	}
-
-	void ChromaticNumber::UpdateActualVertices(int** newVertices, int row, int col)
-	{
-		for (int i = 0; i < actualVerticesRowCount; ++i)
-		{
-			delete[] actualVertices[i];
-		}
-		delete[] actualVertices;
-
-		actualVertices = newVertices;
-
-		actualVerticesRowCount = row;
-		actualVerticesColCount = col;
-	}
-
-	void ChromaticNumber::BuildingIndependentSets(Graph g)
-	{
-		int n = g.GetVerticesCount();
-		int* vertices = g.GetVertices();
-		int* offset = g.GetNeighborsCount();
+		int actualVerticesRowCount;
+		int actualVerticesColCount;
 
 		// Inicjalizacja macierzy o rozmiarze 2^N (wartoœci pocz¹tkowe 0)
 		independentSets = new int[1 << n] ();
 
 		// Krok 1 algorytmu: przypisanie wartoœci 1 (iloœæ niezale¿nych zbiorów) dla podzbiorów 1-elementowych, oraz dodanie ich do aktualnie przetwarzanych elementów (1 poziom tworzenia wszystkich podzbiorów)
-		CreateActualVertices(n, 1);
+		actualVertices = CreateVertices(n, 1);
+
+		actualVerticesRowCount = n;
+		actualVerticesColCount = 1;
 		
 		for (int i = 0; i < n; ++i)
 		{
@@ -111,7 +86,7 @@ namespace version_cpu
 			int col = el + 1;
 			int row = Combination_n_of_k(n, col);
 			
-			int** newVertices = CreateNewVertices(row, col);
+			newVertices = CreateVertices(row, col);
 			int l = 0;
 
 			for (int i = 0; i < actualVerticesRowCount; ++i)
@@ -152,15 +127,32 @@ namespace version_cpu
 					l++;
 				}
 			}
-			UpdateActualVertices(newVertices, row, col);
+	
+			for (int i = 0; i < actualVerticesRowCount; ++i)
+			{
+				delete[] actualVertices[i];
+			}
+			delete[] actualVertices;
+
+			actualVertices = newVertices;
+
+			actualVerticesRowCount = row;
+			actualVerticesColCount = col;
 		}
+
+		for (int i = 0; i < actualVerticesRowCount; ++i)
+		{
+			delete[] actualVertices[i];
+		}
+		delete[] actualVertices;
+
+		return independentSets;
 	}
 
-	int ChromaticNumber::FindChromaticNumber(Graph g)
+	int FindChromaticNumber(int* vertices, int* offset, int n)
 	{
-		BuildingIndependentSets(g);
-		int n = g.GetVerticesCount();
-	
+		int* independentSets = BuildingIndependentSets(vertices, offset, n);
+
 		for (int k = 1; k <= n; ++k)
 		{
 			unsigned long s = 0;
@@ -169,10 +161,13 @@ namespace version_cpu
 			for (int i = 0; i < PowerNumber; ++i) s += (sgnPow(BitCount(i)) * Pow(independentSets[i], k));
 			
 			if (s <= 0) continue;
-		
+
+			delete[] independentSets;
+
 			return k;
 		}
-		
+
+		delete[] independentSets;
 		return -1;
 	}
 }

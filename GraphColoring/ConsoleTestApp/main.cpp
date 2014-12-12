@@ -30,15 +30,15 @@ int main()
 	// dla Myciel3 poprawny wynik to 4, a dla Myciel4 wynik to 5
 
 	//string path = "../TestFiles/GraphExampleMyciel4.txt";
-	string path = "../TestFiles/GraphExample22.txt";
+	string path = "../TestFiles/GraphExample20.txt";
 	Graph g = Graph::ReadGraph(path);
-	ChromaticNumber cn = ChromaticNumber();
+
 
 	double wall0 = get_wall_time();
 	double cpu0 = get_cpu_time();
 
 	{
-		int wynik = cn.FindChromaticNumber(g);
+		int wynik = FindChromaticNumber(g.GetVertices(), g.GetNeighborsCount(), g.GetVerticesCount());
 		cout << "wynik to: " << wynik << endl << endl;
 	}
 

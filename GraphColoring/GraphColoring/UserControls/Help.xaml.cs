@@ -5,6 +5,9 @@
     /// </summary>
     public partial class Help 
     {
+        /// <summary>
+        /// Konstrukror.
+        /// </summary>
         public Help()
         {
             InitializeComponent();

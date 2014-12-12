@@ -1,72 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using System.Windows;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Forms;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using GraphColoring.Properties;
 using GraphColoring.Structures;
-using GraphColoring.UserControls;
-using Microsoft.Win32;
-using Help = GraphColoring.UserControls.Help;
 using MenuItem = System.Windows.Controls.MenuItem;
 using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
-
+using System.Runtime.InteropServices; 
 
 namespace GraphColoring
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Klasa obsługująca UI i zdarzenia w nim występujące.
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
-        private string lastPath;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <param name="neighborsCount"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        [DllImport("C:\\Users\\Kamil\\Documents\\GitHub\\GraphColoring\\GraphColoring\\Debug\\GraphColoringCPU.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int FindChromaticNumber([MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n);
 
+        /// <summary>
+        /// Ścieżka ostatnio otworzonego pliku z reprezentacją grafu.
+        /// </summary>
+        private string _lastPath;
+
+        /// <summary>
+        /// Domyślny konstruktor.
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private void Tile_Click(object sender, RoutedEventArgs e)
-        {
-            var s = sender as Tile;
-   
-            if (s == null) return;
-            switch ((string)s.Tag)
-            {
-                case "M1":
-                    Content.Children.Clear();
-                    Content.Children.Add(new LoadData());
-                
-       
-                    break;
-                case "M2":
-                    Content.Children.Clear();
-                    //Content.Children.Add();
-                    break;
-                case "M3":
-                    Content.Children.Clear();
-                    Content.Children.Add(new Help());
-                    break;
-                case "M4":
-                    Close();
-                    break;
-                default:
-                   
-                    break;
-            }
-        }
-
+        /// <summary>
+        /// Metoda obsługująca zdarzenie otworzenie okna dialogowego wyboru pliku.
+        /// </summary>
+        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
+        /// <param name="e">Parametry zdarzenia.</param>
         private void Open_OnClick(object sender, RoutedEventArgs e)
         {
             var openFileDialog1 = new OpenFileDialog
@@ -77,7 +51,7 @@ namespace GraphColoring
 
             if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                lastPath=openFileDialog1.InitialDirectory + openFileDialog1.FileName;
+                _lastPath=openFileDialog1.InitialDirectory + openFileDialog1.FileName;
             }
             else
             {
@@ -85,53 +59,112 @@ namespace GraphColoring
             }
         }
 
+        /// <summary>
+        /// Metoda obsługująca zdarzenie ...
+        /// </summary>
+        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
+        /// <param name="e">Parametry zdarzenia.</param>
         private void Generate_OnClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Element '" + (sender as MenuItem).Header + "' nie jest obsługiwany w bieżącej wersji.");
+            MessageBox.Show("Element '" + ((MenuItem) sender).Header + "' nie jest obsługiwany w bieżącej wersji.");
         }
 
+        /// <summary>
+        /// Metoda obsługująca zdarzenie uruchomienia obliczenia algorytmu napisanego w wersji C# (niezoptymalizowany)
+        /// </summary>
+        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
+        /// <param name="e">Parametry zdarzenia.</param>
         private void CPU1_OnClick(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrEmpty(lastPath))
+            if (!string.IsNullOrEmpty(_lastPath))
             {
-                var g = FileProcessing.ReadFile(lastPath);
-                g.GetChromaticNumber();
+                var g = FileProcessing.ReadFile(_lastPath);
+
+                var watch = Stopwatch.StartNew();
+
+                var k = g.GetChromaticNumber();
+
+                watch.Stop();
+                MessageBox.Show(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}ms", k, watch.ElapsedMilliseconds));
             }
             else
             {
                 MessageBox.Show("Jakbyś podał graf na wejściu, to ja bym policzył :(");
             }
-            
         }
 
+        /// <summary>
+        /// Metoda obsługująca zdarzenie uruchomienia obliczenia algorytmu napisanego w wersji C++ (zoptymalizowany)
+        /// </summary>
+        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
+        /// <param name="e">Parametry zdarzenia.</param>
         private void CPU2_OnClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Element '" + (sender as MenuItem).Header + "' nie jest obsługiwany w bieżącej wersji.");
+            if (!string.IsNullOrEmpty(_lastPath))
+            {
+                var g = FileProcessing.ReadFile(_lastPath);
+
+                var watch = Stopwatch.StartNew();
+
+                var k = FindChromaticNumber(g.Vertices, g.NeighboursCount, g.VerticesCount);
+
+                watch.Stop();
+                MessageBox.Show(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}ms", k, watch.ElapsedMilliseconds));
+            }
+            else
+            {
+                MessageBox.Show("Jakbyś podał graf na wejściu, to ja bym policzył :(");
+            }
         }
 
+        /// <summary>
+        /// Metoda obsługująca zdarzenie uruchomienia obliczenia algorytmu napisanego w wersji CUDA C++ (zoptymalizowany)
+        /// </summary>
+        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
+        /// <param name="e">Parametry zdarzenia.</param>
         private void GPU_OnClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Element '" + (sender as MenuItem).Header + "' nie jest obsługiwany w bieżącej wersji.");
+            MessageBox.Show("Element '" + ((MenuItem) sender).Header + "' nie jest obsługiwany w bieżącej wersji.");
         }
 
+        /// <summary>
+        /// Metoda obsługująca zdarzenie otworzenie okna dialogowego z informacjami o programie.
+        /// </summary>
+        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
+        /// <param name="e">Parametry zdarzenia.</param>
         private void AboutProgram_OnClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Element '" + (sender as MenuItem).Header + "' nie jest obsługiwany w bieżącej wersji.");
+            MessageBox.Show("Element '" + ((MenuItem) sender).Header + "' nie jest obsługiwany w bieżącej wersji.");
         }
 
+        /// <summary>
+        /// Metoda obsługująca zdarzenie otworzenie okna dialogowego z informacjami o algorytmie.
+        /// </summary>
+        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
+        /// <param name="e">Parametry zdarzenia.</param>
         private void AboutAlgorithm_OnClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Element '" + (sender as MenuItem).Header + "' nie jest obsługiwany w bieżącej wersji.");
+            MessageBox.Show("Element '" + ((MenuItem) sender).Header + "' nie jest obsługiwany w bieżącej wersji.");
         }
 
+        /// <summary>
+        /// Metoda obsługująca zdarzenie otworzenie okna dialogowego z instrukcją obsługi aplikacji.
+        /// </summary>
+        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
+        /// <param name="e">Parametry zdarzenia.</param>
         private void HowTo_OnClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Element '" + (sender as MenuItem).Header + "' nie jest obsługiwany w bieżącej wersji.");
+            MessageBox.Show("Element '" + ((MenuItem) sender).Header + "' nie jest obsługiwany w bieżącej wersji.");
         }
 
+        /// <summary>
+        /// Metoda obsługująca zdarzenie otworzenie okna dialogowego z aktualną wersją aplikacji.
+        /// </summary>
+        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
+        /// <param name="e">Parametry zdarzenia.</param>
         private void Version_OnClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Element '" + (sender as MenuItem).Header + "' nie jest obsługiwany w bieżącej wersji.");
+            MessageBox.Show("Element '" + ((MenuItem) sender).Header + "' nie jest obsługiwany w bieżącej wersji.");
         }
     }
 }

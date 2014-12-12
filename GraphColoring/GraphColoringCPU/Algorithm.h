@@ -1,27 +1,18 @@
 #ifndef ALGORITHM_H
 #define ALGORITHM_H
 
-#include "Graph.h"
-
-using namespace std;
-
 namespace version_cpu
 {
-	class ChromaticNumber
+	extern "C"
 	{
-	private:
-		int* independentSets;
-		int** actualVertices;
-		int actualVerticesRowCount;
-		int actualVerticesColCount;
-
-		__declspec(dllexport) void BuildingIndependentSets(Graph);
-		__declspec(dllexport) void CreateActualVertices(int,int);
-		__declspec(dllexport) void UpdateActualVertices(int**,int,int);
-
-	public:
-		__declspec(dllexport) ChromaticNumber();
-		__declspec(dllexport) int FindChromaticNumber(Graph);
+		__declspec(dllexport) unsigned long Pow(int, int);
+		__declspec(dllexport) int sgnPow(int);
+		__declspec(dllexport) int BitCount(int);
+		__declspec(dllexport) int Combination_n_of_k(int, int);
+		__declspec(dllexport) int** CreateVertices(int, int);
+		__declspec(dllexport) int* BuildingIndependentSets(int*, int*, int);
+		__declspec(dllexport) int FindChromaticNumber(int*, int*, int);
 	};
 }
+
 #endif

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 
 namespace GraphColoring.Structures
 {
+    /// <summary>
+    /// Statyczna klasa parsująca plik znajdujący się w podanej ścieżce, a następnie zamieniająca go na obiekt grafu
+    /// </summary>
     static class FileProcessing
     {
         /// <summary>
@@ -15,21 +17,26 @@ namespace GraphColoring.Structures
         /// <returns>Wynikowy graf utworzony na podstawie danych z pliku tekstowego.</returns>
         public static Graph ReadFile(string path)
         {
-            var vertices = new List<Vertex>();
-
             try
             {
                 using (var sr = new StreamReader(path))
                 {
-                    String line;
+                    var vertices = new List<int>();
+                    var neighborsCount = new List<int>();
+
+                    string line;
+
+                    if (!sr.EndOfStream)
+                        sr.ReadLine();
+
                     while ((line = sr.ReadLine()) != null)
                     {
-                        var value = line.Split(';');
-                        vertices.Add(new Vertex(value.Select(Int32.Parse).ToList()));
+                        vertices.AddRange(line.Split(',').Select(Int32.Parse).ToList());
+                        neighborsCount.Add(vertices.Count);
                     }
                     sr.Close();
 
-                    return new Graph(vertices);
+                    return new Graph(vertices.ToArray(), neighborsCount.ToArray());
                 }
             }
             catch (Exception e)
@@ -38,30 +45,6 @@ namespace GraphColoring.Structures
                 Console.WriteLine(e.Message);
 
                 return null;
-            }
-        }
-
-        /// <summary>
-        /// Statyczna metoda służaca do zapisania dowolnego grafu do pliku w domyślnym formacie. Więcej informacji o formacie w dokumentaji do aplikacji.
-        /// </summary>
-        /// <param name="path">Ścieżka do wynikowego pliku z grafem w postaci tekstowej.</param>
-        /// <param name="graph">Graf do zapisania do pliku.</param>
-        public static void WriteFile(string path, Graph graph)
-        {
-            try
-            {
-                using (var sw = new StreamWriter(path))
-                {
-                    foreach (var line in from el in graph.Vertices let line = "Neighbours: " select el.Neighbours.Aggregate(line, (current, elm) => current + (elm.ToString(CultureInfo.InvariantCulture) + ",")))
-                    {
-                        sw.WriteLine(line.TrimEnd(','));
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(@"Podczas zapisu grafu do pliku wystapił błąd:");
-                Console.WriteLine(e.Message);
             }
         }
     }

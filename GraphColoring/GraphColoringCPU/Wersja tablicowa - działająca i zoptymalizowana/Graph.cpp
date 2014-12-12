@@ -13,15 +13,21 @@ namespace version_cpu
 
 	}
 
-	Graph::Graph(int* _vertices, int _size)
+	Graph::Graph(int* _vertices, int* _neighborsCount, int _size)
 	{
 		vertices = _vertices;
+		neighborsCount = _neighborsCount;
 		verticesCount = _size;
 	}
 
 	int* Graph::GetVertices()
 	{
 		return vertices;
+	}
+
+	int* Graph::GetNeighborsCount()
+	{
+		return neighborsCount;
 	}
 
 	int Graph::GetVerticesCount()
@@ -40,9 +46,9 @@ namespace version_cpu
 			getline(plik, line);
 
 			int size = stoi(line);
-			int i = 0;
-
-			int* nVertices = new int[size] {0};
+			int i = 0, k = 0;
+			int* nNeighborsCount = new int[size];
+			vector<string> el;
 
 			while (!plik.eof())
 			{
@@ -52,17 +58,24 @@ namespace version_cpu
 				string item;
 
 				while (getline(ss, item, ','))
-					nVertices[i] |= 1 << stoi(item);
+					el.push_back(item);
 
+				nNeighborsCount[i] = el.size();
+
+				k = el.size();
 				i++;
 			}
 			plik.close();
 
-			return Graph(nVertices, size);
+			int* nVertices = new int[k];
+
+			for (int i = 0; i < k; i++)
+				nVertices[i] = stoi(el[i]);
+
+			return Graph(nVertices, nNeighborsCount, size);
 		}
 		else throw new logic_error("Podczas otwierania pliku wyst¹pi³ b³¹d");
 
 		return Graph();
 	}
 }
-

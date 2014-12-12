@@ -58,16 +58,12 @@
     <Compile Include="Algorithm\ChromaticNumber.cs" />
     <Compile Include="Structures\FileProcessing.cs" />
     <Compile Include="Structures\Graph.cs" />
-    <Compile Include="UserControls\Tile.xaml.cs">
-      <DependentUpon>Tile.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UserControls\Help.xaml.cs">
       <DependentUpon>Help.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\LoadData.xaml.cs">
       <DependentUpon>LoadData.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Structures\Vertex.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -81,10 +77,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Style\Style.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UserControls\Tile.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
