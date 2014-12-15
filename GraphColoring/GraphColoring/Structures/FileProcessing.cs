@@ -47,5 +47,21 @@ namespace GraphColoring.Structures
                 return null;
             }
         }
+
+        public static Graph ConvertToBitVersion(Graph g)
+        {
+            var n = g.VerticesCount;
+            var v = new int[n];
+
+            for (var i = 0; i < n; ++i)
+            {
+                for (var j = g.NeighboursCount[i - 1 > 0 ? i - 1 : 0]; j < g.NeighboursCount[i]; ++j)
+                {
+                    v[i] |= (1 << g.Vertices[j]);
+                }
+            }
+
+            return new Graph(v, g.NeighboursCount.ToArray());
+        }
     }
 }

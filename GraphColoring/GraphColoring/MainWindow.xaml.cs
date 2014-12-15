@@ -19,9 +19,10 @@ namespace GraphColoring
         /// <param name="vertices"></param>
         /// <param name="neighborsCount"></param>
         /// <param name="n"></param>
+        /// <param name="flag"></param>
         /// <returns></returns>
-        [DllImport("C:\\Users\\Kamil\\Documents\\GitHub\\GraphColoring\\GraphColoring\\Debug\\GraphColoringCPU.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int FindChromaticNumber([MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n);
+        [DllImport("..\\..\\..\\Release\\GraphColoringCPU.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int FindChromaticNumber([MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int flag = 0);
 
         /// <summary>
         /// Ścieżka ostatnio otworzonego pliku z reprezentacją grafu.
@@ -100,16 +101,17 @@ namespace GraphColoring
         /// <param name="e">Parametry zdarzenia.</param>
         private void CPU2_OnClick(object sender, RoutedEventArgs e)
         {
+            _lastPath = "..\\..\\..\\..\\TestFiles\\GraphExample22.txt";
             if (!string.IsNullOrEmpty(_lastPath))
             {
                 var g = FileProcessing.ReadFile(_lastPath);
-
+                g = FileProcessing.ConvertToBitVersion(g);
                 var watch = Stopwatch.StartNew();
 
-                var k = FindChromaticNumber(g.Vertices, g.NeighboursCount, g.VerticesCount);
+                var k = FindChromaticNumber(g.Vertices, g.NeighboursCount, g.VerticesCount,1);
 
                 watch.Stop();
-                MessageBox.Show(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}ms", k, watch.ElapsedMilliseconds));
+                MessageBox.Show(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
             }
             else
             {
