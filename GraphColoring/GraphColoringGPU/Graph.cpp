@@ -13,11 +13,12 @@ namespace version_cpu
 
 	}
 
-	Graph::Graph(int* _vertices, int* _neighborsCount, int _size)
+	Graph::Graph(int* _vertices, int* _neighborsCount, int _size, int _verticesLength)
 	{
 		vertices = _vertices;
 		neighborsCount = _neighborsCount;
 		verticesCount = _size;
+		verticesLength = _verticesLength;
 	}
 
 	int* Graph::GetVertices()
@@ -35,11 +36,16 @@ namespace version_cpu
 		return verticesCount;
 	}
 
+	int Graph::GetVerticesLength()
+	{
+		return verticesLength;
+	}
+
 	Graph Graph::ReadGraph(string path)
 	{
 		fstream plik;
 		plik.open(path, ios::in | ios::out);
-
+		
 		if (plik.good())
 		{
 			string line;
@@ -72,7 +78,7 @@ namespace version_cpu
 			for (int i = 0; i < k; i++)
 				nVertices[i] = stoi(el[i]);
 
-			return Graph(nVertices, nNeighborsCount, size);
+			return Graph(nVertices, nNeighborsCount, size, k);
 		}
 		else throw new logic_error("Podczas otwierania pliku wyst¹pi³ b³¹d");
 
