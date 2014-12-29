@@ -316,30 +316,25 @@ int* BuildingIndependentSetsGPU(int N, int* Vertices, int* Offest, int verticesL
 
 int main()
 {
-	Graph graph = ReadGraph("test.txt");
+	Graph graph = ReadGraph("../../TestFiles/GraphExampleMyciel3.txt");
 
 	//int roz = 1 << graph.n;
 
 	//int* independentSet = BuildingIndependentSets(graph.n, graph.vertices, graph.neighbors);
 	//int* independentSet = BuildingIndependentSetsGPU(graph.n, graph.vertices, graph.neighbors, graph.allVerticesCount);
-	//cout << endl;
-	//for (int i = 0; i <roz; i++)
-	//{
-	//	cout << independentSet[i] << " ";
-	//}
-	//cout << endl;
+
 	int* tabWyn = new int[graph.n];
 
 	//cudaError_t cudaStatus = runCuda(tabWyn, independentSet, graph.n, roz);
 	cudaError_t cudaStatus = runCuda2(tabWyn, graph.vertices, graph.neighbors, graph.n, graph.allVerticesCount);
-   
+
 	if (cudaStatus != cudaSuccess) 
 	{
         fprintf(stderr, "addWithCuda failed!");
         return 1;
     }
 
-	int wynik;
+	int wynik = 0;
 
 	for(int i = 0; i < graph.n; i++)
 	{
@@ -350,14 +345,11 @@ int main()
 		}
 	}
 
-	//for(int i=0;i<graph.GetVerticesCount();i++)
+	//for(int i=0;i<graph.n;i++)
 	//	cout << " " << tabWyn[i];
 
 	cout << endl << "Potrzeba " << wynik << " kolorow." << endl;
 	
-
-    // cudaDeviceReset must be called before exiting in order for profiling and
-    // tracing tools such as Nsight and Visual Profiler to show complete traces.
     cudaStatus = cudaDeviceReset();
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaDeviceReset failed!");
@@ -477,25 +469,29 @@ __global__ void Init1(int* independentSet, int* actualVertices, int verticesCoun
 	}
 }
 
-__global__ void Init2(int* actualVertices, int* newVertices)
+__global__ void Init2(int* actualVertices, int* newVertices, int size)
 {
-	actualVertices = newVertices;
+	for(int i = 0; i < size; ++i)
+		actualVertices[i] = newVertices[i];
 }
 
 __global__ void Init3(int* actualVertices, int* l_set, int n, int actualVerticesRowCount, int actualVerticesColCount)
 {
 	int last_el = 0;
+	int last_index = 0;
 	l_set[0] = 0;
 	for(int i = 1; i < actualVerticesRowCount; ++i)
 	{
-		int j = n - actualVertices[(i - 1) * actualVerticesColCount + actualVerticesColCount - 1] - 1;
+		int j = n - actualVertices[(last_index) * actualVerticesColCount + actualVerticesColCount - 1] - 1;
+		int actual = n - actualVertices[i * actualVerticesColCount + actualVerticesColCount - 1] - 1;
 	
-		if(j <= 0)
+		if(actual <= 0)
 			l_set[i] = -1;
 		else
 		{
 			l_set[i] = last_el + j;
-			last_el = j;
+			last_el = l_set[i];
+			last_index = i;
 		}
 	}
 }
@@ -570,6 +566,13 @@ cudaError_t runCuda2(int* wynik, int* vertices, int* offset, int verticesCount, 
 
 	for (int el = 1; el < verticesCount; el++)
 	{	
+		/*int* a_set = new int[actualVerticesRowCount*actualVerticesColCount];
+		gpuErrchk(cudaMemcpy(a_set, dev_actualVertices, actualVerticesRowCount*actualVerticesColCount * sizeof(int), cudaMemcpyDeviceToHost));
+		cout << "a_set"<<endl;
+		for(int r = 0; r < actualVerticesRowCount*actualVerticesColCount; ++r)
+			cout << a_set[r] << " ";
+		cout << endl;*/
+
 		int col = el + 1;
 		int row = Combination_n_of_k(verticesCount, col);
 
@@ -578,27 +581,31 @@ cudaError_t runCuda2(int* wynik, int* vertices, int* offset, int verticesCount, 
 		
 		Init3<<<1,1>>> (dev_actualVertices, dev_l_set, verticesCount, actualVerticesRowCount, actualVerticesColCount);
 
-		int* l_set = new int[actualVerticesRowCount];
+		/*int* l_set = new int[actualVerticesRowCount];
 		gpuErrchk(cudaMemcpy(l_set, dev_l_set, actualVerticesRowCount * sizeof(int), cudaMemcpyDeviceToHost));
 		cout << "l_set"<<endl;
 		for(int r = 0; r < actualVerticesRowCount; ++r)
 			cout << l_set[r] << " ";
-		cout << endl;
+		cout << endl;*/
 
+		IndependentSetGPU2<<<1,actualVerticesRowCount>>> (dev_l_set, verticesCount, dev_vertices, dev_offset, actualVerticesRowCount, actualVerticesColCount, dev_actualVertices, dev_newVertices, dev_independentSet, col, el);	
 
-
-		IndependentSetGPU2<<<1,actualVerticesRowCount>>> (dev_l_set, verticesCount, dev_vertices, dev_offset, actualVerticesRowCount, actualVerticesColCount, dev_actualVertices, dev_newVertices, dev_independentSet, col, el);
-	
-		cudaThreadSynchronize();
+		//int* n_set = new int[row*col];
+		//gpuErrchk(cudaMemcpy(n_set, dev_newVertices, row*col * sizeof(int), cudaMemcpyDeviceToHost));
+		//cout << "n_set"<<endl;
+		//for(int r = 0; r < row*col; ++r)
+		//	cout << n_set[r] << " ";
+		//cout << endl;
 
 		cudaFree(dev_actualVertices);
-		Init2<<<1,1>>> (dev_actualVertices, dev_newVertices);
-		
+		gpuErrchk(cudaMalloc((void**)&dev_actualVertices, (row * col) * sizeof(int)));
+		Init2<<<1,1>>> (dev_actualVertices, dev_newVertices, row * col);
+
 		actualVerticesRowCount = row;
 		actualVerticesColCount = col;
-		cout<<"nr "<<el<<endl;
+		cout << "nr " <<el << endl;
 	}
-
+	
 	FindChromaticNumber<<<1,verticesCount>>>(verticesCount, dev_independentSet, dev_wynik);
 
     gpuErrchk(cudaGetLastError());
