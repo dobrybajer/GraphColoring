@@ -1,14 +1,12 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
-
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <sstream>
-
 
 using namespace std;
 
@@ -22,12 +20,17 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
-cudaError_t runCuda(int *c, int *a,   int sizec, int sizea);
-int* BuildingIndependentSetsGPU(int N ,int* Vertices,int* Offest, int verticesLength);
+#pragma region Headers
+
+cudaError_t runCuda(int*, int*, int, int);
+cudaError_t initIndepSet(int, int*, int, int*, int, int, int*, int*, int*, int, int, int);
+int* BuildingIndependentSetsGPU(int N, int* Vertices, int* Offest, int verticesLength);
+
+#pragma endregion Headers
 
 #pragma region Algorithm
 
-	 __host__ __device__ unsigned long Pow(int a, int n)
+	__host__ __device__ unsigned long Pow(int a, int n)
 	{
 		unsigned long result = 1;
 
@@ -43,21 +46,20 @@ int* BuildingIndependentSetsGPU(int N ,int* Vertices,int* Offest, int verticesLe
 		return result;
 	}
 
-	// Final
-	 __host__ __device__ int sgnPow(int n)
+	__host__ __device__ int sgnPow(int n)
 	{
 		return (n & 1) == 0 ? 1 : -1;
 	}
 
 	// Sprawdziæ, dlaczego to dzia³a
-	 __host__ __device__ int BitCount(int u)
+	__host__ __device__ int BitCount(int u)
 	{
 		int uCount = u - ((u >> 1) & 033333333333) - ((u >> 2) & 011111111111);
 		return ((uCount + (uCount >> 3)) & 030707070707) % 63;
 	}
 
 	// Sprawdziæ, czy mo¿na lepiej
-	 __host__ __device__ int Combination_n_of_k(int n, int k)
+	__host__ __device__ int Combination_n_of_k(int n, int k)
 	{
 		if (k > n) return 0;
 
@@ -70,14 +72,14 @@ int* BuildingIndependentSetsGPU(int N ,int* Vertices,int* Offest, int verticesLe
 		return r;
 	} 
 
-	  int* BuildingIndependentSets(int N ,int* Vertices,int* Offest )
+	int* BuildingIndependentSets(int N, int* Vertices, int* Offset)
 	{
 		int n = N;
 		int* vertices = Vertices;
-		int* offset = Offest;
+		int* offset = Offset;
 
 		int* independentSets;
-		int* actualVertices;//zmiana na tablice jedno wymiarow¹ 
+		int* actualVertices;
 		int actualVerticesRowCount;
 		int actualVerticesColCount;
 
@@ -100,7 +102,6 @@ int* BuildingIndependentSetsGPU(int N ,int* Vertices,int* Offest, int verticesLe
 		// Zaczynamy od 1, bo krok pierwszy wykonany wy¿ej.
 		for (int el = 1; el < n; el++)
 		{
-						
 			int col = el + 1;
 			int row = Combination_n_of_k(n, col);
 			int* newVertices = new int[row*col];//zmiana na tablice jedno wymiarow¹ 
@@ -148,21 +149,71 @@ int* BuildingIndependentSetsGPU(int N ,int* Vertices,int* Offest, int verticesLe
 		return independentSets;
 	}
 
-	__global__ void FindChromaticNumber(int N ,int* independentSets,int *wynik)
+	int* BuildingIndependentSetsGPU(int N, int* Vertices, int* Offest, int verticesLength)
+{
+		int n = N;
+		int* vertices = Vertices;
+		int* offset = Offest;
+
+		int* independentSets;
+		int* actualVertices;//zmiana na tablice jedno wymiarow¹ 
+		int actualVerticesRowCount;
+		int actualVerticesColCount;
+
+		// Inicjalizacja macierzy o rozmiarze 2^N (wartoœci pocz¹tkowe 0)
+		independentSets = new int[1 << n] ();
+
+		// Krok 1 algorytmu: przypisanie wartoœci 1 (iloœæ niezale¿nych zbiorów) dla podzbiorów 1-elementowych, oraz dodanie ich do aktualnie przetwarzanych elementów (1 poziom tworzenia wszystkich podzbiorów)
+		//CreateActualVertices(n, 1);
+		actualVertices = new int[n];
+
+		actualVerticesRowCount = n;//oldRow	
+		actualVerticesColCount = 1;//oldCol
+		
+		for (int i = 0; i < n; ++i)
+		{
+			independentSets[1 << i] = 1;
+			actualVertices[i] = i;
+		}
+
+		// G³ówna funkcja tworz¹ca tablicê licznoœci zbiorów niezale¿nych dla wszystkich podzbiorów zbioru N-elementowego.
+		// Zaczynamy od 1, bo krok pierwszy wykonany wy¿ej.
+		for (int el = 1; el < n; el++)
+		{	
+			cout<<"row "<<actualVerticesRowCount<<endl;
+			int col = el + 1;
+			int row = Combination_n_of_k(n, col);
+			int* newVertices = new int[row*col];//zmiana na tablice jedno wymiarow¹ 
+		
+			int l = 0;
+			int roz=1<<N;
+			
+			initIndepSet(N,Vertices,verticesLength,Offest,actualVerticesRowCount,actualVerticesColCount,
+				actualVertices,newVertices,independentSets,row,col,el);
+		
+			delete[] actualVertices;
+
+			actualVertices = newVertices;
+		
+			actualVerticesRowCount = row;
+			actualVerticesColCount = col;
+			cout<<"nr "<<el<<endl;
+    
+		}
+		return independentSets;
+}
+
+	__global__ void FindChromaticNumber(int N, int* independentSets, int* wynik)
 	{
 		int n = N;
-		int index= threadIdx.x;
+		int index = threadIdx.x;
 
-			unsigned long s = 0;
-			int PowerNumber = Pow(2, n);
-			// Czy mo¿na omin¹æ u¿ycie funkcji BitCount ?
-			for (int i = 0; i < PowerNumber; ++i) s += (sgnPow(BitCount(i)) * Pow(independentSets[i], index+1));
+		unsigned long s = 0;
+		int PowerNumber = 1 << n;
+
+		for (int i = 0; i < PowerNumber; ++i) s += (sgnPow(BitCount(i)) * Pow(independentSets[i], index + 1));
 			
-			if (s > 0)
-				wynik[index]=index;
-			else
-				wynik[index]=s;
-		
+		wynik[index] = s > 0 ? index : s; // KAMIL: punkt krytyczny, czy dobrze jest liczone "s"? dla unsigned long long liczy Ÿle...
 	}
 
 	__global__ void IndependentSetGPU(int N ,int* Vertices,int* Offset ,int actualVerticesRowCount,
@@ -206,7 +257,9 @@ int* BuildingIndependentSetsGPU(int N ,int* Vertices,int* Offest, int verticesLe
 
 #pragma endregion Algorithm
 
-struct Graph
+#pragma region Structure
+
+	struct Graph
 {
 	int* vertices;
 	int* neighbors;
@@ -214,7 +267,7 @@ struct Graph
 	int allVerticesCount;
 };
 
-Graph ReadGraph(string path)
+	Graph ReadGraph(string path)
 {
 	fstream plik;
 	plik.open(path, ios::in | ios::out);
@@ -258,49 +311,47 @@ Graph ReadGraph(string path)
 	else throw new logic_error("Podczas otwierania pliku wyst¹pi³ b³¹d");
 }
 
+#pragma endregion Structure
+
 int main()
 {
 	Graph graph = ReadGraph("test.txt");
 
-	int roz=0;
-	cout<<graph.allVerticesCount<<endl;
+	int roz = 1 << graph.n;
 
-	roz=1<<graph.n;
-
-	int* independentSet = BuildingIndependentSets(graph.n,graph.vertices,graph.neighbors);
-	/*cout<<endl;
-	for (int i = 0; i <roz; i++)
-	{
-		cout<<independentSet2[i]<<" ";
-	}
-	cout<<endl;*/
-	//int* independentSet=BuildingIndependentSetsGPU(graph.GetVerticesCount(),graph.GetVertices(),graph.GetNeighborsCount(),graph.GetVerticesLength());
-	//cout<<endl;
+	//int* independentSet = BuildingIndependentSets(graph.n, graph.vertices, graph.neighbors);
+	int* independentSet = BuildingIndependentSetsGPU(graph.n, graph.vertices, graph.neighbors, graph.allVerticesCount);
+	//cout << endl;
 	//for (int i = 0; i <roz; i++)
 	//{
-	//	cout<<independentSet[i]<<" ";
+	//	cout << independentSet[i] << " ";
 	//}
-	//cout<<endl;
-	int* tabWyn=new int[graph.n];
+	//cout << endl;
+	int* tabWyn = new int[graph.n];
 
-	cudaError_t cudaStatus = runCuda(tabWyn, independentSet, graph.n,roz);
-    if (cudaStatus != cudaSuccess) {
+	cudaError_t cudaStatus = runCuda(tabWyn, independentSet, graph.n, roz);
+   
+	if (cudaStatus != cudaSuccess) 
+	{
         fprintf(stderr, "addWithCuda failed!");
         return 1;
     }
 
-	int wynik =0;
-	for(int i =0 ; i<graph.n;i++)
+	int wynik;
+
+	for(int i = 0; i < graph.n; i++)
+	{
 		if(tabWyn[i]!=-1 && tabWyn[i]!=0)
 		{
-			wynik = tabWyn[i]+1;
+			wynik = tabWyn[i] + 1;
 			break;
 		}
+	}
 
-		//for(int i=0;i<graph.GetVerticesCount();i++)
-		//	cout<<" "<<tabWyn[i];
+	//for(int i=0;i<graph.GetVerticesCount();i++)
+	//	cout << " " << tabWyn[i];
 
-	cout<<endl<<"Potrzeba "<<wynik<<" kolorow"<<endl;
+	cout << endl << "Potrzeba " << wynik << " kolorow." << endl;
 	
 
     // cudaDeviceReset must be called before exiting in order for profiling and
@@ -314,11 +365,13 @@ int main()
     return 0;
 }
 
-cudaError_t runCuda(int *wynik, int *independentSet,   int sizeWynik, int sizeIndep)
+#pragma region CudaFunctions
+
+cudaError_t runCuda(int *wynik, int *independentSet, int sizeWynik, int sizeIndep)
 {
     int *dev_independentSet = 0;
     int *dev_wynik = 0;
-    cudaError_t cudaStatus=cudaSuccess;
+    cudaError_t cudaStatus = cudaSuccess;
 
     // Choose which GPU to run on, change this on a multi-GPU system.
     gpuErrchk(cudaSetDevice(0));
@@ -332,7 +385,7 @@ cudaError_t runCuda(int *wynik, int *independentSet,   int sizeWynik, int sizeIn
     gpuErrchk(cudaMemcpy(dev_independentSet, independentSet, sizeIndep * sizeof(int), cudaMemcpyHostToDevice));
     
     // Launch a kernel on the GPU with one thread for each element.
-	FindChromaticNumber<<<1,sizeWynik>>>(sizeWynik,dev_independentSet,dev_wynik);
+	FindChromaticNumber<<<1,sizeWynik>>>(sizeWynik, dev_independentSet, dev_wynik);
 
     // Check for any errors launching the kernel
     gpuErrchk(cudaGetLastError());
@@ -347,8 +400,8 @@ cudaError_t runCuda(int *wynik, int *independentSet,   int sizeWynik, int sizeIn
     return cudaStatus;
 }
 
-cudaError_t initIndepSet(int N ,int* Vertices,int verticeslength, int* Offset ,int actualVerticesRowCount,
-		int actualVerticesColCount,int* actualVertices,int* newVertices,int* independentSets, int row, int col,int el)
+cudaError_t initIndepSet(int N, int* Vertices, int verticeslength, int* Offset, int actualVerticesRowCount,
+		int actualVerticesColCount, int* actualVertices, int* newVertices, int* independentSets, int row, int col, int el)
 {
 	int *dev_Vertices = 0;
     int *dev_Offset = 0;
@@ -409,56 +462,4 @@ cudaError_t initIndepSet(int N ,int* Vertices,int verticeslength, int* Offset ,i
     return cudaStatus;
 }
 
-int* BuildingIndependentSetsGPU(int N ,int* Vertices,int* Offest, int verticesLength)
-{
-		int n = N;
-		int* vertices = Vertices;
-		int* offset = Offest;
-
-		int* independentSets;
-		int* actualVertices;//zmiana na tablice jedno wymiarow¹ 
-		int actualVerticesRowCount;
-		int actualVerticesColCount;
-
-		// Inicjalizacja macierzy o rozmiarze 2^N (wartoœci pocz¹tkowe 0)
-		independentSets = new int[1 << n] ();
-
-		// Krok 1 algorytmu: przypisanie wartoœci 1 (iloœæ niezale¿nych zbiorów) dla podzbiorów 1-elementowych, oraz dodanie ich do aktualnie przetwarzanych elementów (1 poziom tworzenia wszystkich podzbiorów)
-		//CreateActualVertices(n, 1);
-		actualVertices = new int[n];
-
-		actualVerticesRowCount = n;//oldRow	
-		actualVerticesColCount = 1;//oldCol
-		
-		for (int i = 0; i < n; ++i)
-		{
-			independentSets[1 << i] = 1;
-			actualVertices[i] = i;
-		}
-
-		// G³ówna funkcja tworz¹ca tablicê licznoœci zbiorów niezale¿nych dla wszystkich podzbiorów zbioru N-elementowego.
-		// Zaczynamy od 1, bo krok pierwszy wykonany wy¿ej.
-		for (int el = 1; el < n; el++)
-		{	
-			cout<<"row "<<actualVerticesRowCount<<endl;
-			int col = el + 1;
-			int row = Combination_n_of_k(n, col);
-			int* newVertices = new int[row*col];//zmiana na tablice jedno wymiarow¹ 
-		
-			int l = 0;
-			int roz=1<<N;
-			
-			initIndepSet(N,Vertices,verticesLength,Offest,actualVerticesRowCount,actualVerticesColCount,
-				actualVertices,newVertices,independentSets,row,col,el);
-		
-			delete[] actualVertices;
-
-			actualVertices = newVertices;
-		
-			actualVerticesRowCount = row;
-			actualVerticesColCount = col;
-			cout<<"nr "<<el<<endl;
-    
-		}
-		return independentSets;
-}
+#pragma endregion CudaFunctions
