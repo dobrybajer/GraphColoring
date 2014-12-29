@@ -1,12 +1,15 @@
-
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
-#include "Graph.h"
+
 
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <sstream>
 
-using namespace version_cpu;
+
 using namespace std;
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
@@ -203,17 +206,68 @@ int* BuildingIndependentSetsGPU(int N ,int* Vertices,int* Offest, int verticesLe
 
 #pragma endregion Algorithm
 
+struct Graph
+{
+	int* vertices;
+	int* neighbors;
+	int n;
+	int allVerticesCount;
+};
+
+Graph ReadGraph(string path)
+{
+	fstream plik;
+	plik.open(path, ios::in | ios::out);
+
+	if (plik.good())
+	{
+		string line;
+		getline(plik, line);
+
+		int size = stoi(line);
+		int i = 0, k = 0;
+		int* nNeighborsCount = new int[size];
+		vector<string> el;
+
+		while (!plik.eof())
+		{
+			getline(plik, line);
+
+			stringstream ss(line);
+			string item;
+
+			while (getline(ss, item, ','))
+				el.push_back(item);
+
+			nNeighborsCount[i] = el.size();
+
+			k = el.size();
+			i++;
+		}
+		plik.close();
+
+		int* nVertices = new int[k];
+
+		for (int i = 0; i < k; i++)
+			nVertices[i] = stoi(el[i]);
+
+		Graph g = { nVertices, nNeighborsCount, size, k };
+
+		return g;
+	}
+	else throw new logic_error("Podczas otwierania pliku wyst¹pi³ b³¹d");
+}
+
 int main()
 {
-	Graph graph = Graph();
-	graph= Graph::ReadGraph("test.txt");
+	Graph graph = ReadGraph("test.txt");
 
 	int roz=0;
-	cout<<graph.GetVerticesLength()<<endl;
+	cout<<graph.allVerticesCount<<endl;
 
-	roz=1<<graph.GetVerticesCount();
+	roz=1<<graph.n;
 
-	int* independentSet = BuildingIndependentSets(graph.GetVerticesCount(),graph.GetVertices(),graph.GetNeighborsCount());
+	int* independentSet = BuildingIndependentSets(graph.n,graph.vertices,graph.neighbors);
 	/*cout<<endl;
 	for (int i = 0; i <roz; i++)
 	{
@@ -227,16 +281,16 @@ int main()
 	//	cout<<independentSet[i]<<" ";
 	//}
 	//cout<<endl;
-	int* tabWyn=new int[graph.GetVerticesCount()];
+	int* tabWyn=new int[graph.n];
 
-	cudaError_t cudaStatus = runCuda(tabWyn, independentSet, graph.GetVerticesCount(),roz);
+	cudaError_t cudaStatus = runCuda(tabWyn, independentSet, graph.n,roz);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "addWithCuda failed!");
         return 1;
     }
 
 	int wynik =0;
-	for(int i =0 ; i<graph.GetVerticesCount();i++)
+	for(int i =0 ; i<graph.n;i++)
 		if(tabWyn[i]!=-1 && tabWyn[i]!=0)
 		{
 			wynik = tabWyn[i]+1;
