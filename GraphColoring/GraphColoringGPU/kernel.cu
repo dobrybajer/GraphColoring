@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <Windows.h>
 
 using namespace std;
 
@@ -23,7 +24,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 #pragma region Headers
 
 cudaError_t runCuda(int*, int*, int, int);
-cudaError_t runCuda2(int*, int*, int*, int, int);
+cudaError_t FindChromaticNumberMain(int*, int*, int*, int, int);
 cudaError_t initIndepSet(int, int*, int, int*, int, int, int*, int*, int*, int, int, int);
 int* BuildingIndependentSetsGPU(int N, int* Vertices, int* Offest, int verticesLength);
 
@@ -314,9 +315,30 @@ int* BuildingIndependentSetsGPU(int N, int* Vertices, int* Offest, int verticesL
 
 #pragma endregion Structure
 
+#pragma region Time Measuring
+
+double get_wall_time()
+{
+	LARGE_INTEGER time, freq;
+	if (!QueryPerformanceFrequency(&freq)) { return 0; }
+	if (!QueryPerformanceCounter(&time)) { return 0; }
+	return (double)time.QuadPart / freq.QuadPart;
+}
+
+double get_cpu_time()
+{
+	FILETIME a, b, c, d;
+	if (GetProcessTimes(GetCurrentProcess(), &a, &b, &c, &d) != 0)
+		return (double)(d.dwLowDateTime | ((unsigned long long)d.dwHighDateTime << 32)) * 0.0000001;
+	else
+		return 0;
+}
+
+#pragma endregion Time Measuring
+
 int main()
 {
-	Graph graph = ReadGraph("../../TestFiles/GraphExampleMyciel3.txt");
+	Graph graph = ReadGraph("../../TestFiles/GraphExample12.txt");
 
 	//int roz = 1 << graph.n;
 
@@ -325,9 +347,11 @@ int main()
 
 	int* tabWyn = new int[graph.n];
 
-	//cudaError_t cudaStatus = runCuda(tabWyn, independentSet, graph.n, roz);
-	cudaError_t cudaStatus = runCuda2(tabWyn, graph.vertices, graph.neighbors, graph.n, graph.allVerticesCount);
+	double wall0 = get_wall_time();
+	double cpu0 = get_cpu_time();
 
+	//cudaError_t cudaStatus = runCuda(tabWyn, independentSet, graph.n, roz);
+	cudaError_t cudaStatus = FindChromaticNumberMain(tabWyn, graph.vertices, graph.neighbors, graph.n, graph.allVerticesCount);
 	if (cudaStatus != cudaSuccess) 
 	{
         fprintf(stderr, "addWithCuda failed!");
@@ -345,10 +369,13 @@ int main()
 		}
 	}
 
-	//for(int i=0;i<graph.n;i++)
-	//	cout << " " << tabWyn[i];
+	double wall1 = get_wall_time();
+	double cpu1 = get_cpu_time();
 
-	cout << endl << "Potrzeba " << wynik << " kolorow." << endl;
+	cout << "Wall Time = " << wall1 - wall0 << " seconds" << endl;
+	cout << "CPU Time  = " << cpu1 - cpu0 << " seconds" << endl;
+
+	cout << "Potrzeba " << wynik << " kolorow." << endl;
 	
     cudaStatus = cudaDeviceReset();
     if (cudaStatus != cudaSuccess) {
@@ -459,9 +486,14 @@ cudaError_t initIndepSet(int N, int* Vertices, int verticeslength, int* Offset, 
 #pragma endregion CudaFunctions
 
 #pragma region CudaFunctions - version 2
-
-__global__ void Init1(int* independentSet, int* actualVertices, int verticesCount)
+// Final
+__global__ void Init(int* independentSet, int* actualVertices, int verticesCount)
 {
+	int PowerNumber = 1 << verticesCount;
+
+	for(int i = 0; i < PowerNumber; ++i)
+		independentSet[i] = 0;
+
 	for (int i = 0; i < verticesCount; ++i)
 	{
 		independentSet[1 << i] = 1;
@@ -469,34 +501,38 @@ __global__ void Init1(int* independentSet, int* actualVertices, int verticesCoun
 	}
 }
 
-__global__ void Init2(int* actualVertices, int* newVertices, int size)
+// Final
+__global__ void CreateActualVertices(int* actualVertices, int* newVertices, int size)
 {
 	for(int i = 0; i < size; ++i)
 		actualVertices[i] = newVertices[i];
 }
 
-__global__ void Init3(int* actualVertices, int* l_set, int n, int actualVerticesRowCount, int actualVerticesColCount)
+// Mo¿liwe zmiany, jeœli bêdzie lepszy pomys³
+__global__ void PrepareToNewVertices(int* actualVertices, int* l_set, int n, int actualVerticesRowCount, int actualVerticesColCount)
 {
 	int last_el = 0;
 	int last_index = 0;
 	l_set[0] = 0;
+
 	for(int i = 1; i < actualVerticesRowCount; ++i)
 	{
-		int j = n - actualVertices[(last_index) * actualVerticesColCount + actualVerticesColCount - 1] - 1;
-		int actual = n - actualVertices[i * actualVerticesColCount + actualVerticesColCount - 1] - 1;
+		int previousPossibleCombination = n - actualVertices[last_index * actualVerticesColCount + actualVerticesColCount - 1] - 1;
+		int actualPossibleCombination = n - actualVertices[i * actualVerticesColCount + actualVerticesColCount - 1] - 1;
 	
-		if(actual <= 0)
+		if(actualPossibleCombination <= 0)
 			l_set[i] = -1;
 		else
 		{
-			l_set[i] = last_el + j;
+			l_set[i] = last_el + previousPossibleCombination;
 			last_el = l_set[i];
 			last_index = i;
 		}
 	}
 }
 
-__global__ void IndependentSetGPU2(int* l_set, int n, int* Vertices, int* Offset, int actualVerticesRowCount, int actualVerticesColCount, int* actualVertices, int* newVertices, int* independentSets, int col, int el)
+// Konieczne zmiany po wprowadzeniu bloków, a mo¿liwe ¿e i siatek (grid)
+__global__ void BuildIndependentSetGPU(int* l_set, int n, int* vertices, int* offset, int actCol, int newCol, int* actualVertices, int* newVertices, int* independentSets)
 {
 	int i = threadIdx.x;
 	int l = l_set[i];
@@ -504,37 +540,41 @@ __global__ void IndependentSetGPU2(int* l_set, int n, int* Vertices, int* Offset
 	if (l==-1) return;
 
 	int lastIndex = 0;
-	// Sprawdzenie indeksu poporzedniego zbioru dla rozpatrywanego podzbioru
-	for (int index = 0; index < actualVerticesColCount; ++index)
-		lastIndex += (1 << actualVertices[i * actualVerticesColCount + index]);
 
-	for (int j = actualVertices[i * actualVerticesColCount + actualVerticesColCount - 1] + 1; j < n; ++j)
+	for (int index = 0; index < actCol; ++index)
+		lastIndex += (1 << actualVertices[i * actCol + index]);
+
+	for (int j = actualVertices[i * actCol + actCol - 1] + 1; j < n; ++j)
 	{
 		int lastIndex2 = lastIndex;
-		// Sprawdzenie indeksu poprzedniego zbioru dla rozpatrywanego podzbioru \ {i}
-		for (int ns = Offset[j - 1]; ns < Offset[j]; ++ns)
+
+		for (int ns = offset[j - 1]; ns < offset[j]; ++ns)
 		{
-			for (int q = 0; q < actualVerticesColCount; ++q)
+			for (int q = 0; q < actCol; ++q)
 			{
-				if (actualVertices[i * actualVerticesColCount + q] == Vertices[ns])
+				if (actualVertices[i * actCol + q] == vertices[ns])
 				{
-					lastIndex2 -= (1 << Vertices[ns]);
+					lastIndex2 -= (1 << vertices[ns]);
 					break;
 				}
 			}		
 		}
+
 		int nextIndex = lastIndex + (1 << j);
-		// Liczba zbiorów niezale¿nych w aktualnie przetwarzanym podzbiorze
+
 		independentSets[nextIndex] = independentSets[lastIndex] + independentSets[lastIndex2] + 1;
-		for (int k = 0; k < el; ++k)
-			newVertices[l*col + k] = actualVertices[i * actualVerticesColCount + k];
-		newVertices[l * col + el] = j;
+
+		for (int k = 0; k < newCol - 1; ++k)
+			newVertices[l * newCol + k] = actualVertices[i * actCol + k];
+
+		newVertices[l * newCol + newCol - 1] = j;
 				
 		l++;
 	}
 }
 
-cudaError_t runCuda2(int* wynik, int* vertices, int* offset, int verticesCount, int allVerticesCount)
+// Do sprawdzenia szczególnie kwestia alokowanej i zwalnianej pamiêci
+cudaError_t FindChromaticNumberMain(int* wynik, int* vertices, int* offset, int verticesCount, int allVerticesCount)
 {
     int* dev_vertices = 0;
 	int* dev_offset = 0;
@@ -562,52 +602,31 @@ cudaError_t runCuda2(int* wynik, int* vertices, int* offset, int verticesCount, 
     gpuErrchk(cudaMemcpy(dev_vertices, vertices, allVerticesCount * sizeof(int), cudaMemcpyHostToDevice));
     gpuErrchk(cudaMemcpy(dev_offset, offset, verticesCount * sizeof(int), cudaMemcpyHostToDevice));
     
-	Init1<<<1,1>>> (dev_independentSet, dev_actualVertices, verticesCount);
+	Init<<<1,1>>> (dev_independentSet, dev_actualVertices, verticesCount); // czy warto odpaliæ na wiêkszej iloœci w¹tków? (wpisywanie du¿ej iloœci zer)
 
-	for (int el = 1; el < verticesCount; el++)
+	for (int el = 1; el < verticesCount; el++) // przy tej konstrukcji alg nie damy rady odpaliæ tej pêtli równolegle
 	{	
-		/*int* a_set = new int[actualVerticesRowCount*actualVerticesColCount];
-		gpuErrchk(cudaMemcpy(a_set, dev_actualVertices, actualVerticesRowCount*actualVerticesColCount * sizeof(int), cudaMemcpyDeviceToHost));
-		cout << "a_set"<<endl;
-		for(int r = 0; r < actualVerticesRowCount*actualVerticesColCount; ++r)
-			cout << a_set[r] << " ";
-		cout << endl;*/
-
 		int col = el + 1;
 		int row = Combination_n_of_k(verticesCount, col);
 
 		gpuErrchk(cudaMalloc((void**)&dev_newVertices, (row * col) * sizeof(int)));
 		gpuErrchk(cudaMalloc((void**)&dev_l_set, actualVerticesRowCount * sizeof(int)));
 		
-		Init3<<<1,1>>> (dev_actualVertices, dev_l_set, verticesCount, actualVerticesRowCount, actualVerticesColCount);
+		PrepareToNewVertices<<<1,1>>> (dev_actualVertices, dev_l_set, verticesCount, actualVerticesRowCount, actualVerticesColCount); // przy tej konstrukcji funkcji nie damy rady odpaliæ tego na wielu w¹tkach
 
-		/*int* l_set = new int[actualVerticesRowCount];
-		gpuErrchk(cudaMemcpy(l_set, dev_l_set, actualVerticesRowCount * sizeof(int), cudaMemcpyDeviceToHost));
-		cout << "l_set"<<endl;
-		for(int r = 0; r < actualVerticesRowCount; ++r)
-			cout << l_set[r] << " ";
-		cout << endl;*/
+		BuildIndependentSetGPU<<<1,actualVerticesRowCount>>> (dev_l_set, verticesCount, dev_vertices, dev_offset, actualVerticesColCount, col, dev_actualVertices, dev_newVertices, dev_independentSet); // Koniecznie trzeba odpalaæ tak¿e u¿ywaj¹c bloków. Max w¹tków per blok to np. 1024, a s¹ sytuacje gdzie podawane jest ponad 180k (dla n=20)	
 
-		IndependentSetGPU2<<<1,actualVerticesRowCount>>> (dev_l_set, verticesCount, dev_vertices, dev_offset, actualVerticesRowCount, actualVerticesColCount, dev_actualVertices, dev_newVertices, dev_independentSet, col, el);	
+		cudaFree(dev_actualVertices); // czy aby na pewno dobrze jest pamiec zwalniana? nie marnujemy zasobow karty?
+		gpuErrchk(cudaMalloc((void**)&dev_actualVertices, (row * col) * sizeof(int))); // czy ponowne mallocowanie jest ok jeœli wczeœniej u¿yto cudaFree?
 
-		//int* n_set = new int[row*col];
-		//gpuErrchk(cudaMemcpy(n_set, dev_newVertices, row*col * sizeof(int), cudaMemcpyDeviceToHost));
-		//cout << "n_set"<<endl;
-		//for(int r = 0; r < row*col; ++r)
-		//	cout << n_set[r] << " ";
-		//cout << endl;
-
-		cudaFree(dev_actualVertices);
-		gpuErrchk(cudaMalloc((void**)&dev_actualVertices, (row * col) * sizeof(int)));
-		Init2<<<1,1>>> (dev_actualVertices, dev_newVertices, row * col);
+		CreateActualVertices<<<1,1>>> (dev_actualVertices, dev_newVertices, row * col);
 
 		actualVerticesRowCount = row;
 		actualVerticesColCount = col;
-		cout << "nr " <<el << endl;
 	}
 	
-	FindChromaticNumber<<<1,verticesCount>>>(verticesCount, dev_independentSet, dev_wynik);
-
+	FindChromaticNumber<<<1,verticesCount>>> (verticesCount, dev_independentSet, dev_wynik); // Mo¿liwe odpalenie bloków, czyli zrobienie Reduce dla pewnych kawa³ków ca³ej sumy. Ponadto komunikacja- przerwanie obliczeñ natychmiast, gdy jakiœ w¹tek/blok da³ pozytywn¹ odpowiedŸ
+	
     gpuErrchk(cudaGetLastError());
     
     gpuErrchk(cudaDeviceSynchronize());
