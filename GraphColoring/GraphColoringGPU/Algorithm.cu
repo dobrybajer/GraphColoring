@@ -96,19 +96,6 @@ namespace version_gpu
 		}
 	}
 
-	__global__ void FindChromaticNumber(int N, int* independentSets, int* wynik)
-	{
-		int n = N;
-		int index = threadIdx.x;
-
-		unsigned long s = 0;
-		int PowerNumber = 1 << n;
-
-		for (int i = 0; i < PowerNumber; ++i) s += (sgnPow(BitCount(i)) * Pow(independentSets[i], index + 1));
-			
-		wynik[index] = s > 0 ? index : s; // KAMIL: punkt krytyczny, czy dobrze jest liczone "s"? dla unsigned long long liczy Ÿle...
-	}
-
 	__global__ void Init(int* independentSet, int* actualVertices, int verticesCount)
 	{
 		int PowerNumber = 1 << verticesCount;
@@ -151,6 +138,19 @@ namespace version_gpu
 		}
 	}
 
+	__global__ void FindChromaticNumber(int N, int* independentSets, int* wynik)
+	{
+		int n = N;
+		int index = threadIdx.x;
+
+		unsigned long s = 0;
+		int PowerNumber = 1 << n;
+
+		for (int i = 0; i < PowerNumber; ++i) s += (sgnPow(BitCount(i)) * Pow(independentSets[i], index + 1));
+			
+		wynik[index] = s > 0 ? index : s; // KAMIL: punkt krytyczny, czy dobrze jest liczone "s"? dla unsigned long long liczy Ÿle...
+	}
+	
 	cudaError_t FindChromaticNumberMain(int* wynik, int* vertices, int* offset, int verticesCount, int allVerticesCount)
 	{
 		int* dev_vertices = 0;

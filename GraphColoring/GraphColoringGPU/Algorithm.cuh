@@ -1,5 +1,5 @@
-#ifndef ALGORITHM_H
-#define ALGORITHM_H
+#ifndef ALGORITHM_CUH
+#define ALGORITHM_CUH
 
 #include "cuda_runtime.h"
 

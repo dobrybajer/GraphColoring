@@ -39,7 +39,7 @@ namespace version_cpu
 
 		if (k * 2 > n) k = n - k;
 
-		unsigned int r = 1, tmp;
+		unsigned int r = 1;
 		for (int d = 1; d <= k; ++d) {
 			r *= n--;
 			r /= d;
