@@ -168,15 +168,15 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CudaCompile Include="kernel.cu" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\GraphColoringCPU\GraphColoringCPU.vcxproj">
       <Project>{c78c39b6-4da8-4478-86de-3a38ea3c8d65}</Project>
     </ProjectReference>
     <ProjectReference Include="..\GraphColoringGPU\GraphColoringGPU.vcxproj">
       <Project>{e80bc299-c4a9-41b6-9134-e8341a0d6c57}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\ConsoleTestApp\kernel.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

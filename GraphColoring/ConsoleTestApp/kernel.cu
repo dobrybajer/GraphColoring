@@ -12,8 +12,6 @@
 #include <sstream>
 #include <Windows.h>
 
-using namespace version_cpu;
-using namespace version_gpu;
 using namespace std;
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
@@ -147,7 +145,7 @@ int GPU(Graph g)
 {
 	int* tabWyn = new int[g.n];
 
-	cudaError_t cudaStatus = FindChromaticNumberMain(tabWyn, g.vertices, g.neighbors, g.n, g.allVerticesCount);
+	cudaError_t cudaStatus = version_gpu::FindChromaticNumberGPU(tabWyn, g.vertices, g.neighbors, g.n, g.allVerticesCount);
 	if (cudaStatus != cudaSuccess) 
 	{
         fprintf(stderr, "FindChromaticNumberMain failed!");
@@ -171,9 +169,9 @@ int GPU(Graph g)
 int CPU(Graph g, int flag)
 {
 	if(flag == 1)
-		return  FindChromaticNumber(g.vertices, g.neighbors, g.n);
+		return  version_cpu::FindChromaticNumber(g.vertices, g.neighbors, g.n);
 	else
-		return  FindChromaticNumber(g.vertices, g.neighbors, g.n, 1);
+		return  version_cpu::FindChromaticNumber(g.vertices, g.neighbors, g.n, 1);
 }
 
 #pragma endregion Versions
@@ -187,7 +185,7 @@ int main()
 	int deviceReset = 0;
 
 	//string path = "../../TestFiles/GraphExampleMyciel4.txt";
-	string path = "../../TestFiles/GraphExample10.txt";
+	string path = "../../TestFiles/GraphExample12.txt";
 	
 	int wynik;
 	int what = -1;

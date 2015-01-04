@@ -1,10 +1,10 @@
-#include "cuda_runtime.h"
+﻿#include "cuda_runtime.h"
 #include "Algorithm.cuh"
 #include <stdio.h>
 #include <Windows.h>
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
+inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true)
 {
    if (code != cudaSuccess) 
    {
@@ -13,8 +13,18 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
+/// <summary>
+/// Przestrzeń nazwy dla algorytmu kolorowania grafów w wersji GPU napisanej w języku CUDA C++.
+/// </summary>
 namespace version_gpu
 {
+	/// <summary>
+	/// Szybkie podnoszenie danej liczby do podanej potęgi. Pozwala na potęgowanie liczby, której
+	/// wynik jest nie większy od rozmiaru typu INT.
+	/// </summary>
+	/// <param name="a">Podstawa potęgi.</param>
+	/// <param name="n">Wykładnik potęgi.</param>
+	/// <returns>Wynik potęgowania.</returns>
 	__host__ __device__ unsigned long Pow(int a, int n)
 	{
 		unsigned long result = 1;
@@ -31,18 +41,37 @@ namespace version_gpu
 		return result;
 	}
 
+	/// <summary>
+	/// Szybkie i efektywne podnoszenie do potęgi liczby -1. Polega na sprawdzaniu parzystości
+	/// wykładnika potęgi.
+	/// </summary>
+	/// <param name="n">Wykładnik potęgi.</param>
+	/// <returns>Wynik potęgowania.</returns>
 	__host__ __device__ int sgnPow(int n)
 	{
 		return (n & 1) == 0 ? 1 : -1;
 	}
 
-	__host__ __device__ int BitCount(int u)
+	/// <summary>
+	/// Funkcja zliczająca liczbę ustawionych bitów w reprezentacji bitowej wejściowej liczby.
+	/// W przypadku algorytmu, służy do wyznaczania ilości elementów w aktualnie rozpatrywanym podzbiorze.
+	/// </summary>
+	/// <param name="n">Liczba wejściowa.</param>
+	/// <returns>Liczba ustawionych bitów w danej liczbie wejściowej.</returns>
+	__host__ __device__ int BitCount(int n)
 	{
-		int uCount = u - ((u >> 1) & 033333333333) - ((u >> 2) & 011111111111);
+		int uCount = n - ((n >> 1) & 033333333333) - ((n >> 2) & 011111111111);
 		return ((uCount + (uCount >> 3)) & 030707070707) % 63;
 	}
 
-	__host__ __device__ int Combination_n_of_k(int n, int k)
+	/// <summary>
+	/// Wyznaczanie kombinacji k - elementowych zbioru n - elementowego (kombinacje bez powtórzeń).
+	/// Ograniczone możliwości ze względu na możliwie zbyt dużą wielkość wyniku.
+	/// </summary>
+	/// <param name="n">Liczba elementów w zbiorze.</param>
+	/// <param name="k">Liczba elementów w kombinacji.</param>
+	/// <returns>Liczba oznaczająca kombinację n po k.</returns>
+	__host__ __device__ unsigned int Combination_n_of_k(int n, int k)
 	{
 		if (k > n) return 0;
 
@@ -55,7 +84,23 @@ namespace version_gpu
 		return r;
 	} 
 
-	__global__ void BuildIndependentSetGPU(int* l_set, int n, int* vertices, int* offset, int actCol, int newCol, int* actualVertices, int* newVertices, int* independentSets)
+	/// <summary>
+	/// Obliczanie i uzupełnianie pewnej części tablicy zbiorów niezależnych dla danego grafu. 
+	/// Funckja wywoływana na procesorze graficznym.
+	/// </summary>
+	/// <param name="l_set">
+	/// Tabela zawierająca indeksy początkowe, w których każdy wątek 
+	/// powinien zacząć wpisywać dane do tablicy zbiorów niezależnych.
+	/// </param>
+	/// <param name="n">Liczba wierzchołków w grafie.</param>
+	/// <param name="vertices">Tablica wszystkich sąsiadów każdego z wierzchołków.</param>
+	/// <param name="offset">Tablica pozycji początkowych sąsiadów dla danego wierzchołka.</param>
+	/// <param name="actCol">Moc aktualnie rozpatrywanego podzbioru potęgowego.</param>
+	/// <param name="newCol">Moc kolejnego rozpatrywanego podzbioru potęgowego.</param>
+	/// <param name="actualVertices">Tablica zawierająca aktualnie rozpatrywane pozbiory.</param>
+	/// <param name="newVertices">Tablica zawierająca rozpatrywane pozbiory dla następnej iteracji (tworzona w tej funkcji).</param>
+	/// <param name="independentSets">Tablica zbiorów niezależnych.</param>
+	__global__ void BuildIndependentSetGPU(int* l_set, int n, int* vertices, int* offset, int actCol, int* actualVertices, int* newVertices, int* independentSets)
 	{
 		int i = threadIdx.x;
 		int l = l_set[i];
@@ -87,15 +132,22 @@ namespace version_gpu
 
 			independentSets[nextIndex] = independentSets[lastIndex] + independentSets[lastIndex2] + 1;
 
-			for (int k = 0; k < newCol - 1; ++k)
-				newVertices[l * newCol + k] = actualVertices[i * actCol + k];
+			for (int k = 0; k < actCol; ++k)
+				newVertices[l * (actCol + 1) + k] = actualVertices[i * actCol + k];
 
-			newVertices[l * newCol + newCol - 1] = j;
+			newVertices[l * (actCol + 1) + actCol] = j;
 				
 			l++;
 		}
 	}
 
+	/// <summary>
+	/// Przypisanie początkowych wartości do tablicy zbiorów niezależnych.
+	/// Funckja wywoływana na procesorze graficznym.
+	/// </summary>
+	/// <param name="independentSets">Tablica zbiorów niezależnych.</param>
+	/// <param name="actualVertices">Tablica zawierająca aktualnie rozpatrywane pozbiory.</param>
+	/// <param name="verticesCount">Liczba wierzchołków w grafie.</param>
 	__global__ void Init(int* independentSet, int* actualVertices, int verticesCount)
 	{
 		int PowerNumber = 1 << verticesCount;
@@ -110,12 +162,32 @@ namespace version_gpu
 		}
 	}
 
+	/// <summary>
+	/// Uzupełnianie aktualnie rozpatrywanego podzbioru wartościami wyliczonymi z bieżącej iteracji.
+	/// Funckja wywoływana na procesorze graficznym.
+	/// </summary>
+	/// <param name="actualVertices">Tablica zawierająca aktualnie rozpatrywane pozbiory.</param>
+	/// <param name="newVertices">Tablica zawierająca rozpatrywane pozbiory dla następnej iteracji.</param>
+	/// <param name="size">Liczba elementów w rozpatrywanym zbiorze dla kolejnej iteracji.</param>
 	__global__ void CreateActualVertices(int* actualVertices, int* newVertices, int size)
 	{
 		for(int i = 0; i < size; ++i)
 			actualVertices[i] = newVertices[i];
 	}
 
+	/// <summary>
+	/// Tworzenie tablicy zawierającej indeksy początkowe, w których każdy wątek 
+	/// powinien zacząć wpisywać dane do tablicy zbiorów niezależnych.
+	/// Funckja wywoływana na procesorze graficznym.
+	/// </summary>
+	/// <param name="actualVertices">Tablica zawierająca aktualnie rozpatrywane pozbiory.</param>
+	/// <param name="l_set">
+	/// Tablica zawierająca indeksy początkowe, w których każdy wątek 
+	/// powinien zacząć wpisywać dane do tablicy zbiorów niezależnych.
+	/// </param>
+	/// <param name="n">Liczba wierzchołków w grafie.</param>
+	/// <param name="actualVerticesRowCount">Liczba aktualnie rozpatrywanych podzbiorów.</param>
+	/// <param name="actualVerticesColCount">Liczba elementów w każdym z aktualnie rozpatrywanych podzbiorów.</param>
 	__global__ void PrepareToNewVertices(int* actualVertices, int* l_set, int n, int actualVerticesRowCount, int actualVerticesColCount)
 	{
 		int last_el = 0;
@@ -138,9 +210,15 @@ namespace version_gpu
 		}
 	}
 
-	__global__ void FindChromaticNumber(int N, int* independentSets, int* wynik)
+	/// <summary>
+	/// Główna funkcja obliczająca wynik dla odpowiedniego indeksu, a następnie wpisująca do wyjściowej tablicy wynik.
+	/// Funckja wywoływana na procesorze graficznym.
+	/// </summary>
+	/// <param name="n">Liczba wierzchołków w grafie.</param>
+	/// <param name="independentSets">Tablica zbiorów niezależnych.</param>
+	/// <param name="wynik">Tablica zawierająca wynik dla każdego z k kolorów (tworzona w tej funkcji).</param>
+	__global__ void FindChromaticNumber(int n, int* independentSets, int* wynik)
 	{
-		int n = N;
 		int index = threadIdx.x;
 
 		unsigned long s = 0;
@@ -148,10 +226,20 @@ namespace version_gpu
 
 		for (int i = 0; i < PowerNumber; ++i) s += (sgnPow(BitCount(i)) * Pow(independentSets[i], index + 1));
 			
-		wynik[index] = s > 0 ? index : s; // KAMIL: punkt krytyczny, czy dobrze jest liczone "s"? dla unsigned long long liczy �le...
+		wynik[index] = s > 0 ? index : s; // KAMIL: punkt krytyczny, czy dobrze jest liczone "s"? dla unsigned long long liczy źle...
 	}
 	
-	cudaError_t FindChromaticNumberMain(int* wynik, int* vertices, int* offset, int verticesCount, int allVerticesCount)
+	/// <summary>
+	/// Funkcja uruchamiająca cały przebieg algorytmu. Wykorzystuje pozostałe funkcje w celu obliczenia tablicy
+	/// zbiorów niezależnych, a następnie policzenia wyniku dla każdego z k kolorów.
+	/// </summary>
+	/// <param name="wynik">Tablica zawierająca wynik dla każdego z k kolorów.</param>
+	/// <param name="vertices">Tablica wszystkich sąsiadów każdego z wierzchołków.</param>
+	/// <param name="offset">Tablica pozycji początkowych sąsiadów dla danego wierzchołka.</param>
+	/// <param name="verticesCount">Liczba wierzchołków w grafie.</param>
+	/// <param name="allVerticesCount">Liczba wszystkich sąsiadów każdego z wierzchołków.</param>
+	/// <returns>Status wykonania funkcji na procesorze graficznym.</returns>
+	cudaError_t FindChromaticNumberGPU(int* wynik, int* vertices, int* offset, int verticesCount, int allVerticesCount)
 	{
 		int* dev_vertices = 0;
 		int* dev_offset = 0;
@@ -179,9 +267,9 @@ namespace version_gpu
 		gpuErrchk(cudaMemcpy(dev_vertices, vertices, allVerticesCount * sizeof(int), cudaMemcpyHostToDevice));
 		gpuErrchk(cudaMemcpy(dev_offset, offset, verticesCount * sizeof(int), cudaMemcpyHostToDevice));
     
-		Init<<<1,1>>> (dev_independentSet, dev_actualVertices, verticesCount); // czy warto odpali� na wi�kszej ilo�ci w�tk�w? (wpisywanie du�ej ilo�ci zer)
+		Init<<<1,1>>> (dev_independentSet, dev_actualVertices, verticesCount); // czy warto odpalić na większej ilości wątków? (wpisywanie dużej ilości zer)
 
-		for (int el = 1; el < verticesCount; el++) // przy tej konstrukcji alg nie damy rady odpali� tej p�tli r�wnolegle
+		for (int el = 1; el < verticesCount; el++) // przy tej konstrukcji alg nie damy rady odpalić tej pętli równolegle
 		{	
 			int col = el + 1;
 			int row = Combination_n_of_k(verticesCount, col);
@@ -189,12 +277,12 @@ namespace version_gpu
 			gpuErrchk(cudaMalloc((void**)&dev_newVertices, (row * col) * sizeof(int)));
 			gpuErrchk(cudaMalloc((void**)&dev_l_set, actualVerticesRowCount * sizeof(int)));
 		
-			PrepareToNewVertices<<<1,1>>> (dev_actualVertices, dev_l_set, verticesCount, actualVerticesRowCount, actualVerticesColCount); // przy tej konstrukcji funkcji nie damy rady odpali� tego na wielu w�tkach
+			PrepareToNewVertices<<<1,1>>> (dev_actualVertices, dev_l_set, verticesCount, actualVerticesRowCount, actualVerticesColCount); // przy tej konstrukcji funkcji nie damy rady odpalić tego na wielu wątkach
 
-			BuildIndependentSetGPU<<<1,actualVerticesRowCount>>> (dev_l_set, verticesCount, dev_vertices, dev_offset, actualVerticesColCount, col, dev_actualVertices, dev_newVertices, dev_independentSet); // Koniecznie trzeba odpala� tak�e u�ywaj�c blok�w. Max w�tk�w per blok to np. 1024, a s� sytuacje gdzie podawane jest ponad 180k (dla n=20)	
+			BuildIndependentSetGPU<<<1,actualVerticesRowCount>>> (dev_l_set, verticesCount, dev_vertices, dev_offset, actualVerticesColCount, dev_actualVertices, dev_newVertices, dev_independentSet); // Koniecznie trzeba odpalać także używając bloków. Max wątków per blok to np. 1024, a są sytuacje gdzie podawane jest ponad 180k (dla n=20)	
 
 			cudaFree(dev_actualVertices); // czy aby na pewno dobrze jest pamiec zwalniana? nie marnujemy zasobow karty?
-			gpuErrchk(cudaMalloc((void**)&dev_actualVertices, (row * col) * sizeof(int))); // czy ponowne mallocowanie jest ok je�li wcze�niej u�yto cudaFree?
+			gpuErrchk(cudaMalloc((void**)&dev_actualVertices, (row * col) * sizeof(int))); // czy ponowne mallocowanie jest ok jeśli wcześniej użyto cudaFree?
 
 			CreateActualVertices<<<1,1>>> (dev_actualVertices, dev_newVertices, row * col);
 
@@ -202,7 +290,7 @@ namespace version_gpu
 			actualVerticesColCount = col;
 		}
 	
-		FindChromaticNumber<<<1,verticesCount>>> (verticesCount, dev_independentSet, dev_wynik); // Mo�liwe odpalenie blok�w, czyli zrobienie Reduce dla pewnych kawa�k�w ca�ej sumy. Ponadto komunikacja- przerwanie oblicze� natychmiast, gdy jaki� w�tek/blok da� pozytywn� odpowied�
+		FindChromaticNumber<<<1,verticesCount>>> (verticesCount, dev_independentSet, dev_wynik); // Możliwe odpalenie bloków, czyli zrobienie Reduce dla pewnych kawałków całej sumy. Ponadto komunikacja- przerwanie obliczeń natychmiast, gdy jakiś wątek/blok dał pozytywną odpowiedź
 	
 		gpuErrchk(cudaGetLastError());
     

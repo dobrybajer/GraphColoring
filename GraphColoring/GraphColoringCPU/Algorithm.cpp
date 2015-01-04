@@ -1,8 +1,17 @@
-#include "Algorithm.h"
+﻿#include "Algorithm.h"
 
+/// <summary>
+/// Przestrzeń nazwy dla algorytmu kolorowania grafów w wersji CPU napisanej w języku C++.
+/// </summary>
 namespace version_cpu
 {
-	// Sprawdzi� czy mo�na lepiej
+	/// <summary>
+	/// Szybkie podnoszenie danej liczby do podanej potęgi. Pozwala na potęgowanie liczby, której
+	/// wynik jest nie większy od rozmiaru typu INT.
+	/// </summary>
+	/// <param name="a">Podstawa potęgi.</param>
+	/// <param name="n">Wykładnik potęgi.</param>
+	/// <returns>Wynik potęgowania.</returns>
 	unsigned int Pow(int a, int n)
 	{
 		unsigned int result = 1;
@@ -19,19 +28,36 @@ namespace version_cpu
 		return result;
 	}
 
+	/// <summary>
+	/// Szybkie i efektywne podnoszenie do potęgi liczby -1. Polega na sprawdzaniu parzystości
+	/// wykładnika potęgi.
+	/// </summary>
+	/// <param name="n">Wykładnik potęgi.</param>
+	/// <returns>Wynik potęgowania.</returns>
 	int sgnPow(int n)
 	{
 		return (n & 1) == 0 ? 1 : -1;
 	}
 
-	// Sprawdzi�, dlaczego to dzia�a
-	int BitCount(int u)
+	/// <summary>
+	/// Funkcja zliczająca liczbę ustawionych bitów w reprezentacji bitowej wejściowej liczby.
+	/// W przypadku algorytmu, służy do wyznaczania ilości elementów w aktualnie rozpatrywanym podzbiorze.
+	/// </summary>
+	/// <param name="n">Liczba wejściowa.</param>
+	/// <returns>Liczba ustawionych bitów w danej liczbie wejściowej.</returns>
+	int BitCount(int n)
 	{
-		int uCount = u - ((u >> 1) & 033333333333) - ((u >> 2) & 011111111111);
+		int uCount = n - ((n >> 1) & 033333333333) - ((n >> 2) & 011111111111);
 		return ((uCount + (uCount >> 3)) & 030707070707) % 63;
 	}
 	
-	// Sprawdzi�, czy mo�na lepiej
+	/// <summary>
+	/// Wyznaczanie kombinacji k - elementowych zbioru n - elementowego (kombinacje bez powtórzeń).
+	/// Ograniczone możliwości ze względu na możliwie zbyt dużą wielkość wyniku.
+	/// </summary>
+	/// <param name="n">Liczba elementów w zbiorze.</param>
+	/// <param name="k">Liczba elementów w kombinacji.</param>
+	/// <returns>Liczba oznaczająca kombinację n po k.</returns>
 	unsigned int Combination_n_of_k(int n, int k)
 	{
 		if (k > n) return 0;
@@ -47,6 +73,13 @@ namespace version_cpu
 		return r;
 	} 
 
+	/// <summary>
+	/// Wyznacza pozycję najbardziej znaczącego bitu w reprezentacji bitowej liczby wejściowej.
+	/// W przypadku algorytmu używane jest do wyznaczania największego elementu w rozpatrywanym podzbiorze.
+	/// Używane tylko w wersji bitowej algorytmu.
+	/// </summary>
+	/// <param name="n">Liczba wejściowa.</param>
+	/// <returns>Pozycja najbardziej znaczącego bitu.</returns>
 	int GetFirstBitPosition(int n)
 	{
 		int cnt = BitCount(n);
@@ -60,10 +93,17 @@ namespace version_cpu
 		return i - 1 > 0 ? i - 1 : 0;
 	}
 
-	unsigned int GetBitPosition(int n, int col)
+	/// <summary>
+	/// Wyznaczanie pozycji k - tego bitu w liczbie n.
+	/// Używane tylko w wersji bitowej algorytmu.
+	/// </summary>
+	/// <param name="n">Liczba wejściowa.</param>
+	/// <param name="k">Numer bitu równego 1, którego pozycja jest wyznaczona.</param>
+	/// <returns>Pozycja wyznaczonego bitu.</returns>
+	unsigned int GetBitPosition(int n, int k)
 	{
 		unsigned int f = 0, c = 0, i = 0;
-		while (f != col)
+		while (f != k)
 		{
 			if (n & (1 << i))
 			{
@@ -76,6 +116,14 @@ namespace version_cpu
 		return c;
 	}
 
+	/// <summary>
+	/// Pomocnicza funkcja alokująca pamięć dla tablicy dwuwymiarowej o podanych w parametrach
+	/// wyjściowych wymiarach.
+	/// Używane tylko w wersji tablicowej algorytmu.
+	/// </summary>
+	/// <param name="row">Liczba wierszy.</param>
+	/// <param name="col">Liczba kolumn.</param>
+	/// <returns>Wskaźnik na utworzoną dwuwymiarową tablicę.</returns>
 	int** CreateVertices(int row, int col)
 	{
 		int** nVertices = new int*[row];
@@ -85,6 +133,19 @@ namespace version_cpu
 		return nVertices;
 	}
 
+	/// <summary>
+	/// Funckja tworząca tablicę zbiorów niezależnych dla podanego grafu wejściowego. Wersja bitowa,
+	/// tj. informacja o sąsiadach danego wierzchołka przechowywana jest w samej liczbie, poprzez
+	/// ustawienie odpowiedniego bitu. Ogranicza to liczbę wierzchołków do 32 (w przypadku użycia
+	/// typu INT) lub do 64 (w przypadku użycia typu UNSIGNED LONG LONG). 
+	/// Zaletą jest około dwukrotne przyspieszenie obliczeń w stosunku do wersji tablicowej.
+	/// </summary>
+	/// <param name="vertices">
+	/// Graf wejściowy reprezentowany jako tablica liczb, zawierających informację o sąsiadach
+	/// każdego wierzchołka.
+	/// </param>
+	/// <param name="n">Liczba wierzchołków w grafie.</param>
+	/// <returns>Tablica zbiorów niezależnych.</returns>
 	int* BuildingIndependentSets_BitVersion(int* vertices, int n)
 	{
 		int* independentSets;
@@ -93,10 +154,10 @@ namespace version_cpu
 
 		int actualRow = n;
 
-		// Inicjalizacja macierzy o rozmiarze 2^N (warto�ci pocz�tkowe 0)
+		// Inicjalizacja macierzy o rozmiarze 2^N (wartoci początkowe 0)
 		independentSets = new int[1 << n]();
 
-		// Krok 1 algorytmu: przypisanie warto�ci 1 (ilo�� niezale�nych zbior�w) dla podzbior�w 1-elementowych, oraz dodanie ich do aktualnie przetwarzanych element�w (1 poziom tworzenia wszystkich podzbior�w)
+		// Krok 1 algorytmu: przypisanie wartoci 1 (iloć niezależnych zbiorów) dla podzbiorów 1-elementowych, oraz dodanie ich do aktualnie przetwarzanych elementów (1 poziom tworzenia wszystkich podzbiorów)
 		actualVertices = new int[n]();
 
 		for (int i = 0; i < n; ++i)
@@ -105,8 +166,8 @@ namespace version_cpu
 			actualVertices[i] |= (1 << i);
 		}
 
-		// G��wna funkcja tworz�ca tablic� liczno�ci zbior�w niezale�nych dla wszystkich podzbior�w zbioru N-elementowego.
-		// Zaczynamy od 1, bo krok pierwszy wykonany wy�ej.
+		// Główna funkcja tworząca tablicę licznoci zbiorów niezależnych dla wszystkich podzbiorów zbioru N-elementowego.
+		// Zaczynamy od 1, bo krok pierwszy wykonany wyżej.
 		for (int el = 1; el < n; el++)
 		{
 			int row = Combination_n_of_k(n, el + 1);
@@ -137,7 +198,7 @@ namespace version_cpu
 
 					int nextIndex = lastIndex + (1 << j);
 
-					// Liczba zbior�w niezale�nych w aktualnie przetwarzanym podzbiorze
+					// Liczba zbiorów niezależnych w aktualnie przetwarzanym podzbiorze
 					independentSets[nextIndex] = independentSets[lastIndex] + independentSets[lastIndex2] + 1;
 
 					newVertices[l] = actualVertices[i];
@@ -158,6 +219,16 @@ namespace version_cpu
 		return independentSets;
 	}
 
+	/// <summary>
+	/// Funckja tworząca tablicę zbiorów niezależnych dla podanego grafu wejściowego. 
+	/// Wersja tablicowa, tj. informacja o sąsiadach danego wierzchołka przechowywana jest w drugim
+	/// wymiarze tablicy grafu wejściowego. Zwiększa to zużycie pamięci RAM oraz około dwukrotnie
+	/// wydłuża czas obliczeń w stosunku do wersji bitowej, ale nie ogranicza* problemu do 32 lub 64 wierzchołków.
+	/// </summary>
+	/// <param name="vertices">Lista wszystkich sąsiadów każdego z wierzchołków.</param>
+	/// <param name="vertices">Lista pozycji początkowych sąsiadów dla danego wierzchołka.</param>
+	/// <param name="n">Liczba wierzchołków w grafie.</param>
+	/// <returns>Tablica zbiorów niezależnych.</returns>
 	int* BuildingIndependentSets_TableVersion(int* vertices, int* offset, int n)
 	{
 		int* independentSets;
@@ -167,10 +238,10 @@ namespace version_cpu
 		int actualVerticesRowCount;
 		int actualVerticesColCount;
 
-		// Inicjalizacja macierzy o rozmiarze 2^N (warto�ci pocz�tkowe 0)
+		// Inicjalizacja macierzy o rozmiarze 2^N (wartoci początkowe 0)
 		independentSets = new int[1 << n] ();
 
-		// Krok 1 algorytmu: przypisanie warto�ci 1 (ilo�� niezale�nych zbior�w) dla podzbior�w 1-elementowych, oraz dodanie ich do aktualnie przetwarzanych element�w (1 poziom tworzenia wszystkich podzbior�w)
+		// Krok 1 algorytmu: przypisanie wartoci 1 (iloć niezależnych zbiorów) dla podzbiorów 1-elementowych, oraz dodanie ich do aktualnie przetwarzanych elementów (1 poziom tworzenia wszystkich podzbiorów)
 		actualVertices = CreateVertices(n, 1);
 
 		actualVerticesRowCount = n;
@@ -182,8 +253,8 @@ namespace version_cpu
 			actualVertices[i][0] = i;
 		}
 
-		// G��wna funkcja tworz�ca tablic� liczno�ci zbior�w niezale�nych dla wszystkich podzbior�w zbioru N-elementowego.
-		// Zaczynamy od 1, bo krok pierwszy wykonany wy�ej.
+		// Główna funkcja tworząca tablicę licznoci zbiorów niezależnych dla wszystkich podzbiorów zbioru N-elementowego.
+		// Zaczynamy od 1, bo krok pierwszy wykonany wyżej.
 		for (int el = 1; el < n; el++)
 		{
 			int col = el + 1;
@@ -219,7 +290,7 @@ namespace version_cpu
 
 					int nextIndex = lastIndex + (1 << j);
 
-					// Liczba zbior�w niezale�nych w aktualnie przetwarzanym podzbiorze
+					// Liczba zbiorów niezależnych w aktualnie przetwarzanym podzbiorze
 					independentSets[nextIndex] = independentSets[lastIndex] + independentSets[lastIndex2] + 1;
 
 					for (int k = 0; k < el; ++k)
@@ -252,13 +323,27 @@ namespace version_cpu
 		return independentSets;
 	}
 
+	/// <summary>
+	/// Główna funkcja algorytmu. Uruchamia wyznaczanie zbioru niezależnego 
+	/// (odpowiednia metoda w zależnoci od ostatniego parametru), a następnie wylicza k - kolorowalność grafu.
+	/// </summary>
+	/// <param name="vertices">Graf wejściowy reprezentowany zależnie od wyboru metody.</param>
+	/// <param name="offset">Lista pozycji początkowych sąsiadów dla danego wierzchołka (używane tylko gdy flaga ustawiona na 0).</param>
+	/// <param name="n">Liczba wierzchołków w grafie.</param>
+	/// <param name="flag">
+	/// Flaga informująca o wyborze metody wyznaczania zbioru niezależnego:
+	/// - 0 (wartość domyślna) - metoda tablicowa
+	/// - 1 - metoda bitowa
+	/// Parametr opcjonalny.
+	/// </param>
+	/// <returns>Licza k oznaczająca k - kolorowalność grafu, bądź wartość -1 w przypadku błędu.</returns>
 	int FindChromaticNumber(int* vertices, int* offset, int n, int flag)
 	{
 		int* independentSets = flag == 1 ? 
 			BuildingIndependentSets_BitVersion(vertices, n) : 
 			BuildingIndependentSets_TableVersion(vertices, offset, n);
 
-		int PowerNumber = Pow(2, n);
+		int PowerNumber = (1 << n);
 
 		for (int k = 1; k <= n; ++k)
 		{

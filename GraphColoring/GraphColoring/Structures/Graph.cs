@@ -42,6 +42,14 @@ namespace GraphColoring.Structures
         }
 
         /// <summary>
+        /// Właściwość zwracająca liczbę wszystkich sąsiadów każdego z wierchołków
+        /// </summary>
+        public int AllVerticesCount
+        {
+            get { return _vertices.Length; }
+        }
+
+        /// <summary>
         /// Konstruktor. Na podstawie listy wierzchołków tworzy obiekt grafu.
         /// </summary>
         /// <param name="vertices">Lista sąsiadów każdego z wierzchołków danego grafu.</param>

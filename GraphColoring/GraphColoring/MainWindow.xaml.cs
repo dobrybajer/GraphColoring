@@ -21,8 +21,20 @@ namespace GraphColoring
         /// <param name="n"></param>
         /// <param name="flag"></param>
         /// <returns></returns>
-        [DllImport("..\\..\\..\\Release\\GraphColoringCPU.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("..\\..\\..\\Debug\\GraphColoringCPU.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int FindChromaticNumber([MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int flag = 0);
+
+        /// <summary>
+        /// Finds the chromatic number gpu.
+        /// </summary>
+        /// <param name="wynik">The wynik.</param>
+        /// <param name="vertices">The vertices.</param>
+        /// <param name="neighborsCount">The neighbors count.</param>
+        /// <param name="n">The n.</param>
+        /// <param name="allVertices">All vertices.</param>
+        /// <returns></returns>
+        [DllImport("..\\..\\..\\Debug\\GraphColoringGPU.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int FindChromaticNumberGPU([MarshalAs(UnmanagedType.LPArray)]int[] wynik, [MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int allVertices);
 
         /// <summary>
         /// Ścieżka ostatnio otworzonego pliku z reprezentacją grafu.
@@ -101,14 +113,14 @@ namespace GraphColoring
         /// <param name="e">Parametry zdarzenia.</param>
         private void CPU2_OnClick(object sender, RoutedEventArgs e)
         {
-            _lastPath = "..\\..\\..\\..\\TestFiles\\GraphExample22.txt";
+            _lastPath = "..\\..\\..\\..\\TestFiles\\GraphExample12.txt";
             if (!string.IsNullOrEmpty(_lastPath))
             {
                 var g = FileProcessing.ReadFile(_lastPath);
                 g = FileProcessing.ConvertToBitVersion(g);
                 var watch = Stopwatch.StartNew();
 
-                var k = FindChromaticNumber(g.Vertices, g.NeighboursCount, g.VerticesCount,1);
+                var k = FindChromaticNumber(g.Vertices, g.NeighboursCount, g.VerticesCount, 1);
 
                 watch.Stop();
                 MessageBox.Show(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
@@ -126,7 +138,34 @@ namespace GraphColoring
         /// <param name="e">Parametry zdarzenia.</param>
         private void GPU_OnClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Element '" + ((MenuItem) sender).Header + "' nie jest obsługiwany w bieżącej wersji.");
+            _lastPath = "..\\..\\..\\..\\TestFiles\\GraphExample12.txt";
+            if (!string.IsNullOrEmpty(_lastPath))
+            {
+                var g = FileProcessing.ReadFile(_lastPath);
+                int[] wynik = new int[g.VerticesCount];
+
+                var watch = Stopwatch.StartNew();
+                
+                FindChromaticNumberGPU(wynik, g.Vertices, g.NeighboursCount, g.VerticesCount, g.AllVerticesCount);
+
+                int wynikk = -2;
+
+                for (int i = 0; i < g.VerticesCount; i++)
+                {
+                    if (wynik[i] != -1 && wynik[i] != 0)
+                    {
+                        wynikk = wynik[i] + 1;
+                        break;
+                    }
+                }
+
+                watch.Stop();
+                MessageBox.Show(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", wynikk, watch.Elapsed));
+            }
+            else
+            {
+                MessageBox.Show("Jakbyś podał graf na wejściu, to ja bym policzył :(");
+            }
         }
 
         /// <summary>
