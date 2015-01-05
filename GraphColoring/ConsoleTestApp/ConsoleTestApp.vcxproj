@@ -19,9 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{2C4E753C-9A2F-4FA0-A662-FAC09D94F6EB}</ProjectGuid>
+    <ProjectGuid>{B2AC4FD4-F811-43A4-8335-5752EA429486}</ProjectGuid>
     <RootNamespace>ConsoleTestApp</RootNamespace>
-    <ProjectName>ConsoleTestApp</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -69,13 +68,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\GraphColoringCPU;..\GraphColoringGPU;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\GraphColoringCPU;..\GraphColoringGPU;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -93,16 +88,7 @@
 copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
-      <Include>
-      </Include>
-      <CodeGeneration>compute_20,sm_20</CodeGeneration>
-      <TargetMachinePlatform>32</TargetMachinePlatform>
-      <PtxAsOptionV>false</PtxAsOptionV>
-      <CInterleavedPTX>false</CInterleavedPTX>
-      <GenerateLineInfo>false</GenerateLineInfo>
-      <Warning>InheritFromHost</Warning>
       <GPUDebugInfo>false</GPUDebugInfo>
-      <HostDebugInfo>false</HostDebugInfo>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

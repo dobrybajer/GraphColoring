@@ -16,9 +16,7 @@
                 <MenuItem Header="Losowy graf" Click="Generate_OnClick"/>
             </MenuItem>
             <MenuItem Header="Uruchom">
-                <MenuItem Header="CPU (C#)" Click="CPU1_OnClick"/>
-                <Separator />
-                <MenuItem Header="CPU (C++)" Click="CPU2_OnClick"/>
+                <MenuItem Header="CPU (C++)" Click="CPU_OnClick"/>
                 <Separator />
                 <MenuItem Header="GPU (CUDA C++)" Click="GPU_OnClick"/>
             </MenuItem>

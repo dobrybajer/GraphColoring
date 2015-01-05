@@ -1,5 +1,6 @@
-﻿using GraphColoring.Algorithm;
-
+﻿/// <summary>
+/// Przestrzeń nazw dla pliku wejściowego oraz jego przetwarzania.
+/// </summary>
 namespace GraphColoring.Structures
 {
     /// <summary>
@@ -58,15 +59,6 @@ namespace GraphColoring.Structures
         {
             _vertices = vertices;
             _neighboursCount = neighboursCount;
-        }
-
-        /// <summary>
-        /// Metoda wykonująca algorytm znajdywania k-kolorowania grafu.
-        /// </summary>
-        /// <returns>Liczba K-kolorowania grafu.</returns>
-        public int GetChromaticNumber()
-        {
-            return ChromaticNumber.FindChromaticNumber(Vertices, NeighboursCount, VerticesCount);
         }
     }
 }

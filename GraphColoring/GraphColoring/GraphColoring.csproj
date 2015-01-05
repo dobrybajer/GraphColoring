@@ -51,7 +51,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Algorithm\ChromaticNumber.cs" />
     <Compile Include="Structures\FileProcessing.cs" />
     <Compile Include="Structures\Graph.cs" />
     <Compile Include="UserControls\Help.xaml.cs">

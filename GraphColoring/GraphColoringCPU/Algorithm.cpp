@@ -14,6 +14,10 @@ namespace version_cpu
 	/// <returns>Wynik potęgowania.</returns>
 	unsigned int Pow(int a, int n)
 	{
+		if (n <= 0) return 1;
+		if (n == 1) return a;
+		if (a <= 0) return 0;
+
 		unsigned int result = 1;
 
 		while (n)
@@ -47,6 +51,8 @@ namespace version_cpu
 	/// <returns>Liczba ustawionych bitów w danej liczbie wejściowej.</returns>
 	int BitCount(int n)
 	{
+		if (n <= 0) return 0;
+
 		int uCount = n - ((n >> 1) & 033333333333) - ((n >> 2) & 011111111111);
 		return ((uCount + (uCount >> 3)) & 030707070707) % 63;
 	}
@@ -80,10 +86,12 @@ namespace version_cpu
 	/// </summary>
 	/// <param name="n">Liczba wejściowa.</param>
 	/// <returns>Pozycja najbardziej znaczącego bitu.</returns>
-	int GetFirstBitPosition(int n)
+	unsigned int GetFirstBitPosition(int n)
 	{
-		int cnt = BitCount(n);
-		int c = 0, i = 0;
+		if(n <= 0) return 0;
+
+		unsigned int cnt = BitCount(n);
+		unsigned int c = 0, i = 0;
 		while (c != cnt)
 		{
 			if (n & (1 << i))
@@ -94,16 +102,18 @@ namespace version_cpu
 	}
 
 	/// <summary>
-	/// Wyznaczanie pozycji k - tego bitu w liczbie n.
+	/// Wyznaczanie sumy wszystkich bitów aż do k-tego bitu włącznie.
 	/// Używane tylko w wersji bitowej algorytmu.
 	/// </summary>
 	/// <param name="n">Liczba wejściowa.</param>
-	/// <param name="k">Numer bitu równego 1, którego pozycja jest wyznaczona.</param>
-	/// <returns>Pozycja wyznaczonego bitu.</returns>
+	/// <param name="k">Liczba bitów równych 1 brana do całkowitej sumy.</param>
+	/// <returns>Obliczona suma.</returns>
 	unsigned int GetBitPosition(int n, int k)
 	{
+		if (k <= 0 || n <= 0) return 0;
+
 		unsigned int f = 0, c = 0, i = 0;
-		while (f != k)
+		while (f != k && (1 << i) <= n)
 		{
 			if (n & (1 << i))
 			{
@@ -178,11 +188,11 @@ namespace version_cpu
 			for (int i = 0; i < actualRow; ++i)
 			{
 				// Sprawdzenie indeksu poporzedniego zbioru dla rozpatrywanego podzbioru
-				int lastIndex = GetBitPosition(actualVertices[i], el);
+				unsigned int lastIndex = GetBitPosition(actualVertices[i], el);
 
 				for (int j = GetFirstBitPosition(actualVertices[i]) + 1; j < n; ++j)
 				{
-					int lastIndex2 = lastIndex;
+					unsigned int lastIndex2 = lastIndex;
 
 					// Sprawdzenie indeksu poprzedniego zbioru dla rozpatrywanego podzbioru \ {i}
 					for (int ns = 0, no = 0; ns < BitCount(vertices[j]); no++)

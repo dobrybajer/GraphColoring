@@ -1,8 +1,8 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
-#include "Algorithm.h"
-#include "Algorithm.cuh"
+#include "..\GraphColoringCPU\Algorithm.h"
+#include "..\GraphColoringGPU\Algorithm.cuh"
 
 #include <stdio.h>
 #include <iostream>
@@ -185,8 +185,8 @@ int main()
 	int deviceReset = 0;
 
 	//string path = "../../TestFiles/GraphExampleMyciel4.txt";
-	string path = "../../TestFiles/GraphExample12.txt";
-	
+	string path = "../../TestFiles/GraphExample3_2.txt";
+
 	int wynik;
 	int what = -1;
 	Graph graph;

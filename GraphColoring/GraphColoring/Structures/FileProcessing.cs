@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+/// <summary>
+/// Przestrzeń nazw dla pliku wejściowego oraz jego przetwarzania.
+/// </summary>
 namespace GraphColoring.Structures
 {
     /// <summary>

@@ -4,8 +4,11 @@ using GraphColoring.Structures;
 using MenuItem = System.Windows.Controls.MenuItem;
 using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
-using System.Runtime.InteropServices; 
+using System.Runtime.InteropServices;
 
+/// <summary>
+/// Przestrzeń nazwy dla aplikacji.
+/// </summary>
 namespace GraphColoring
 {
     /// <summary>
@@ -83,35 +86,11 @@ namespace GraphColoring
         }
 
         /// <summary>
-        /// Metoda obsługująca zdarzenie uruchomienia obliczenia algorytmu napisanego w wersji C# (niezoptymalizowany)
-        /// </summary>
-        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
-        /// <param name="e">Parametry zdarzenia.</param>
-        private void CPU1_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (!string.IsNullOrEmpty(_lastPath))
-            {
-                var g = FileProcessing.ReadFile(_lastPath);
-
-                var watch = Stopwatch.StartNew();
-
-                var k = g.GetChromaticNumber();
-
-                watch.Stop();
-                MessageBox.Show(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}ms", k, watch.ElapsedMilliseconds));
-            }
-            else
-            {
-                MessageBox.Show("Jakbyś podał graf na wejściu, to ja bym policzył :(");
-            }
-        }
-
-        /// <summary>
         /// Metoda obsługująca zdarzenie uruchomienia obliczenia algorytmu napisanego w wersji C++ (zoptymalizowany)
         /// </summary>
         /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
         /// <param name="e">Parametry zdarzenia.</param>
-        private void CPU2_OnClick(object sender, RoutedEventArgs e)
+        private void CPU_OnClick(object sender, RoutedEventArgs e)
         {
             _lastPath = "..\\..\\..\\..\\TestFiles\\GraphExample12.txt";
             if (!string.IsNullOrEmpty(_lastPath))
