@@ -185,9 +185,10 @@ int main()
 	int deviceReset = 0;
 
 	//string path = "../../TestFiles/GraphExampleMyciel4.txt";
-	string path = "../../TestFiles/GraphExample3_2.txt";
+	string path = "../../TestFiles/GraphExample";
 
 	int wynik;
+	string test;
 	int what = -1;
 	Graph graph;
 
@@ -201,6 +202,7 @@ int main()
 		cout << endl;
 
 		cin >> what;
+		cin >> test;
 		cout << endl;
 		
 		if(what == 3)
@@ -209,9 +211,9 @@ int main()
 		try
 		{
 			if(what == 2)
-				graph = ReadGraphBitVersion(path);
+				graph = ReadGraphBitVersion(path + test + ".txt");
 			else
-				graph = ReadGraph(path);
+				graph = ReadGraph(path + test + ".txt");
 		}
 		catch (logic_error le)
 		{

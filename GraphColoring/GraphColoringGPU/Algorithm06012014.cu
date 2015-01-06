@@ -1,11 +1,8 @@
 ﻿#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
 #include "Algorithm.cuh"
 #include <stdio.h>
-#include <cmath>
 #include <Windows.h>
 
-#define BLOCKSIZE 256
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true)
 {
@@ -87,7 +84,6 @@ namespace version_gpu
 		return r;
 	} 
 
-	// Konieczne zmiany po wprowadzeniu bloków, a możliwe że i siatek (grid)
 	/// <summary>
 	/// Obliczanie i uzupełnianie pewnej części tablicy zbiorów niezależnych dla danego grafu. 
 	/// Funckja wywoływana na procesorze graficznym.
@@ -106,7 +102,7 @@ namespace version_gpu
 	/// <param name="independentSets">Tablica zbiorów niezależnych.</param>
 	__global__ void BuildIndependentSetGPU(int* l_set, int n, int* vertices, int* offset, int actCol, int* actualVertices, int* newVertices, int* independentSets)
 	{
-		int i = blockIdx.x * blockDim.x + threadIdx.x;
+		int i = threadIdx.x;
 		int l = l_set[i];
 
 		if (l==-1) return;
@@ -145,7 +141,6 @@ namespace version_gpu
 		}
 	}
 
-	// Final rozbicie na petli
 	/// <summary>
 	/// Przypisanie początkowych wartości do tablicy zbiorów niezależnych.
 	/// Funckja wywoływana na procesorze graficznym.
@@ -153,21 +148,20 @@ namespace version_gpu
 	/// <param name="independentSets">Tablica zbiorów niezależnych.</param>
 	/// <param name="actualVertices">Tablica zawierająca aktualnie rozpatrywane pozbiory.</param>
 	/// <param name="verticesCount">Liczba wierzchołków w grafie.</param>
-	__global__ void Init(int* independentSet, int* actualVertices, int verticesCount, int PowerNumber)
+	__global__ void Init(int* independentSet, int* actualVertices, int verticesCount)
 	{
-		for(int i = threadIdx.x; i < PowerNumber; i += BLOCKSIZE)
-			independentSet[i] = 0;
-	
-		__syncthreads();
+		int PowerNumber = 1 << verticesCount;
 
-		if(threadIdx.x == 0)
+		for(int i = 0; i < PowerNumber; ++i)
+			independentSet[i] = 0;
+
+		for (int i = 0; i < verticesCount; ++i)
 		{
-			independentSet[1 << blockIdx.x] = 1;
-			actualVertices[blockIdx.x] = blockIdx.x;
+			independentSet[1 << i] = 1;
+			actualVertices[i] = i;
 		}
 	}
 
-	// Final po co na gpu
 	/// <summary>
 	/// Uzupełnianie aktualnie rozpatrywanego podzbioru wartościami wyliczonymi z bieżącej iteracji.
 	/// Funckja wywoływana na procesorze graficznym.
@@ -177,11 +171,10 @@ namespace version_gpu
 	/// <param name="size">Liczba elementów w rozpatrywanym zbiorze dla kolejnej iteracji.</param>
 	__global__ void CreateActualVertices(int* actualVertices, int* newVertices, int size)
 	{
-		int i = blockIdx.x * blockDim.x + threadIdx.x;
-		actualVertices[i] = newVertices[i];
+		for(int i = 0; i < size; ++i)
+			actualVertices[i] = newVertices[i];
 	}
 
-	// Możliwe zmiany, jeli będzie lepszy pomysł
 	/// <summary>
 	/// Tworzenie tablicy zawierającej indeksy początkowe, w których każdy wątek 
 	/// powinien zacząć wpisywać dane do tablicy zbiorów niezależnych.
@@ -217,7 +210,6 @@ namespace version_gpu
 		}
 	}
 
-	//zmiana Łukasza
 	/// <summary>
 	/// Główna funkcja obliczająca wynik dla odpowiedniego indeksu, a następnie wpisująca do wyjściowej tablicy wynik.
 	/// Funckja wywoływana na procesorze graficznym.
@@ -227,38 +219,16 @@ namespace version_gpu
 	/// <param name="wynik">Tablica zawierająca wynik dla każdego z k kolorów (tworzona w tej funkcji).</param>
 	__global__ void FindChromaticNumber(int n, int* independentSets, int* wynik)
 	{
-		//poprawic kod, mozna lepiej
-		int index = blockIdx.x;
-		int startIndex = threadIdx.x;
-		 __shared__ unsigned int sd[BLOCKSIZE];		
-	
-		if(startIndex == BLOCKSIZE - 1)		
- 			for(int i = 0; i < BLOCKSIZE; i++)
-				sd[i] = 0;
+		int index = threadIdx.x;
 
-		__syncthreads();
-
-		unsigned int s = 0;
+		unsigned long s = 0;
 		int PowerNumber = 1 << n;
-	
-		for(int i = startIndex; i < PowerNumber; i += BLOCKSIZE) 
-		{
-			sd[startIndex] += (sgnPow(BitCount(i)) * Pow(independentSets[i], index + 1));
-			__syncthreads();
-		}
 
-		__syncthreads();
-
-		if(startIndex == BLOCKSIZE - 1)
-		{
-			for(int i = 0; i < BLOCKSIZE; i++)
-				s+=sd[i];
-
-			wynik[index] = s > 0 ? index : s;
-		}
+		for (int i = 0; i < PowerNumber; ++i) s += (sgnPow(BitCount(i)) * Pow(independentSets[i], index + 1));
+			
+		wynik[index] = s > 0 ? index : s; // KAMIL: punkt krytyczny, czy dobrze jest liczone "s"? dla unsigned long long liczy źle...
 	}
 	
-	// Do sprawdzenia szczególnie kwestia alokowanej i zwalnianej pamięci
 	/// <summary>
 	/// Funkcja uruchamiająca cały przebieg algorytmu. Wykorzystuje pozostałe funkcje w celu obliczenia tablicy
 	/// zbiorów niezależnych, a następnie policzenia wyniku dla każdego z k kolorów.
@@ -285,11 +255,6 @@ namespace version_gpu
 
 		cudaError_t cudaStatus = cudaSuccess;
 
-		int blockSize = 1;
-		dim3 dimBlock(blockSize);
-		dim3 dimBlockVer(BLOCKSIZE);	
-		dim3 dimGridInit(verticesCount);
-
 		gpuErrchk(cudaSetDevice(0));
 
 		gpuErrchk(cudaMalloc((void**)&dev_vertices, allVerticesCount * sizeof(int)));
@@ -302,7 +267,7 @@ namespace version_gpu
 		gpuErrchk(cudaMemcpy(dev_vertices, vertices, allVerticesCount * sizeof(int), cudaMemcpyHostToDevice));
 		gpuErrchk(cudaMemcpy(dev_offset, offset, verticesCount * sizeof(int), cudaMemcpyHostToDevice));
     
-		Init<<<dimGridInit,dimBlockVer>>> (dev_independentSet, dev_actualVertices, verticesCount, 1 << verticesCount); // czy warto odpalić na większej ilości wątków? (wpisywanie dużej ilości zer)
+		Init<<<1,1>>> (dev_independentSet, dev_actualVertices, verticesCount); // czy warto odpalić na większej ilości wątków? (wpisywanie dużej ilości zer)
 
 		for (int el = 1; el < verticesCount; el++) // przy tej konstrukcji alg nie damy rady odpalić tej pętli równolegle
 		{	
@@ -314,24 +279,18 @@ namespace version_gpu
 		
 			PrepareToNewVertices<<<1,1>>> (dev_actualVertices, dev_l_set, verticesCount, actualVerticesRowCount, actualVerticesColCount); // przy tej konstrukcji funkcji nie damy rady odpalić tego na wielu wątkach
 
-			dim3 dimGrid(actualVerticesRowCount);
-
-			BuildIndependentSetGPU<<<dimGrid,dimBlock>>> (dev_l_set, verticesCount, dev_vertices, dev_offset, actualVerticesColCount, dev_actualVertices, dev_newVertices, dev_independentSet); // Koniecznie trzeba odpalać także używając bloków. Max wątków per blok to np. 1024, a są sytuacje gdzie podawane jest ponad 180k (dla n=20)	
+			BuildIndependentSetGPU<<<1,actualVerticesRowCount>>> (dev_l_set, verticesCount, dev_vertices, dev_offset, actualVerticesColCount, dev_actualVertices, dev_newVertices, dev_independentSet); // Koniecznie trzeba odpalać także używając bloków. Max wątków per blok to np. 1024, a są sytuacje gdzie podawane jest ponad 180k (dla n=20)	
 
 			cudaFree(dev_actualVertices); // czy aby na pewno dobrze jest pamiec zwalniana? nie marnujemy zasobow karty?
 			gpuErrchk(cudaMalloc((void**)&dev_actualVertices, (row * col) * sizeof(int))); // czy ponowne mallocowanie jest ok jeśli wcześniej użyto cudaFree?
 
-			dim3 dimGridVer(ceil((double)((double)row * col) / (double)BLOCKSIZE));
-			CreateActualVertices<<<dimGridVer,dimBlockVer>>> (dev_actualVertices, dev_newVertices, row * col);
+			CreateActualVertices<<<1,1>>> (dev_actualVertices, dev_newVertices, row * col);
 
 			actualVerticesRowCount = row;
 			actualVerticesColCount = col;
 		}
-
-		dim3 dimBlockChro(BLOCKSIZE);
-		dim3 dimGridChro(verticesCount);
 	
-		FindChromaticNumber<<<dimGridChro,dimBlockChro>>> (verticesCount, dev_independentSet, dev_wynik); // Możliwe odpalenie bloków, czyli zrobienie Reduce dla pewnych kawałków całej sumy. Ponadto komunikacja- przerwanie obliczeń natychmiast, gdy jakiś wątek/blok dał pozytywną odpowiedź
+		FindChromaticNumber<<<1,verticesCount>>> (verticesCount, dev_independentSet, dev_wynik); // Możliwe odpalenie bloków, czyli zrobienie Reduce dla pewnych kawałków całej sumy. Ponadto komunikacja- przerwanie obliczeń natychmiast, gdy jakiś wątek/blok dał pozytywną odpowiedź
 	
 		gpuErrchk(cudaGetLastError());
     
