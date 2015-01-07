@@ -2,6 +2,7 @@
 #include "device_launch_parameters.h"
 #include "Algorithm.cuh"
 #include <stdio.h>
+#include <iostream>
 #include <cmath>
 #include <Windows.h>
 
@@ -155,15 +156,17 @@ namespace version_gpu
 	/// <param name="verticesCount">Liczba wierzchołków w grafie.</param>
 	__global__ void Init(int* independentSet, int* actualVertices, int verticesCount, int PowerNumber)
 	{
-		for(int i = threadIdx.x; i < PowerNumber; i += BLOCKSIZE)
+		//for(int i = threadIdx.x; i < PowerNumber; i += BLOCKSIZE)
+		//	independentSet[i] = 0;
+		for(int i = 0; i < PowerNumber; i++)
 			independentSet[i] = 0;
-	
-		__syncthreads();
-
-		if(threadIdx.x == 0)
+		//__syncthreads();
+		//int i = threadIdx.x;
+		//if(threadIdx.x == 0)
+		for(int i = 0; i < verticesCount; i++)
 		{
-			independentSet[1 << blockIdx.x] = 1;
-			actualVertices[blockIdx.x] = blockIdx.x;
+			independentSet[1 << i] = 1;
+			actualVertices[i] = i;
 		}
 	}
 
@@ -258,6 +261,14 @@ namespace version_gpu
 		}
 	}
 	
+	int podziel(int number)
+	{
+		for(int i = 1024; i > 0; i--)
+			if(number%i==0)
+				return i;
+		return 1;
+	}
+
 	// Do sprawdzenia szczególnie kwestia alokowanej i zwalnianej pamięci
 	/// <summary>
 	/// Funkcja uruchamiająca cały przebieg algorytmu. Wykorzystuje pozostałe funkcje w celu obliczenia tablicy
@@ -285,7 +296,7 @@ namespace version_gpu
 
 		cudaError_t cudaStatus = cudaSuccess;
 
-		int blockSize = 1;
+		int blockSize = 2;
 		dim3 dimBlock(blockSize);
 		dim3 dimBlockVer(BLOCKSIZE);	
 		dim3 dimGridInit(verticesCount);
@@ -301,8 +312,16 @@ namespace version_gpu
 
 		gpuErrchk(cudaMemcpy(dev_vertices, vertices, allVerticesCount * sizeof(int), cudaMemcpyHostToDevice));
 		gpuErrchk(cudaMemcpy(dev_offset, offset, verticesCount * sizeof(int), cudaMemcpyHostToDevice));
-    
-		Init<<<dimGridInit,dimBlockVer>>> (dev_independentSet, dev_actualVertices, verticesCount, 1 << verticesCount); // czy warto odpalić na większej ilości wątków? (wpisywanie dużej ilości zer)
+
+    	Init<<<1,1>>> (dev_independentSet, dev_actualVertices, verticesCount, 1 << verticesCount); // czy warto odpalić na większej ilości wątków? (wpisywanie dużej ilości zer)
+
+		//Init<<<dimGridInit,dimBlockVer>>> (dev_independentSet, dev_actualVertices, verticesCount, 1 << verticesCount); // czy warto odpalić na większej ilości wątków? (wpisywanie dużej ilości zer)
+		//int* tab = new int[(1<<verticesCount)];
+		//gpuErrchk(cudaMemcpy(tab, dev_independentSet, (1<<verticesCount) * sizeof(int), cudaMemcpyDeviceToHost));
+		//for(int i = 0; i < (1 << verticesCount);i++)
+		//	std::cout<<tab[i]<<",";
+		//std::cout<<std::endl;
+		//cudaThreadSynchronize();
 
 		for (int el = 1; el < verticesCount; el++) // przy tej konstrukcji alg nie damy rady odpalić tej pętli równolegle
 		{	
@@ -314,9 +333,23 @@ namespace version_gpu
 		
 			PrepareToNewVertices<<<1,1>>> (dev_actualVertices, dev_l_set, verticesCount, actualVerticesRowCount, actualVerticesColCount); // przy tej konstrukcji funkcji nie damy rady odpalić tego na wielu wątkach
 
-			dim3 dimGrid(actualVerticesRowCount);
+			dim3 dimGrid(actualVerticesRowCount/2);
 
-			BuildIndependentSetGPU<<<dimGrid,dimBlock>>> (dev_l_set, verticesCount, dev_vertices, dev_offset, actualVerticesColCount, dev_actualVertices, dev_newVertices, dev_independentSet); // Koniecznie trzeba odpalać także używając bloków. Max wątków per blok to np. 1024, a są sytuacje gdzie podawane jest ponad 180k (dla n=20)	
+			if(actualVerticesRowCount < 1024)
+			{
+				dim3 dimBlockBrute(actualVerticesRowCount);
+				dim3 dimGridBrute(1);
+
+				BuildIndependentSetGPU<<<dimGridBrute,dimBlockBrute>>> (dev_l_set, verticesCount, dev_vertices, dev_offset, actualVerticesColCount, dev_actualVertices, dev_newVertices, dev_independentSet); // Koniecznie trzeba odpalać także używając bloków. Max wątków per blok to np. 1024, a są sytuacje gdzie podawane jest ponad 180k (dla n=20)	
+			}
+			else
+			{
+				int threads = podziel(actualVerticesRowCount);
+				dim3 dimBlockBrute(threads);
+				dim3 dimGridBrute(actualVerticesRowCount/threads);
+
+				BuildIndependentSetGPU<<<dimGridBrute,dimBlockBrute>>> (dev_l_set, verticesCount, dev_vertices, dev_offset, actualVerticesColCount, dev_actualVertices, dev_newVertices, dev_independentSet); // Koniecznie trzeba odpalać także używając bloków. Max wątków per blok to np. 1024, a są sytuacje gdzie podawane jest ponad 180k (dla n=20)
+			}
 
 			cudaFree(dev_actualVertices); // czy aby na pewno dobrze jest pamiec zwalniana? nie marnujemy zasobow karty?
 			gpuErrchk(cudaMalloc((void**)&dev_actualVertices, (row * col) * sizeof(int))); // czy ponowne mallocowanie jest ok jeśli wcześniej użyto cudaFree?
