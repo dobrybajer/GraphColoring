@@ -75,7 +75,7 @@ Graph ReadGraph(string path)
 
 		return g;
 	}
-	else throw new logic_error("Podczas otwierania pliku wyst¹pi³ b³¹d");
+	else return Graph();
 }
 
 Graph ReadGraphBitVersion(string path)
@@ -184,7 +184,6 @@ int main()
 
 	int deviceReset = 0;
 
-	//string path = "../../TestFiles/GraphExampleMyciel4.txt";
 	string path = "../../TestFiles/GraphExample";
 
 	int wynik;
@@ -208,42 +207,38 @@ int main()
 		if(what == 3)
 			return 1;
 
-		try
-		{
-			if(what == 2)
-				graph = ReadGraphBitVersion(path + test + ".txt");
-			else
-				graph = ReadGraph(path + test + ".txt");
-		}
-		catch (logic_error le)
-		{
-			cout << "Fatal error while reading graph from file: " << le.what() << endl;
-			cin.get();
-			return 1;
-		}
-
-		double wall0 = get_wall_time();
-		double cpu0 = get_cpu_time();
-
-		if(what == 0)
-		{
-			wynik = GPU(graph);
-			deviceReset = 1;
-		}
-		else if(what == 1)
-			wynik = CPU(graph, 1);
+		if(what == 2)
+			graph = ReadGraphBitVersion(path + test + ".txt");
 		else
-			wynik = CPU(graph, 2);
+			graph = ReadGraph(path + test + ".txt");
 
-		double wall1 = get_wall_time();
-		double cpu1 = get_cpu_time();
+		if(graph.n!=0)
+		{
+			double wall0 = get_wall_time();
+			double cpu0 = get_cpu_time();
 
-		cout << "Wall Time = " << wall1 - wall0 << " seconds" << endl;
-		cout << "CPU Time  = " << cpu1 - cpu0 << " seconds" << endl;
-		cout << endl;
+			if(what == 0)
+			{
+				wynik = GPU(graph);
+				deviceReset = 1;
+			}
+			else if(what == 1)
+				wynik = CPU(graph, 1);
+			else
+				wynik = CPU(graph, 2);
 
-		cout << "Potrzeba " << wynik << " kolorow." << endl;
-		cout << endl;
+			double wall1 = get_wall_time();
+			double cpu1 = get_cpu_time();
+
+			cout << "Wall Time = " << wall1 - wall0 << " seconds" << endl;
+			cout << "CPU Time  = " << cpu1 - cpu0 << " seconds" << endl;
+			cout << endl;
+
+			cout << "Potrzeba " << wynik << " kolorow." << endl;
+			cout << endl;
+		}
+		else
+			cout << "Nie ma takiego pliku testowego." << endl << endl;
 	}
 
 	if(deviceReset == 1)

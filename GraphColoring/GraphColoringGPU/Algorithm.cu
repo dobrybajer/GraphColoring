@@ -7,6 +7,7 @@
 #include <Windows.h>
 
 #define BLOCKSIZE 256
+#define BLOCKSIZE2 1024 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true)
 {
@@ -263,7 +264,7 @@ namespace version_gpu
 	
 	int podziel(int number)
 	{
-		for(int i = 1024; i > 0; i--)
+		for(int i = BLOCKSIZE2; i > 0; i--)
 			if(number%i==0)
 				return i;
 		return 1;
@@ -335,7 +336,7 @@ namespace version_gpu
 
 			dim3 dimGrid(actualVerticesRowCount/2);
 
-			if(actualVerticesRowCount < 1024)
+			if(actualVerticesRowCount < BLOCKSIZE2)
 			{
 				dim3 dimBlockBrute(actualVerticesRowCount);
 				dim3 dimGridBrute(1);

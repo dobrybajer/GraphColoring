@@ -92,7 +92,7 @@ namespace GraphColoring
         /// <param name="e">Parametry zdarzenia.</param>
         private void CPU_OnClick(object sender, RoutedEventArgs e)
         {
-            _lastPath = "..\\..\\..\\..\\TestFiles\\GraphExample12.txt";
+            //_lastPath = "..\\..\\..\\..\\TestFiles\\GraphExample12.txt";
             if (!string.IsNullOrEmpty(_lastPath))
             {
                 var g = FileProcessing.ReadFile(_lastPath);
@@ -117,7 +117,7 @@ namespace GraphColoring
         /// <param name="e">Parametry zdarzenia.</param>
         private void GPU_OnClick(object sender, RoutedEventArgs e)
         {
-            _lastPath = "..\\..\\..\\..\\TestFiles\\GraphExample12.txt";
+            //_lastPath = "..\\..\\..\\..\\TestFiles\\GraphExample12.txt";
             if (!string.IsNullOrEmpty(_lastPath))
             {
                 var g = FileProcessing.ReadFile(_lastPath);
