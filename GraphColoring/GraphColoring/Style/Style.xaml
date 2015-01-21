@@ -36,10 +36,31 @@
         <Setter Property="DockPanel.Dock" Value="Bottom" />
         <Setter Property="Background" Value="Black" />
     </Style>
-    <Style x:Key="ContentPanel" TargetType="Grid">
+    <Style x:Key="ContentPanel" TargetType="UserControl">
         <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="DockPanel.Dock" Value="Bottom" />
+        <Setter Property="DockPanel.Dock" Value="Top" />
         <Setter Property="Background" Value="White" />
-        <Setter Property="Margin" Value="10,10,10,10" />
+        <!--<Setter Property="Margin" Value="10,10,10,10" />-->
+    </Style>
+    <Style x:Key="ConsoleTextBox" TargetType="TextBox" >
+        <Setter Property="Foreground" Value="Black" />
+        <Setter Property="FontFamily" Value="Modern No. 20" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextOptions.TextHintingMode" Value="Animated" />
+    </Style>
+    <Style x:Key="ConsoleTextBlock" TargetType="TextBlock" >
+        <Setter Property="Foreground" Value="Black" />
+        <Setter Property="FontFamily" Value="Modern No. 20" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextOptions.TextHintingMode" Value="Animated" />
+    </Style>
+    <Style x:Key="Settings" TargetType="TextBlock" >
+      
+        <!--<Setter Property="Height" Value="20"/>-->
+
+    </Style>
+    <Style x:Key="SettingsButton" TargetType="{x:Type Button}" >
+ 
+
     </Style>
 </ResourceDictionary>

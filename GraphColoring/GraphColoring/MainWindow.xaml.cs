@@ -1,14 +1,15 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 using GraphColoring.Structures;
-using MenuItem = System.Windows.Controls.MenuItem;
-using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 using System.Runtime.InteropServices;
 
-/// <summary>
-/// Przestrzeń nazwy dla aplikacji.
-/// </summary>
 namespace GraphColoring
 {
     /// <summary>
@@ -39,25 +40,89 @@ namespace GraphColoring
         [DllImport("..\\..\\..\\Debug\\GraphColoringGPU.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int FindChromaticNumberGPU([MarshalAs(UnmanagedType.LPArray)]int[] wynik, [MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int allVertices);
 
-        /// <summary>
-        /// Ścieżka ostatnio otworzonego pliku z reprezentacją grafu.
-        /// </summary>
-        private string _lastPath;
+        readonly ConsoleContent _dc = new ConsoleContent();
 
-        /// <summary>
-        /// Domyślny konstruktor.
-        /// </summary>
+        private bool isFile = false;
+
         public MainWindow()
         {
             InitializeComponent();
+            Loaded += MainWindow_Loaded;          
+            DataContext = _dc;
+            _dc.Path = "Nie wybrano.";   
         }
 
-        /// <summary>
-        /// Metoda obsługująca zdarzenie otworzenie okna dialogowego wyboru pliku.
-        /// </summary>
-        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
-        /// <param name="e">Parametry zdarzenia.</param>
-        private void Open_OnClick(object sender, RoutedEventArgs e)
+        private void GPU(string path)
+        {
+            var g = FileProcessing.ReadFile(path);
+            var wynik = new int[g.VerticesCount];
+
+            var watch = Stopwatch.StartNew();
+
+            FindChromaticNumberGPU(wynik, g.Vertices, g.NeighboursCount, g.VerticesCount, g.AllVerticesCount);
+
+            var wynikk = -2;
+
+            for (var i = 0; i < g.VerticesCount; i++)
+            {
+                if (wynik[i] == -1 || wynik[i] == 0) continue;
+                wynikk = wynik[i] + 1;
+                break;
+            }
+
+            _dc.RunCommandType(0, string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", wynikk, watch.Elapsed));
+
+            InputBlock.Focus();
+            ContentPanel.ScrollToBottom();
+        }
+
+        private void CPUT(string path)
+        {
+            var g = FileProcessing.ReadFile(path);
+            var watch = Stopwatch.StartNew();
+
+            var k = FindChromaticNumber(g.Vertices, g.NeighboursCount, g.VerticesCount);
+
+            watch.Stop();
+
+            _dc.RunCommandType(0, string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
+
+            InputBlock.Focus();
+            ContentPanel.ScrollToBottom();
+        }
+
+        private void CPUB(string path)
+        {
+            var g = FileProcessing.ReadFile(path);
+            g = FileProcessing.ConvertToBitVersion(g);
+            var watch = Stopwatch.StartNew();
+
+            var k = FindChromaticNumber(g.Vertices, g.NeighboursCount, g.VerticesCount, 1);
+
+            watch.Stop();
+
+            _dc.RunCommandType(0, string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
+
+            InputBlock.Focus();
+            ContentPanel.ScrollToBottom();
+        }
+
+        void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            InputBlock.KeyDown += InputBlock_KeyDown;
+            InputBlock.Focus();
+        }
+
+        void InputBlock_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter) return;
+            _dc.ConsoleInput = InputBlock.Text;
+            _dc.RunCommand();
+            InputBlock.Focus();
+            ContentPanel.ScrollToBottom();
+        }
+
+        private void ChooseFile_Click(object sender, RoutedEventArgs e)
         {
             var openFileDialog1 = new OpenFileDialog
             {
@@ -67,124 +132,175 @@ namespace GraphColoring
 
             if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                _lastPath=openFileDialog1.InitialDirectory + openFileDialog1.FileName;
+                isFile = true;
+                _dc.Path = openFileDialog1.InitialDirectory + openFileDialog1.FileName;
+                _dc.RunCommandType(0, "Ścieżka do wybranego pliku: " + _dc.Path);
+                InputBlock.Focus();
+                ContentPanel.ScrollToBottom();
             }
             else
             {
-                MessageBox.Show("Nie wybrałeś żadnego pliku, spróbuj ponownie.");
+                _dc.RunCommandType(0, "Nie wybrałeś żadnego pliku.");
+                InputBlock.Focus();
+                ContentPanel.ScrollToBottom();
             }
         }
 
-        /// <summary>
-        /// Metoda obsługująca zdarzenie ...
-        /// </summary>
-        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
-        /// <param name="e">Parametry zdarzenia.</param>
-        private void Generate_OnClick(object sender, RoutedEventArgs e)
+        private void ChooseFolder_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Element '" + ((MenuItem) sender).Header + "' nie jest obsługiwany w bieżącej wersji.");
-        }
-
-        /// <summary>
-        /// Metoda obsługująca zdarzenie uruchomienia obliczenia algorytmu napisanego w wersji C++ (zoptymalizowany)
-        /// </summary>
-        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
-        /// <param name="e">Parametry zdarzenia.</param>
-        private void CPU_OnClick(object sender, RoutedEventArgs e)
-        {
-            //_lastPath = "..\\..\\..\\..\\TestFiles\\GraphExample12.txt";
-            if (!string.IsNullOrEmpty(_lastPath))
+            var dialog = new System.Windows.Forms.FolderBrowserDialog();
+       
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                var g = FileProcessing.ReadFile(_lastPath);
-                g = FileProcessing.ConvertToBitVersion(g);
-                var watch = Stopwatch.StartNew();
-
-                var k = FindChromaticNumber(g.Vertices, g.NeighboursCount, g.VerticesCount, 1);
-
-                watch.Stop();
-                MessageBox.Show(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
+                isFile = false;
+                _dc.Path = dialog.SelectedPath;
+                _dc.RunCommandType(0, "Ścieżka do wybranego folderu: " + _dc.Path);
+                InputBlock.Focus();
+                ContentPanel.ScrollToBottom();
             }
             else
             {
-                MessageBox.Show("Jakbyś podał graf na wejściu, to ja bym policzył :(");
+                _dc.RunCommandType(0, "Nie wybrałeś żadnego folderu.");
+                InputBlock.Focus();
+                ContentPanel.ScrollToBottom();
             }
         }
 
-        /// <summary>
-        /// Metoda obsługująca zdarzenie uruchomienia obliczenia algorytmu napisanego w wersji CUDA C++ (zoptymalizowany)
-        /// </summary>
-        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
-        /// <param name="e">Parametry zdarzenia.</param>
-        private void GPU_OnClick(object sender, RoutedEventArgs e)
+        private void ClearLog_Click(object sender, RoutedEventArgs e)
         {
-            //_lastPath = "..\\..\\..\\..\\TestFiles\\GraphExample12.txt";
-            if (!string.IsNullOrEmpty(_lastPath))
+            _dc.RunCommandType(1);
+            InputBlock.Focus();
+            ContentPanel.ScrollToBottom();
+        }
+
+        private void MakeLog_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                var g = FileProcessing.ReadFile(_lastPath);
-                int[] wynik = new int[g.VerticesCount];
+                Filter = @"Pliki tekstowe|*.txt",
+                Title = @"Wybierz plik do jakiego ma być zapisany log."
+            };
 
-                var watch = Stopwatch.StartNew();
-                
-                FindChromaticNumberGPU(wynik, g.Vertices, g.NeighboursCount, g.VerticesCount, g.AllVerticesCount);
+            if (dialog.ShowDialog() == true)
+            {
+                _dc.RunCommandType(2, dialog.InitialDirectory + dialog.FileName);        
+            }
+            else
+            {
+                _dc.RunCommandType(0, "Nie wybrałeś żadnego pliku do zapisu pliku z logiem.");
+                InputBlock.Focus();
+                ContentPanel.ScrollToBottom();
+            }
+        }
 
-                int wynikk = -2;
-
-                for (int i = 0; i < g.VerticesCount; i++)
+        private void Run_Click(object sender, RoutedEventArgs e)
+        {
+            if (_dc.Path != "Nie wybrano." && (CpuT.IsChecked == true || CpuB.IsChecked == true || Gpu.IsChecked == true))
+            {
+                if (isFile)
                 {
-                    if (wynik[i] != -1 && wynik[i] != 0)
-                    {
-                        wynikk = wynik[i] + 1;
-                        break;
-                    }
+                    if (CpuT.IsChecked == true)
+                        CPUT(_dc.Path);
+                    if (CpuB.IsChecked == true)
+                        CPUB(_dc.Path);
+                    if (Gpu.IsChecked == true)
+                        GPU(_dc.Path);
                 }
-
-                watch.Stop();
-                MessageBox.Show(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", wynikk, watch.Elapsed));
+                else
+                {
+                    var files = Directory.GetFiles(_dc.Path, "*GraphExample*", SearchOption.TopDirectoryOnly);
+                    foreach (var f in files)
+                    {
+                        if (CpuT.IsChecked == true)
+                            CPUT(f);
+                        if (CpuB.IsChecked == true)
+                            CPUB(f);
+                        if (Gpu.IsChecked == true)
+                            GPU(f);
+                    }
+                }   
             }
             else
             {
-                MessageBox.Show("Jakbyś podał graf na wejściu, to ja bym policzył :(");
+                _dc.RunCommandType(0, "Błąd: Nie wybrano pliku, ani folderu lub nie wybrano metody algorytmu.");
+                InputBlock.Focus();
+                ContentPanel.ScrollToBottom();
+            }
+        }
+    }
+
+    public class ConsoleContent : INotifyPropertyChanged
+    {
+        private string _path;
+
+        public string Path
+        {
+            get { return _path; }
+            set
+            {
+                if (value == _path) return;
+                _path = value;
+                OnPropertyChanged("Path");
             }
         }
 
-        /// <summary>
-        /// Metoda obsługująca zdarzenie otworzenie okna dialogowego z informacjami o programie.
-        /// </summary>
-        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
-        /// <param name="e">Parametry zdarzenia.</param>
-        private void AboutProgram_OnClick(object sender, RoutedEventArgs e)
+        string _consoleInput = string.Empty;
+        ObservableCollection<string> _consoleOutput = new ObservableCollection<string>() { "Hello!" };
+
+        public string ConsoleInput
         {
-            MessageBox.Show("Element '" + ((MenuItem) sender).Header + "' nie jest obsługiwany w bieżącej wersji.");
+            get
+            {
+                return _consoleInput;
+            }
+            set
+            {
+                _consoleInput = value;
+                OnPropertyChanged("ConsoleInput");
+            }
         }
 
-        /// <summary>
-        /// Metoda obsługująca zdarzenie otworzenie okna dialogowego z informacjami o algorytmie.
-        /// </summary>
-        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
-        /// <param name="e">Parametry zdarzenia.</param>
-        private void AboutAlgorithm_OnClick(object sender, RoutedEventArgs e)
+        public ObservableCollection<string> ConsoleOutput
         {
-            MessageBox.Show("Element '" + ((MenuItem) sender).Header + "' nie jest obsługiwany w bieżącej wersji.");
+            get
+            {
+                return _consoleOutput;
+            }
+            set
+            {
+                _consoleOutput = value;
+                OnPropertyChanged("ConsoleOutput");
+            }
         }
 
-        /// <summary>
-        /// Metoda obsługująca zdarzenie otworzenie okna dialogowego z instrukcją obsługi aplikacji.
-        /// </summary>
-        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
-        /// <param name="e">Parametry zdarzenia.</param>
-        private void HowTo_OnClick(object sender, RoutedEventArgs e)
+        public void RunCommand()
         {
-            MessageBox.Show("Element '" + ((MenuItem) sender).Header + "' nie jest obsługiwany w bieżącej wersji.");
+            ConsoleOutput.Add(ConsoleInput);
+            // do your stuff here.
+            ConsoleInput = String.Empty;
         }
 
-        /// <summary>
-        /// Metoda obsługująca zdarzenie otworzenie okna dialogowego z aktualną wersją aplikacji.
-        /// </summary>
-        /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
-        /// <param name="e">Parametry zdarzenia.</param>
-        private void Version_OnClick(object sender, RoutedEventArgs e)
+        public void RunCommandType(int type=0, string message="")
         {
-            MessageBox.Show("Element '" + ((MenuItem) sender).Header + "' nie jest obsługiwany w bieżącej wersji.");
+            switch (type)
+            {
+                case 0:
+                    ConsoleOutput.Add(message);
+                    break;
+                case 1:
+                    ConsoleOutput.Clear();
+                    break;
+                case 2:
+                    File.WriteAllLines(message, ConsoleOutput.ToList());
+                    break;
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        void OnPropertyChanged(string propertyName)
+        {
+            if (null != PropertyChanged)
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
