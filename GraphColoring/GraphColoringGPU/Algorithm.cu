@@ -281,7 +281,7 @@ namespace version_gpu
 	/// <param name="verticesCount">Liczba wierzchołków w grafie.</param>
 	/// <param name="allVerticesCount">Liczba wszystkich sąsiadów każdego z wierzchołków.</param>
 	/// <returns>Status wykonania funkcji na procesorze graficznym.</returns>
-	cudaError_t FindChromaticNumberGPU(int* wynik, int* vertices, int* offset, int verticesCount, int allVerticesCount)
+	cudaError_t FindChromaticNumberGPU(int* wynik,int* pamiec, int* vertices, int* offset, int verticesCount, int allVerticesCount)
 	{
 		int numSMs;
 		cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, 0);
@@ -298,7 +298,12 @@ namespace version_gpu
 		int actualVerticesRowCount = verticesCount;
 		int actualVerticesColCount = 1;
 		int PowerNumber = 1 << verticesCount;
-
+		int pamiecCount=0;
+		size_t mem_tot = 0;
+		size_t mem_free = 0;
+		cudaMemGetInfo  (&mem_free, & mem_tot);
+		pamiec[pamiecCount]=mem_tot-mem_free;
+		pamiecCount++;
 		cudaError_t cudaStatus = cudaSuccess;
 
 		gpuErrchk(cudaMalloc((void**)&dev_vertices, allVerticesCount * sizeof(int)));
@@ -332,6 +337,10 @@ namespace version_gpu
 			//fprintf(stderr,"el: %d, before: %s %s %d\n", el, cudaGetErrorString(cudaGetLastError()), __FILE__, __LINE__);
 			BuildIndependentSetGPU<<<gridSize,BLOCKSIZE_LOOP>>> (dev_l_set, verticesCount, dev_vertices, dev_offset, actualVerticesRowCount, actualVerticesColCount, dev_actualVertices, dev_newVertices, dev_independentSet);
 
+			cudaMemGetInfo  (&mem_free, & mem_tot);
+			pamiec[pamiecCount]=mem_tot-mem_free;
+			pamiecCount++;
+
 			gpuErrchk(cudaFree(dev_l_set)); 
 			gpuErrchk(cudaFree(dev_actualVertices)); 
 
@@ -348,7 +357,9 @@ namespace version_gpu
 				actualVerticesRowCount = row;
 				actualVerticesColCount = col;
 			}
-
+			cudaMemGetInfo  (&mem_free, & mem_tot);
+			pamiec[pamiecCount]=mem_tot-mem_free;
+			pamiecCount++;
 			gpuErrchk(cudaFree(dev_newVertices)); 
 		}
 
@@ -363,6 +374,9 @@ namespace version_gpu
 
 		gpuErrchk(cudaMemcpy(wynik, dev_wynik, verticesCount * sizeof( int), cudaMemcpyDeviceToHost))
 		gpuErrchk(cudaFree(dev_wynik));
+
+		cudaMemGetInfo  (&mem_free, & mem_tot);
+		pamiec[pamiecCount]=mem_tot-mem_free;
 
 		return cudaStatus;
 	}

@@ -38,7 +38,7 @@ namespace GraphColoring
         /// <param name="allVertices">All vertices.</param>
         /// <returns></returns>
         [DllImport("..\\..\\..\\Debug\\GraphColoringGPU.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int FindChromaticNumberGPU([MarshalAs(UnmanagedType.LPArray)]int[] wynik, [MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int allVertices);
+        public static extern int FindChromaticNumberGPU([MarshalAs(UnmanagedType.LPArray)]int[] wynik,[MarshalAs(UnmanagedType.LPArray)]int[] pamiec, [MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int allVertices);
 
         readonly ConsoleContent _dc = new ConsoleContent();
 
@@ -56,11 +56,12 @@ namespace GraphColoring
         {
             var g = FileProcessing.ReadFile(path);
             var wynik = new int[g.VerticesCount];
-
+            var pamiec = new int[2 * (g.VerticesCount-1) + 2];
+          
             var watch = Stopwatch.StartNew();
 
-            FindChromaticNumberGPU(wynik, g.Vertices, g.NeighboursCount, g.VerticesCount, g.AllVerticesCount);
-
+            FindChromaticNumberGPU(wynik, pamiec,  g.Vertices, g.NeighboursCount, g.VerticesCount, g.AllVerticesCount);
+            var tmp = pamiec;
             var wynikk = -2;
 
             for (var i = 0; i < g.VerticesCount; i++)

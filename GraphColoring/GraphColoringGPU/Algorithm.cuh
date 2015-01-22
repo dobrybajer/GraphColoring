@@ -18,7 +18,7 @@ namespace version_gpu
 	__declspec(dllexport) __global__ void PrepareToNewVertices(int*, int*, int, int, int);
 	__declspec(dllexport) __global__ void FindChromaticNumber(int, int*, int*);
 
-	extern "C" __declspec(dllexport) cudaError_t FindChromaticNumberGPU(int*, int*, int*, int, int);
+	extern "C" __declspec(dllexport) cudaError_t FindChromaticNumberGPU(int*,int*, int*, int*, int, int);
 }
 
 #endif 
