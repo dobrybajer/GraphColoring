@@ -8,7 +8,7 @@
 /// </summary>
 namespace version_gpu
 {
-	__declspec(dllexport) __host__ __device__ unsigned long Pow(int, int);
+	__declspec(dllexport) __host__ __device__ unsigned int Pow(int, int);
 	__declspec(dllexport) __host__ __device__ int sgnPow(int);
 	__declspec(dllexport) __host__ __device__ int BitCount(int);
 	__declspec(dllexport) __host__ __device__ unsigned int Combination_n_of_k(int, int);
