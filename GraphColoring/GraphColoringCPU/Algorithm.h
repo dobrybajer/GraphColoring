@@ -16,7 +16,7 @@ namespace version_cpu
 	__declspec(dllexport) int* BuildingIndependentSets_BitVersion(int*, int);
 	__declspec(dllexport) int* BuildingIndependentSets_TableVersion(int*, int*, int);
 
-	extern "C" __declspec(dllexport) int FindChromaticNumber(int*, int*, int, int=0);
+	extern "C" __declspec(dllexport) int FindChromaticNumber(int*, int*, int*, int, int=0);
 }
 
 #endif

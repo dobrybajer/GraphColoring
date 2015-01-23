@@ -23,25 +23,27 @@ namespace GraphColoring
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="pamiec"></param>
         /// <param name="vertices"></param>
         /// <param name="neighborsCount"></param>
         /// <param name="n"></param>
         /// <param name="flag"></param>
         /// <returns></returns>
         [DllImport("..\\..\\..\\Debug\\GraphColoringCPU.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int FindChromaticNumber([MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int flag = 0);
+        public static extern int FindChromaticNumber([MarshalAs(UnmanagedType.LPArray)]int[] pamiec, [MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int flag = 0);
 
         /// <summary>
         /// Finds the chromatic number gpu.
         /// </summary>
         /// <param name="wynik">The wynik.</param>
+        /// <param name="pamiec">Przechowuje statystyki zuzycia pamie</param>
         /// <param name="vertices">The vertices.</param>
         /// <param name="neighborsCount">The neighbors count.</param>
         /// <param name="n">The n.</param>
         /// <param name="allVertices">All vertices.</param>
         /// <returns></returns>
         [DllImport("..\\..\\..\\Debug\\GraphColoringGPU.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int FindChromaticNumberGPU([MarshalAs(UnmanagedType.LPArray)]int[] wynik,[MarshalAs(UnmanagedType.LPArray)]int[] pamiec, [MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int allVertices);
+        public static extern int FindChromaticNumberGPU([MarshalAs(UnmanagedType.LPArray)]int[] wynik, [MarshalAs(UnmanagedType.LPArray)]int[] pamiec, [MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int allVertices);
 
         readonly ConsoleContent _dc = new ConsoleContent();
 
@@ -61,12 +63,12 @@ namespace GraphColoring
         {
             var g = FileProcessing.ReadFile(path);
             var wynik = new int[g.VerticesCount];
-            var pamiec = new int[2 * (g.VerticesCount-1) + 2];
+            var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
           
             var watch = Stopwatch.StartNew();
 
-            FindChromaticNumberGPU(wynik, pamiec,  g.Vertices, g.NeighboursCount, g.VerticesCount, g.AllVerticesCount);
-            var tmp = pamiec;
+            FindChromaticNumberGPU(wynik, pamiec, g.Vertices, g.NeighboursCount, g.VerticesCount, g.AllVerticesCount);
+   
             var wynikk = -2;
 
             for (var i = 0; i < g.VerticesCount; i++)
@@ -76,7 +78,7 @@ namespace GraphColoring
                 break;
             }
 
-            Stats.Add(path, 0, watch.Elapsed);     
+            Stats.Add(path, 0, watch.Elapsed, pamiec);     
 
             _dc.RunCommandType(0, string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", wynikk, watch.Elapsed));
 
@@ -87,13 +89,14 @@ namespace GraphColoring
         private void CPUT(string path)
         {
             var g = FileProcessing.ReadFile(path);
+            var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
             var watch = Stopwatch.StartNew();
 
-            var k = FindChromaticNumber(g.Vertices, g.NeighboursCount, g.VerticesCount);
+            var k = FindChromaticNumber(pamiec, g.Vertices, g.NeighboursCount, g.VerticesCount);
 
             watch.Stop();
 
-            Stats.Add(path, 1, watch.Elapsed);     
+            Stats.Add(path, 1, watch.Elapsed, pamiec);     
 
             _dc.RunCommandType(0, string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
 
@@ -105,13 +108,14 @@ namespace GraphColoring
         {
             var g = FileProcessing.ReadFile(path);
             g = FileProcessing.ConvertToBitVersion(g);
+            var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
             var watch = Stopwatch.StartNew();
 
-            var k = FindChromaticNumber(g.Vertices, g.NeighboursCount, g.VerticesCount, 1);
+            var k = FindChromaticNumber(pamiec, g.Vertices, g.NeighboursCount, g.VerticesCount, 1);
 
             watch.Stop();
 
-            Stats.Add(path, 2, watch.Elapsed);        
+            Stats.Add(path, 2, watch.Elapsed, pamiec);        
 
             _dc.RunCommandType(0, string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
 

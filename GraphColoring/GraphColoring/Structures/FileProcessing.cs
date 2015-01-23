@@ -3,15 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-<<<<<<< HEAD
-
-=======
-using System.Text.RegularExpressions;
 using System.Threading;
-/// <summary>
-/// Przestrzeń nazw dla pliku wejściowego oraz jego przetwarzania.
-/// </summary>
->>>>>>> origin/master
+
 namespace GraphColoring.Structures
 {
     /// <summary>

@@ -14,13 +14,13 @@ namespace GraphColoring.Structures
             _statsList = new List<GraphStat>();
         }
 
-        public void Add(string fileName, int type, TimeSpan time)
+        public void Add(string fileName, int type, TimeSpan time, int[] memoryUsage)
         {
             var i = _statsList.FindIndex(x => x.FileName == fileName);
             if (i == -1)
-                _statsList.Add(new GraphStat(fileName, type, time));
+                _statsList.Add(new GraphStat(fileName, type, time, memoryUsage));
             else
-                _statsList[i].Update(type, time);
+                _statsList[i].Update(type, time, memoryUsage);
         }
 
         public void SaveToFile(string path)
@@ -32,15 +32,18 @@ namespace GraphColoring.Structures
 
     internal class GraphStat
     {
-        private long avgGpuTicks = -1;
-        private long avgCpuTableTicks = -1;
-        private long avgCpuBitTicks = -1;
+        private long _avgGpuTicks = -1;
+        private long _avgCpuTableTicks = -1;
+        private long _avgCpuBitTicks = -1;
+        private List<int> _memoryGpuUsage;
+        private List<int> _memoryCpuTableUsage;
+        private List<int> _memoryCpuBitUsage;
         public string FileName { get; set; }
         public List<TimeSpan> GpuTime { get; set; }
         public List<TimeSpan> CpuTableTime { get; set; }
         public List<TimeSpan> CpuBitTime { get; set; }
 
-        public GraphStat(string fileName, int type, TimeSpan time)
+        public GraphStat(string fileName, int type, TimeSpan time, IEnumerable<int> memory)
         {
             FileName = fileName;
 
@@ -52,28 +55,34 @@ namespace GraphColoring.Structures
             {
                 case 0:
                     GpuTime.Add(time);
+                    _memoryGpuUsage = new List<int>(memory);
                     break;
                 case 1:
                     CpuTableTime.Add(time);
+                    _memoryCpuTableUsage = new List<int>(memory);
                     break;
                 case 2:
                     CpuBitTime.Add(time);
+                    _memoryCpuBitUsage = new List<int>(memory);
                     break;
             }
         }
 
-        public void Update(int type, TimeSpan time)
+        public void Update(int type, TimeSpan time, IEnumerable<int> memory)
         {
             switch (type)
             {
                 case 0:
                     GpuTime.Add(time);
+                    _memoryGpuUsage = new List<int>(memory);
                     break;
                 case 1:
                     CpuTableTime.Add(time);
+                    _memoryCpuTableUsage = new List<int>(memory);
                     break;
                 case 2:
                     CpuBitTime.Add(time);
+                    _memoryCpuBitUsage = new List<int>(memory);
                     break;
             }
         }
@@ -93,8 +102,14 @@ namespace GraphColoring.Structures
                 message += nLine + "Czas średni: ";
                 var ticks = GpuTime.Sum(t => t.Ticks);
                 ticks /= GpuTime.Count;
-                avgGpuTicks = ticks;
+                _avgGpuTicks = ticks;
                 message += string.Format("{0}" + nLine, new TimeSpan(ticks));
+                message += "Zużycie pamięci RAM na początku algorytmu: ";
+                message += string.Format("{0}" + nLine, _memoryGpuUsage.First());
+                message += "Zużycie pamięci RAM w punktach pośrednich algorytmu: ";
+                message = _memoryGpuUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", m));
+                message += nLine + "Zużycie pamięci RAM na końcu algorytmu: ";
+                message += string.Format("{0}" + nLine, _memoryGpuUsage.Last()) + nLine;
             }
             if (CpuTableTime.Count != 0)
             {
@@ -104,8 +119,14 @@ namespace GraphColoring.Structures
                 message += nLine + "Czas średni: ";
                 var ticks = CpuTableTime.Sum(t => t.Ticks);
                 ticks /= CpuTableTime.Count;
-                avgCpuTableTicks = ticks;
+                _avgCpuTableTicks = ticks;
                 message += string.Format("{0}" + nLine, new TimeSpan(ticks));
+                message += "Zużycie pamięci RAM na początku algorytmu: ";
+                message += string.Format("{0}" + nLine, _memoryCpuTableUsage.First());
+                message += "Zużycie pamięci RAM w punktach pośrednich algorytmu: ";
+                message = _memoryCpuTableUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", m));
+                message += nLine + "Zużycie pamięci RAM na końcu algorytmu: ";
+                message += string.Format("{0}" + nLine, _memoryCpuTableUsage.Last()) + nLine;
             }
             if (CpuBitTime.Count != 0)
             {
@@ -115,25 +136,31 @@ namespace GraphColoring.Structures
                 message += nLine + "Czas średni: ";
                 var ticks = CpuBitTime.Sum(t => t.Ticks);
                 ticks /= CpuBitTime.Count;
-                avgCpuBitTicks = ticks;
+                _avgCpuBitTicks = ticks;
                 message += string.Format("{0}" + nLine, new TimeSpan(ticks));
+                message += "Zużycie pamięci RAM na początku algorytmu: ";
+                message += string.Format("{0}" + nLine, _memoryCpuBitUsage.First());
+                message += "Zużycie pamięci RAM w punktach pośrednich algorytmu: ";
+                message = _memoryCpuBitUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", m));
+                message += nLine + "Zużycie pamięci RAM na końcu algorytmu: ";
+                message += string.Format("{0}" + nLine, _memoryCpuBitUsage.Last()) + nLine;
             }
 
             message += "Współczynnik zmiany czasu obliczeń cpu_table/gpu: ";
-            if (avgGpuTicks != -1 && avgCpuTableTicks != -1)
-                message += string.Format("{0}" + nLine, (float)((float)avgCpuTableTicks / (float)avgGpuTicks));
+            if (_avgGpuTicks != -1 && _avgCpuTableTicks != -1)
+                message += string.Format("{0}" + nLine, (float)((float)_avgCpuTableTicks / (float)_avgGpuTicks));
             else
                 message += "Brak informacji." + nLine;
 
             message += "Współczynnik zmiany czasu obliczeń cpu_bit/gpu: ";
-            if (avgGpuTicks != -1 && avgCpuBitTicks != -1)
-                message += string.Format("{0}" + nLine, (float)avgCpuBitTicks / (float)avgGpuTicks);
+            if (_avgGpuTicks != -1 && _avgCpuBitTicks != -1)
+                message += string.Format("{0}" + nLine, (float)_avgCpuBitTicks / (float)_avgGpuTicks);
             else
                 message += "Brak informacji." + nLine;
 
             message += "Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: ";
-            if (avgCpuTableTicks != -1 && avgCpuBitTicks != -1)
-                message += string.Format("{0}" + nLine, (float)avgCpuTableTicks / (float)avgCpuBitTicks);
+            if (_avgCpuTableTicks != -1 && _avgCpuBitTicks != -1)
+                message += string.Format("{0}" + nLine, (float)_avgCpuTableTicks / (float)_avgCpuBitTicks);
             else
                 message += "Brak informacji." + nLine;
 
