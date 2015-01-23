@@ -398,6 +398,7 @@ namespace version_cpu
 
 			memory[2 * (n - 1) + 1] = getUsedMemory();
 			memoryUsage = (int *)memory;
+			delete[] memory;
 
 			return k;
 		}
@@ -406,6 +407,7 @@ namespace version_cpu
 
 		memory[2 * (n - 1) + 1] = getUsedMemory();
 		memoryUsage = (int *)memory;
+		delete[] memory;
 
 		return -1;
 	}

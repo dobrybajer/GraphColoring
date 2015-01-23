@@ -104,12 +104,13 @@ namespace GraphColoring.Structures
                 ticks /= GpuTime.Count;
                 _avgGpuTicks = ticks;
                 message += string.Format("{0}" + nLine, new TimeSpan(ticks));
-                message += "Zużycie pamięci RAM na początku algorytmu: ";
-                message += string.Format("{0}" + nLine, _memoryGpuUsage.First());
-                message += "Zużycie pamięci RAM w punktach pośrednich algorytmu: ";
-                message = _memoryGpuUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", m));
-                message += nLine + "Zużycie pamięci RAM na końcu algorytmu: ";
-                message += string.Format("{0}" + nLine, _memoryGpuUsage.Last()) + nLine;
+                message += "Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: ";
+                var first = _memoryGpuUsage.First();
+                message += string.Format("{0}" + nLine, (float)first / 1000000);
+                message += "Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: ";
+                message = _memoryGpuUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", (float)(m - first) / 1000000));
+                message += nLine + "Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: ";
+                message += string.Format("{0}" + nLine, (float)(_memoryGpuUsage.Last() - first) / 1000000) + nLine;
             }
             if (CpuTableTime.Count != 0)
             {
@@ -121,12 +122,13 @@ namespace GraphColoring.Structures
                 ticks /= CpuTableTime.Count;
                 _avgCpuTableTicks = ticks;
                 message += string.Format("{0}" + nLine, new TimeSpan(ticks));
-                message += "Zużycie pamięci RAM na początku algorytmu: ";
-                message += string.Format("{0}" + nLine, _memoryCpuTableUsage.First());
-                message += "Zużycie pamięci RAM w punktach pośrednich algorytmu: ";
-                message = _memoryCpuTableUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", m));
-                message += nLine + "Zużycie pamięci RAM na końcu algorytmu: ";
-                message += string.Format("{0}" + nLine, _memoryCpuTableUsage.Last()) + nLine;
+                message += "Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: ";
+                var first = _memoryCpuTableUsage.First();
+                message += string.Format("{0}" + nLine, (float)first / 1000000);
+                message += "Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: ";
+                message = _memoryCpuTableUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", (float)(m - first) / 1000000));
+                message += nLine + "Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: ";
+                message += string.Format("{0}" + nLine, (float)(_memoryCpuTableUsage.Last() - first) / 1000000) + nLine;
             }
             if (CpuBitTime.Count != 0)
             {
@@ -138,12 +140,13 @@ namespace GraphColoring.Structures
                 ticks /= CpuBitTime.Count;
                 _avgCpuBitTicks = ticks;
                 message += string.Format("{0}" + nLine, new TimeSpan(ticks));
-                message += "Zużycie pamięci RAM na początku algorytmu: ";
-                message += string.Format("{0}" + nLine, _memoryCpuBitUsage.First());
-                message += "Zużycie pamięci RAM w punktach pośrednich algorytmu: ";
-                message = _memoryCpuBitUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", m));
-                message += nLine + "Zużycie pamięci RAM na końcu algorytmu: ";
-                message += string.Format("{0}" + nLine, _memoryCpuBitUsage.Last()) + nLine;
+                message += "Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: ";
+                var first = _memoryCpuBitUsage.First();
+                message += string.Format("{0}" + nLine, (float)first / 1000000);
+                message += "Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: ";
+                message = _memoryCpuBitUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", (float)(m - first) / 1000000));
+                message += nLine + "Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: ";
+                message += string.Format("{0}" + nLine, (float)(_memoryCpuBitUsage.Last() - first) / 1000000) + nLine;
             }
 
             message += "Współczynnik zmiany czasu obliczeń cpu_table/gpu: ";
