@@ -8,7 +8,7 @@
 /// </summary>
 namespace version_gpu
 {
-	__declspec(dllexport) __host__ __device__ unsigned long Pow(int, int);
+	__declspec(dllexport) __host__ __device__ unsigned int Pow(int, int);
 	__declspec(dllexport) __host__ __device__ int sgnPow(int);
 	__declspec(dllexport) __host__ __device__ int BitCount(int);
 	__declspec(dllexport) __host__ __device__ unsigned int Combination_n_of_k(int, int);
@@ -18,7 +18,7 @@ namespace version_gpu
 	__declspec(dllexport) __global__ void PrepareToNewVertices(int*, int*, int, int, int);
 	__declspec(dllexport) __global__ void FindChromaticNumber(int, int*, int*);
 
-	extern "C" __declspec(dllexport) cudaError_t FindChromaticNumberGPU(int*, int*, int*, int, int);
+	extern "C" __declspec(dllexport) cudaError_t FindChromaticNumberGPU(int*,int*, int*, int*, int, int);
 }
 
 #endif 
