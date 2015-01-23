@@ -169,7 +169,7 @@ namespace version_cpu
 	/// </param>
 	/// <param name="n">Liczba wierzchołków w grafie.</param>
 	/// <returns>Tablica zbiorów niezależnych.</returns>
-	int* BuildingIndependentSets_BitVersion(int* memory, int* vertices, int n)
+	int* BuildingIndependentSets_BitVersion(int* vertices, int n)
 	{
 		int* independentSets;
 		int* actualVertices;
@@ -195,7 +195,7 @@ namespace version_cpu
 		// Zaczynamy od 1, bo krok pierwszy wykonany wyżej.
 		for (int el = 1; el < n; el++)
 		{
-			memory[licznik++] = getUsedMemory();
+			//memory[licznik++] = getUsedMemory();
 
 			int row = Combination_n_of_k(n, el + 1);
 
@@ -240,7 +240,7 @@ namespace version_cpu
 			for (int i = 0; i < row; ++i)
 				actualVertices[i] = newVertices[i];
 
-			memory[licznik++] = getUsedMemory();
+			//memory[licznik++] = getUsedMemory();
 
 			delete[] newVertices;
 		}
@@ -259,7 +259,7 @@ namespace version_cpu
 	/// <param name="vertices">Lista pozycji początkowych sąsiadów dla danego wierzchołka.</param>
 	/// <param name="n">Liczba wierzchołków w grafie.</param>
 	/// <returns>Tablica zbiorów niezależnych.</returns>
-	int* BuildingIndependentSets_TableVersion(int* memory, int* vertices, int* offset, int n)
+	int* BuildingIndependentSets_TableVersion(int* vertices, int* offset, int n)
 	{
 		int* independentSets;
 		int** actualVertices;
@@ -289,7 +289,7 @@ namespace version_cpu
 		// Zaczynamy od 1, bo krok pierwszy wykonany wyżej.
 		for (int el = 1; el < n; el++)
 		{
-			memory[licznik++] = getUsedMemory();
+			//memory[licznik++] = getUsedMemory();
 
 			int col = el + 1;
 			int row = Combination_n_of_k(n, col);
@@ -344,7 +344,7 @@ namespace version_cpu
 
 			actualVertices = newVertices;
 
-			memory[licznik++] = getUsedMemory();
+			//memory[licznik++] = getUsedMemory();
 
 			delete[] newVertices;
 
@@ -375,13 +375,13 @@ namespace version_cpu
 	/// Parametr opcjonalny.
 	/// </param>
 	/// <returns>Licza k oznaczająca k - kolorowalność grafu, bądź wartość -1 w przypadku błędu.</returns>
-	int FindChromaticNumber(int* memoryUsage, int* vertices, int* offset, int n, int flag)
+	int FindChromaticNumber(int* vertices, int* offset, int n, int flag)
 	{
-		memoryUsage[0] = getUsedMemory();
+		//memoryUsage[0] = getUsedMemory();
 
 		int* independentSets = flag == 1 ? 
-			BuildingIndependentSets_BitVersion(memoryUsage, vertices, n) :
-			BuildingIndependentSets_TableVersion(memoryUsage, vertices, offset, n);
+			BuildingIndependentSets_BitVersion(vertices, n) :
+			BuildingIndependentSets_TableVersion(vertices, offset, n);
 
 		int PowerNumber = (1 << n);
 
@@ -395,14 +395,14 @@ namespace version_cpu
 
 			delete[] independentSets;
 
-			memoryUsage[2 * (n - 1) + 1] = getUsedMemory();
+			//memoryUsage[2 * (n - 1) + 1] = getUsedMemory();
 
 			return k;
 		}
 
 		delete[] independentSets;
 
-		memoryUsage[2 * (n - 1) + 1] = getUsedMemory();
+		//memoryUsage[2 * (n - 1) + 1] = getUsedMemory();
 
 		return -1;
 	}
