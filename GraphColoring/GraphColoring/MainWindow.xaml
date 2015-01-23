@@ -20,7 +20,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <TextBox Text="{Binding ConsoleInput, Mode=TwoWay}" Background="GhostWhite" Name="InputBlock" BorderBrush="{x:Null}" SelectionBrush="{x:Null}" Style="{StaticResource ConsoleTextBox}" TextWrapping="Wrap" />
+                <TextBox GotFocus="InputBlockGotFocus" Text="{Binding ConsoleInput, Mode=TwoWay}" Background="GhostWhite" Name="InputBlock" BorderBrush="{x:Null}" SelectionBrush="{x:Null}" Style="{StaticResource ConsoleTextBox}" TextWrapping="Wrap"  />
             </StackPanel>
         </ScrollViewer>
         <StackPanel Grid.Column="1">
@@ -45,14 +45,11 @@
             </StackPanel>
             <TextBlock Style="{StaticResource Settings}" Text="Ustawienia konsoli" MinHeight="20" TextWrapping="WrapWithOverflow" ></TextBlock>
             <StackPanel Height="20"  HorizontalAlignment="Center" Width="Auto" Orientation="Horizontal">
-                <Button Style="{StaticResource SettingsButton}" Width="90" Margin="0,0,10,0" Content="Czyść konsolę" Click="ClearLog_Click"/>
-                <Button Style="{StaticResource SettingsButton}" Width="90" Content="Utwórz plik log" Click="MakeLog_Click"/>
+                <Button Style="{StaticResource SettingsButton}" Width="60" Margin="0,0,10,0" Content="Czyść konsolę" Click="ClearLog_Click"/>
+                <Button Style="{StaticResource SettingsButton}" Width="60" Margin="0,0,10,0" Content="Utwórz plik log" Click="MakeLog_Click"/>
+                <Button Style="{StaticResource SettingsButton}" Width="60" Content="Zapisz statystyki" Click="SaveStatistics_Click"/>
             </StackPanel>
             <Button Style="{StaticResource SettingsButton}" Width="90" Content="Uruchom" Click="Run_Click"/>
         </StackPanel>
-        
-        <!--<graphColoring:CommandWindow Grid.Row="0" x:Name="ContentPanel" Style="{StaticResource ContentPanel}" Height="Auto" UseLayoutRounding="True"/>-->
-        <!--<Grid Grid.Row="1" Name="ContentPanel" Style="{StaticResource ContentPanel}" Height="Auto"/>-->
-  
     </Grid>
 </controls:MetroWindow>

@@ -59,6 +59,7 @@
     </ApplicationDefinition>
     <Compile Include="Structures\FileProcessing.cs" />
     <Compile Include="Structures\Graph.cs" />
+    <Compile Include="Structures\Statistics.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Forms.VisualStyles;
 using System.Windows.Input;
 using GraphColoring.Structures;
 using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
@@ -42,14 +45,16 @@ namespace GraphColoring
 
         readonly ConsoleContent _dc = new ConsoleContent();
 
-        private bool isFile = false;
+        private bool isFile;
+        private Statistics Stats;
 
         public MainWindow()
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;          
             DataContext = _dc;
-            _dc.Path = "Nie wybrano.";   
+            _dc.Path = "Nie wybrano.";  
+            Stats = new Statistics();
         }
 
         private void GPU(string path)
@@ -70,6 +75,8 @@ namespace GraphColoring
                 break;
             }
 
+            Stats.Add(path, 0, watch.Elapsed);     
+
             _dc.RunCommandType(0, string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", wynikk, watch.Elapsed));
 
             InputBlock.Focus();
@@ -84,6 +91,8 @@ namespace GraphColoring
             var k = FindChromaticNumber(g.Vertices, g.NeighboursCount, g.VerticesCount);
 
             watch.Stop();
+
+            Stats.Add(path, 1, watch.Elapsed);     
 
             _dc.RunCommandType(0, string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
 
@@ -100,6 +109,8 @@ namespace GraphColoring
             var k = FindChromaticNumber(g.Vertices, g.NeighboursCount, g.VerticesCount, 1);
 
             watch.Stop();
+
+            Stats.Add(path, 2, watch.Elapsed);        
 
             _dc.RunCommandType(0, string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
 
@@ -120,6 +131,11 @@ namespace GraphColoring
             _dc.RunCommand();
             InputBlock.Focus();
             ContentPanel.ScrollToBottom();
+        }
+
+        private void InputBlockGotFocus(object sender, RoutedEventArgs routedEventArgs)
+        {
+            InputBlock.CaretIndex = 3;
         }
 
         private void ChooseFile_Click(object sender, RoutedEventArgs e)
@@ -227,11 +243,33 @@ namespace GraphColoring
                 ContentPanel.ScrollToBottom();
             }
         }
+
+        private void SaveStatistics_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = @"Pliki tekstowe|*.txt",
+                Title = @"Wybierz plik do jakiego mają być zapisane statystyki."
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                Stats.SaveToFile(dialog.InitialDirectory + dialog.FileName);
+                _dc.RunCommandType(0, "Poprawnie zapisano statystyki do pliku \"" + dialog.InitialDirectory + dialog.FileName + "\"");
+            }
+            else
+            {
+                _dc.RunCommandType(0, "Nie wybrałeś żadnego pliku do zapisu pliku ze statystykami.");
+                InputBlock.Focus();
+                ContentPanel.ScrollToBottom();
+            }
+        }
     }
 
     public class ConsoleContent : INotifyPropertyChanged
     {
         private string _path;
+        private const string startLine = "Hello! Press \"help\" for command's list";
 
         public string Path
         {
@@ -244,8 +282,8 @@ namespace GraphColoring
             }
         }
 
-        string _consoleInput = string.Empty;
-        ObservableCollection<string> _consoleOutput = new ObservableCollection<string>() { "Hello!" };
+        private string _consoleInput = String.Empty;
+        ObservableCollection<string> _consoleOutput = new ObservableCollection<string>() { startLine };
 
         public string ConsoleInput
         {
@@ -275,17 +313,19 @@ namespace GraphColoring
 
         public void RunCommand()
         {
-            ConsoleOutput.Add(ConsoleInput);
+            ConsoleOutput.Add(">" + ConsoleInput);
             // do your stuff here.
             ConsoleInput = String.Empty;
         }
 
         public void RunCommandType(int type=0, string message="")
         {
+            var fullMessage = GetTimestamp(DateTime.Now) + message;
+
             switch (type)
             {
                 case 0:
-                    ConsoleOutput.Add(message);
+                    ConsoleOutput.Add(fullMessage);
                     break;
                 case 1:
                     ConsoleOutput.Clear();
@@ -294,6 +334,11 @@ namespace GraphColoring
                     File.WriteAllLines(message, ConsoleOutput.ToList());
                     break;
             }
+        }
+
+        public static String GetTimestamp(DateTime value)
+        {
+            return value.ToString("yyyy-MM-dd HH:mm:ss: ");
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

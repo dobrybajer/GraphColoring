@@ -1,10 +1,23 @@
 ﻿#include "Algorithm.h"
+#include <Windows.h>
+#include "psapi.h"
 
 /// <summary>
 /// Przestrzeń nazwy dla algorytmu kolorowania grafów w wersji CPU napisanej w języku C++.
 /// </summary>
 namespace version_cpu
 {
+	/// <summary>
+	/// Metoda zwraca aktualne zużycie pamięci RAM przez aplikację.
+	/// </summary>
+	/// <returns>Rozmiar pamięci.</returns>
+	size_t getUsedMemory()
+	{
+		PROCESS_MEMORY_COUNTERS pmc;
+		GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
+		SIZE_T physMemUsedByMe = pmc.WorkingSetSize;
+	}
+
 	/// <summary>
 	/// Szybkie podnoszenie danej liczby do podanej potęgi. Pozwala na potęgowanie liczby, której
 	/// wynik jest nie większy od rozmiaru typu INT.
@@ -349,6 +362,9 @@ namespace version_cpu
 	/// <returns>Licza k oznaczająca k - kolorowalność grafu, bądź wartość -1 w przypadku błędu.</returns>
 	int FindChromaticNumber(int* vertices, int* offset, int n, int flag)
 	{
+		size_t* memory = new size_t[2 * n + 2] ();
+		memory[0] = getUsedMemory();
+
 		int* independentSets = flag == 1 ? 
 			BuildingIndependentSets_BitVersion(vertices, n) : 
 			BuildingIndependentSets_TableVersion(vertices, offset, n);
@@ -365,10 +381,15 @@ namespace version_cpu
 
 			delete[] independentSets;
 
+			memory[2 * n + 1] = getUsedMemory();
+
 			return k;
 		}
 
 		delete[] independentSets;
+
+		memory[2 * n + 1] = getUsedMemory();
+
 		return -1;
 	}
 }
