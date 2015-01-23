@@ -15,7 +15,7 @@ namespace version_cpu
 	{
 		PROCESS_MEMORY_COUNTERS pmc;
 		GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
-		SIZE_T physMemUsedByMe = pmc.WorkingSetSize;
+		return pmc.WorkingSetSize;
 	}
 
 	/// <summary>
