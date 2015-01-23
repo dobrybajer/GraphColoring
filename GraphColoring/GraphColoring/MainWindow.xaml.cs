@@ -30,7 +30,7 @@ namespace GraphColoring
         /// <param name="flag"></param>
         /// <returns></returns>
         [DllImport("..\\..\\..\\Debug\\GraphColoringCPU.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int FindChromaticNumber(int[] pamiec, [MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int flag = 0);
+        public static extern int FindChromaticNumber([MarshalAs(UnmanagedType.LPArray)]int[] pamiec, [MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int flag = 0);
 
         /// <summary>
         /// Finds the chromatic number gpu.

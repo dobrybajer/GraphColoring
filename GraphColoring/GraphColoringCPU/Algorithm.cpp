@@ -11,11 +11,11 @@ namespace version_cpu
 	/// Metoda zwraca aktualne zużycie pamięci RAM przez aplikację.
 	/// </summary>
 	/// <returns>Rozmiar pamięci.</returns>
-	size_t getUsedMemory()
+	int getUsedMemory()
 	{
 		PROCESS_MEMORY_COUNTERS pmc;
 		GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
-		return pmc.WorkingSetSize;
+		return (int)pmc.WorkingSetSize;
 	}
 
 	/// <summary>
@@ -169,7 +169,7 @@ namespace version_cpu
 	/// </param>
 	/// <param name="n">Liczba wierzchołków w grafie.</param>
 	/// <returns>Tablica zbiorów niezależnych.</returns>
-	int* BuildingIndependentSets_BitVersion(size_t* memory, int* vertices, int n)
+	int* BuildingIndependentSets_BitVersion(int* memory, int* vertices, int n)
 	{
 		int* independentSets;
 		int* actualVertices;
@@ -259,7 +259,7 @@ namespace version_cpu
 	/// <param name="vertices">Lista pozycji początkowych sąsiadów dla danego wierzchołka.</param>
 	/// <param name="n">Liczba wierzchołków w grafie.</param>
 	/// <returns>Tablica zbiorów niezależnych.</returns>
-	int* BuildingIndependentSets_TableVersion(size_t* memory, int* vertices, int* offset, int n)
+	int* BuildingIndependentSets_TableVersion(int* memory, int* vertices, int* offset, int n)
 	{
 		int* independentSets;
 		int** actualVertices;
@@ -377,12 +377,11 @@ namespace version_cpu
 	/// <returns>Licza k oznaczająca k - kolorowalność grafu, bądź wartość -1 w przypadku błędu.</returns>
 	int FindChromaticNumber(int* memoryUsage, int* vertices, int* offset, int n, int flag)
 	{
-		size_t* memory = new size_t[2 * (n - 1) + 2] ();
-		memory[0] = getUsedMemory();
+		memoryUsage[0] = getUsedMemory();
 
 		int* independentSets = flag == 1 ? 
-			BuildingIndependentSets_BitVersion(memory, vertices, n) : 
-			BuildingIndependentSets_TableVersion(memory, vertices, offset, n);
+			BuildingIndependentSets_BitVersion(memoryUsage, vertices, n) :
+			BuildingIndependentSets_TableVersion(memoryUsage, vertices, offset, n);
 
 		int PowerNumber = (1 << n);
 
@@ -396,18 +395,14 @@ namespace version_cpu
 
 			delete[] independentSets;
 
-			memory[2 * (n - 1) + 1] = getUsedMemory();
-			memoryUsage = (int *)memory;
-			delete[] memory;
+			memoryUsage[2 * (n - 1) + 1] = getUsedMemory();
 
 			return k;
 		}
 
 		delete[] independentSets;
 
-		memory[2 * (n - 1) + 1] = getUsedMemory();
-		memoryUsage = (int *)memory;
-		delete[] memory;
+		memoryUsage[2 * (n - 1) + 1] = getUsedMemory();
 
 		return -1;
 	}
