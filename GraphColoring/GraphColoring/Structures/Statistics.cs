@@ -28,6 +28,11 @@ namespace GraphColoring.Structures
             var content = _statsList.Aggregate("", (current, g) => current + g.SaveToFile());
             File.WriteAllText(path, content);
         }
+
+        public string DisplayStats()
+        {
+            return _statsList.Aggregate("", (current, g) => current + g.SaveToFile());
+        }
     }
 
     internal class GraphStat

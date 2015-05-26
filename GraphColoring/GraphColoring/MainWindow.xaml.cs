@@ -1,17 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Forms.VisualStyles;
-using System.Windows.Input;
-using GraphColoring.Structures;
-using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Forms;
+using System.Windows.Media;
+using GraphColoring.Structures;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
+using Control = System.Windows.Controls.Control;
+using MessageBox = System.Windows.MessageBox;
+using MouseEventArgs = System.Windows.Input.MouseEventArgs;
+using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 namespace GraphColoring
 {
@@ -20,6 +20,8 @@ namespace GraphColoring
     /// </summary>
     public partial class MainWindow
     {
+        #region Definicje metod z załączonych plików DDL
+
         /// <summary>
         /// 
         /// </summary>
@@ -44,106 +46,183 @@ namespace GraphColoring
         /// <returns></returns>
         [DllImport("..\\..\\..\\Debug\\GraphColoringGPU.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int FindChromaticNumberGPU([MarshalAs(UnmanagedType.LPArray)]int[] wynik, [MarshalAs(UnmanagedType.LPArray)]int[] pamiec, [MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int allVertices);
+        
+        #endregion
 
-        readonly ConsoleContent _dc = new ConsoleContent();
+        #region Zmienne
 
-        private bool isFile;
-        private Statistics Stats;
+        /// <summary>
+        /// Zmienna przechowująca informację, czy wybrana przez użytkownika ścieżka jest ścieżką do pliku, czy do folderu. Wartość true - plik, false - folder.
+        /// </summary>
+        public bool IsFile { get; private set; }
 
+        /// <summary>
+        /// Zmienna przechowująca ścieżkę do pliku lub folderu z plikami zawierającymi reprezentację grafu. 
+        /// </summary>
+        public string GraphPath { get; private set; }
+
+        /// <summary>
+        /// Zmienna przechowująca ścieżkę do pliku z logiem, domyślnie plik z logiem znajduje się w folderze z projektem. Ścieżka względna: "/Output/Log_{DATA}.txt", gdzie parametr {DATA} to aktualna data i czas w domyślnym formacie TIMESTAMP systemu WINDOWS
+        /// </summary>
+        public string LogFile { get; private set; }
+
+        /// <summary>
+        /// Zmienna przechowująca ścieżkę do pliku ze statystykami, domyślnie plik ze statystykami znajduje się w folderze z projektem. Ścieżka względna: "/Output/Statistics_{DATA}.txt", gdzie parametr {DATA} to aktualna data i czas w domyślnym formacie TIMESTAMP systemu WINDOWS
+        /// </summary>
+        public string StatsFile { get; private set; }
+
+        /// <summary>
+        /// Zmienna przechowująca element wspólny nazwy plików w przypadku wybrania ścieżki do folderu z plikami. W przypadku podania pustej wartości wybierane są wszystkie pliki z wybranego folderu. 
+        /// </summary>
+        public string SearchPattern { get; private set; }
+
+        private readonly Statistics _stats;
+
+        #endregion
+
+        #region Konstruktor okna głównego
+        /// <summary>
+        /// Konstruktor okna głównego. Inicjalizuje dodatkowe zmienne użyte w aplikacji.
+        /// </summary>
         public MainWindow()
         {
-            InitializeComponent();
-            Loaded += MainWindow_Loaded;          
-            DataContext = _dc;
-            _dc.Path = "Nie wybrano.";  
-            Stats = new Statistics();
+            InitializeComponent();    
+            _stats = new Statistics();
+            var directory = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) + "\\Output\\";
+            LogFile = Path.Combine(directory, String.Format("Log_{0:yyyy-MM-dd hh/mm/ss}.txt", DateTime.Now));
+            StatsFile = Path.Combine(directory, "Stats_" + DateTime.Now + ".txt");
         }
+        #endregion
 
-        private void GPU(string path)
+        #region Logowanie wiadomości
+        private void WriteMessage(string message)
         {
-            var g = FileProcessing.ReadFile(path);
-            var wynik = new int[g.VerticesCount];
-            var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
-          
-            var watch = Stopwatch.StartNew();
-
-            FindChromaticNumberGPU(wynik, pamiec, g.Vertices, g.NeighboursCount, g.VerticesCount, g.AllVerticesCount);
-   
-            var wynikk = -2;
-
-            for (var i = 0; i < g.VerticesCount; i++)
+            if (!string.IsNullOrEmpty(LogFile))
             {
-                if (wynik[i] == -1 || wynik[i] == 0) continue;
-                wynikk = wynik[i] + 1;
-                break;
+                AppendToFile(message);
             }
 
-            Stats.Add(path, 0, watch.Elapsed, pamiec);     
-
-            _dc.RunCommandType(0, string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", wynikk, watch.Elapsed));
-
-            InputBlock.Focus();
-            ContentPanel.ScrollToBottom();
+            AddToOutput(message);
         }
 
-        private void CPUT(string path)
+        private void AppendToFile(string message)
         {
-            var g = FileProcessing.ReadFile(path);
-            var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
-            var watch = Stopwatch.StartNew();
-
-            var k = FindChromaticNumber(pamiec,g.Vertices, g.NeighboursCount, g.VerticesCount);
-
-            watch.Stop();
-
-            Stats.Add(path, 1, watch.Elapsed, pamiec);     
-
-            _dc.RunCommandType(0, string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
-
-            InputBlock.Focus();
-            ContentPanel.ScrollToBottom();
+            //if (!File.Exists(LogFile))
+            //{
+            //    using (var fs = File.Create(LogFile))
+            //    {
+            //        using (var sw = new StreamWriter(fs))
+            //        {
+            //            sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss > ") + message);
+            //        }
+            //    }
+            //}
+            //else
+            //{
+                //using (var fs = new FileStream(LogFile, FileMode.Append , FileAccess.Write))
+                using (var sw = new StreamWriter(LogFile, true))
+                {
+                    sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss > ") + message);
+                }
+            //}
         }
 
-        private void CPUB(string path)
+        private void AddToOutput(string message)
         {
-            var g = FileProcessing.ReadFile(path);
-            g = FileProcessing.ConvertToBitVersion(g);
-            var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
-            var watch = Stopwatch.StartNew();
-
-            var k = FindChromaticNumber(pamiec,g.Vertices, g.NeighboursCount, g.VerticesCount, 1);
-
-            watch.Stop();
-
-            Stats.Add(path, 2, watch.Elapsed, pamiec);        
-
-            _dc.RunCommandType(0, string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
-
-            InputBlock.Focus();
-            ContentPanel.ScrollToBottom();
+            ContentPanel.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss > "));
+            ContentPanel.AppendText(message+"\r\n");
+            ContentPanel.Focus();
+            ContentPanel.CaretIndex = ContentPanel.Text.Length;
+            ContentPanel.ScrollToEnd();
         }
+        #endregion
 
-        void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        #region Funkcje uruchamiające obliczanie algorytmu różnymi metodami
+        private void MethodGpu(string path)
         {
-            InputBlock.KeyDown += InputBlock_KeyDown;
-            InputBlock.Focus();
+            try
+            {
+                var g = FileProcessing.ReadFile(path);
+                var wynik = new int[g.VerticesCount];
+                var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
+
+                var watch = Stopwatch.StartNew();
+
+                FindChromaticNumberGPU(wynik, pamiec, g.Vertices, g.NeighboursCount, g.VerticesCount, g.AllVerticesCount);
+
+                var wynikk = -2;
+
+                for (var i = 0; i < g.VerticesCount; i++)
+                {
+                    if (wynik[i] == -1 || wynik[i] == 0) continue;
+                    wynikk = wynik[i] + 1;
+                    break;
+                }
+
+                watch.Stop();
+
+                _stats.Add(path, 0, watch.Elapsed, pamiec);
+
+                WriteMessage(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", wynikk, watch.Elapsed));
+            }
+            catch (Exception e)
+            {
+                WriteMessage("[GPU] Nieoczekiwany błąd, plik " + path + " nie został przetworzony\r\nKod błędu: " + e.Message);
+            }
         }
 
-        void InputBlock_KeyDown(object sender, KeyEventArgs e)
+        private void MethodTableCpu(string path)
         {
-            if (e.Key != Key.Enter) return;
-            _dc.ConsoleInput = InputBlock.Text;
-            _dc.RunCommand();
-            InputBlock.Focus();
-            ContentPanel.ScrollToBottom();
+            try
+            {
+                var g = FileProcessing.ReadFile(path);
+                var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
+
+                var watch = Stopwatch.StartNew();
+
+                var k = FindChromaticNumber(pamiec, g.Vertices, g.NeighboursCount, g.VerticesCount);
+
+                watch.Stop();
+
+                _stats.Add(path, 1, watch.Elapsed, pamiec);
+
+                WriteMessage(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
+            }
+            catch (Exception e)
+            {
+                WriteMessage("[CPU Table] Nieoczekiwany błąd, plik " + path + " nie został przetworzony\r\nKod błędu: " + e.Message);
+            }
+            
         }
 
-        private void InputBlockGotFocus(object sender, RoutedEventArgs routedEventArgs)
+        private void MethodBitCpu(string path)
         {
-            InputBlock.CaretIndex = 3;
-        }
+            try
+            {
+                var g = FileProcessing.ReadFile(path);
+                g = FileProcessing.ConvertToBitVersion(g);
+                var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
 
-        private void ChooseFile_Click(object sender, RoutedEventArgs e)
+                var watch = Stopwatch.StartNew();
+
+                var k = FindChromaticNumber(pamiec, g.Vertices, g.NeighboursCount, g.VerticesCount, 1);
+
+                watch.Stop();
+
+                _stats.Add(path, 2, watch.Elapsed, pamiec);
+
+                WriteMessage(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
+            }
+            catch (Exception e)
+            {
+                WriteMessage("[CPU Bit] Nieoczekiwany błąd, plik " + path + " nie został przetworzony\r\nKod błędu: " + e.Message);
+            }
+
+        }
+        #endregion
+
+        #region Funkcje dodatkowe odpowiadające przyciskom z menu głównego
+        private void ChooseGraphFile_Click(object sender, RoutedEventArgs e)
         {
             var openFileDialog1 = new OpenFileDialog
             {
@@ -153,50 +232,42 @@ namespace GraphColoring
 
             if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                isFile = true;
-                _dc.Path = openFileDialog1.InitialDirectory + openFileDialog1.FileName;
-                _dc.RunCommandType(0, "Ścieżka do wybranego pliku: " + _dc.Path);
-                InputBlock.Focus();
-                ContentPanel.ScrollToBottom();
+                IsFile = true;
+                GraphPath = openFileDialog1.InitialDirectory + openFileDialog1.FileName;
+                WriteMessage("Ścieżka do wybranego pliku: " + GraphPath);
             }
             else
             {
-                _dc.RunCommandType(0, "Nie wybrałeś żadnego pliku.");
-                InputBlock.Focus();
-                ContentPanel.ScrollToBottom();
+                WriteMessage("Nie wybrałeś żadnego pliku.");
             }
         }
 
-        private void ChooseFolder_Click(object sender, RoutedEventArgs e)
+        private void ChooseGraphFolder_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new System.Windows.Forms.FolderBrowserDialog();
-       
+            var dialog = new FolderBrowserDialog();
+
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                isFile = false;
-                _dc.Path = dialog.SelectedPath;
-                _dc.RunCommandType(0, "Ścieżka do wybranego folderu: " + _dc.Path);
-                InputBlock.Focus();
-                ContentPanel.ScrollToBottom();
+                IsFile = false;
+                GraphPath = dialog.SelectedPath;
+                WriteMessage("Ścieżka do wybranego folderu: " + GraphPath); 
             }
             else
             {
-                _dc.RunCommandType(0, "Nie wybrałeś żadnego folderu.");
-                InputBlock.Focus();
-                ContentPanel.ScrollToBottom();
+                WriteMessage("Nie wybrałeś żadnego folderu."); 
             }
         }
 
-        private void ClearLog_Click(object sender, RoutedEventArgs e)
+        private async void SetPattern_Click(object sender, RoutedEventArgs e)
         {
-            _dc.RunCommandType(1);
-            InputBlock.Focus();
-            ContentPanel.ScrollToBottom();
+            var dialog = await this.ShowInputAsync("Wpisz wzorzec do wyszukania odpowiednich plików w wybranym folderze.", "Rozróżniane są małe i wielkie litery.");
+            if (!string.IsNullOrEmpty(dialog))
+                SearchPattern = dialog;
         }
 
-        private void MakeLog_Click(object sender, RoutedEventArgs e)
+        private void ChooseLogFile_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new Microsoft.Win32.SaveFileDialog
+            var dialog = new SaveFileDialog
             {
                 Filter = @"Pliki tekstowe|*.txt",
                 Title = @"Wybierz plik do jakiego ma być zapisany log."
@@ -204,54 +275,18 @@ namespace GraphColoring
 
             if (dialog.ShowDialog() == true)
             {
-                _dc.RunCommandType(2, dialog.InitialDirectory + dialog.FileName);        
+                LogFile = dialog.FileName;
+                WriteMessage(dialog.InitialDirectory + dialog.FileName);
             }
             else
             {
-                _dc.RunCommandType(0, "Nie wybrałeś żadnego pliku do zapisu pliku z logiem.");
-                InputBlock.Focus();
-                ContentPanel.ScrollToBottom();
+                WriteMessage("Nie wybrałeś żadnego pliku do zapisu pliku z logiem.");
             }
         }
 
-        private void Run_Click(object sender, RoutedEventArgs e)
+        private void ChooseStatsFile_Click(object sender, RoutedEventArgs e)
         {
-            if (_dc.Path != "Nie wybrano." && (CpuT.IsChecked == true || CpuB.IsChecked == true || Gpu.IsChecked == true))
-            {
-                if (isFile)
-                {
-                    if (CpuT.IsChecked == true)
-                        CPUT(_dc.Path);
-                    if (CpuB.IsChecked == true)
-                        CPUB(_dc.Path);
-                    if (Gpu.IsChecked == true)
-                        GPU(_dc.Path);
-                }
-                else
-                {
-                    var files = Directory.GetFiles(_dc.Path, "*GraphExample*", SearchOption.TopDirectoryOnly);
-                    foreach (var f in files)
-                    {
-                        if (CpuT.IsChecked == true)
-                            CPUT(f);
-                        if (CpuB.IsChecked == true)
-                            CPUB(f);
-                        if (Gpu.IsChecked == true)
-                            GPU(f);
-                    }
-                }   
-            }
-            else
-            {
-                _dc.RunCommandType(0, "Błąd: Nie wybrano pliku, ani folderu lub nie wybrano metody algorytmu.");
-                InputBlock.Focus();
-                ContentPanel.ScrollToBottom();
-            }
-        }
-
-        private void SaveStatistics_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new Microsoft.Win32.SaveFileDialog
+            var dialog = new SaveFileDialog
             {
                 Filter = @"Pliki tekstowe|*.txt",
                 Title = @"Wybierz plik do jakiego mają być zapisane statystyki."
@@ -259,98 +294,130 @@ namespace GraphColoring
 
             if (dialog.ShowDialog() == true)
             {
-                Stats.SaveToFile(dialog.InitialDirectory + dialog.FileName);
-                _dc.RunCommandType(0, "Poprawnie zapisano statystyki do pliku \"" + dialog.InitialDirectory + dialog.FileName + "\"");
+                StatsFile = dialog.FileName;
+                WriteMessage(dialog.InitialDirectory + dialog.FileName);
             }
             else
             {
-                _dc.RunCommandType(0, "Nie wybrałeś żadnego pliku do zapisu pliku ze statystykami.");
-                InputBlock.Focus();
-                ContentPanel.ScrollToBottom();
-            }
-        }
-    }
-
-    public class ConsoleContent : INotifyPropertyChanged
-    {
-        private string _path;
-        private const string startLine = "Witaj w aplikacji slużącej do obliczania problemu kolorowania grafu!";
-
-        public string Path
-        {
-            get { return _path; }
-            set
-            {
-                if (value == _path) return;
-                _path = value;
-                OnPropertyChanged("Path");
+                WriteMessage("Nie wybrałeś żadnego pliku do zapisu pliku z logiem.");
             }
         }
 
-        private string _consoleInput = String.Empty;
-        ObservableCollection<string> _consoleOutput = new ObservableCollection<string>() { startLine };
-
-        public string ConsoleInput
+        private async void DisplaySettings_Click(object sender, RoutedEventArgs e)
         {
-            get
+            var isfile = string.IsNullOrEmpty(GraphPath) ? "Nie wybrano" : (IsFile ? "P" : "F");
+
+            var message = string.Format("{0}{1}\r\n{2}{3}\r\n{4}{5}\r\n{6}{7}\r\n{8}{9}",
+                "Ścieżka do danych z reprezentacją grafu: ", GraphPath,
+                "Wzorzec, wg którego będą wybierane pliki z folderu (jeżeli dotyczy) :", SearchPattern,
+                "Czy wybrana ścieżka wskazuje na plik (P), czy folder (F): ", isfile,
+                "Ścieżka do pliku z logiem: ", LogFile,
+                "Ścieżka do pliku ze statystykami: ", StatsFile
+                );
+
+            await this.ShowMessageAsync("Aktualne ustawienia", message);
+            WriteMessage("Aktualne ustawienia\r\n" + message);
+        }
+
+        private void DisplayStats_Click(object sender, RoutedEventArgs e)
+        {
+            WriteMessage(_stats.DisplayStats());
+        }
+        
+        private void ClearLog_Click(object sender, RoutedEventArgs e)
+        {
+            ContentPanel.Clear();
+        }
+
+        private static void PressTile(Control tile)
+        {
+            if ((string)tile.Tag == "NotPressed" || (string)tile.Tag == null)
             {
-                return _consoleInput;
+                tile.Tag = "Pressed";
+                tile.Background = new SolidColorBrush(Colors.DimGray);
             }
-            set
+            else
             {
-                _consoleInput = value;
-                OnPropertyChanged("ConsoleInput");
+                tile.Tag = "NotPressed";
+                if(tile.IsMouseDirectlyOver)
+                    tile.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#CC119EDA"));
             }
         }
 
-        public ObservableCollection<string> ConsoleOutput
+        private void AlgorithmSelection_Click(object sender, RoutedEventArgs e)
         {
-            get
-            {
-                return _consoleOutput;
-            }
-            set
-            {
-                _consoleOutput = value;
-                OnPropertyChanged("ConsoleOutput");
-            }
-        }
+            var tile = sender as Tile;
+            if (tile == null) return;
 
-        public void RunCommand()
-        {
-            ConsoleOutput.Add(">" + ConsoleInput);
-            // do your stuff here.
-            ConsoleInput = String.Empty;
-        }
-
-        public void RunCommandType(int type=0, string message="")
-        {
-            var fullMessage = GetTimestamp(DateTime.Now) + message;
-
-            switch (type)
+            switch (tile.Name)
             {
-                case 0:
-                    ConsoleOutput.Add(fullMessage);
+                case "Gpu":
+                    PressTile(tile);
                     break;
-                case 1:
-                    ConsoleOutput.Clear();
+                case "CpuT":
+                    PressTile(tile);
                     break;
-                case 2:
-                    File.WriteAllLines(message, ConsoleOutput.ToList());
+                case "CpuB":
+                    PressTile(tile);
                     break;
             }
         }
 
-        public static String GetTimestamp(DateTime value)
+        #endregion
+
+        #region Główna funkcja uruchamiająca przetwarzanie
+        private void Run_Click(object sender, RoutedEventArgs e)
         {
-            return value.ToString("yyyy-MM-dd HH:mm:ss: ");
+            if (string.IsNullOrEmpty(GraphPath))
+            {
+                WriteMessage("Błąd: Nie wybrano pliku, ani folderu z plikami zawierającymi reprezentację grafu.");
+                return;
+            }
+
+            if ((string)CpuT.Tag == "NotPressed" && (string)CpuB.Tag == "NotPressed" && (string)Gpu.Tag == "NotPressed")
+            {
+                WriteMessage("Błąd: Nie wybrano żadnego algorytmu rozwiązującego problem.");
+                return;
+            }
+
+            if (IsFile)
+            {
+                if ((string)CpuT.Tag=="Pressed")
+                    MethodTableCpu(GraphPath);
+                if ((string)CpuB.Tag == "Pressed")
+                    MethodBitCpu(GraphPath);
+                if ((string)Gpu.Tag == "Pressed")
+                    MethodGpu(GraphPath);
+            }
+            else
+            {
+                var files = Directory.GetFiles(GraphPath, "*"+SearchPattern+"*", SearchOption.TopDirectoryOnly);
+                foreach (var f in files)
+                {
+                    if ((string)CpuT.Tag == "Pressed")
+                        MethodTableCpu(f);
+                    if ((string)CpuB.Tag == "Pressed")
+                        MethodBitCpu(f);
+                    if ((string)Gpu.Tag == "Pressed")
+                        MethodGpu(f);
+                }
+            }   
+            _stats.SaveToFile(StatsFile);
+        }
+        #endregion
+
+        #region Funkcje obsługujące zdarzenia kafelków
+        private void Tile_MouseEnter(object sender, MouseEventArgs e)
+        {
+            var tile = sender as Tile;
+            if (tile != null) tile.Background = new SolidColorBrush(Colors.DimGray);
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        void OnPropertyChanged(string propertyName)
+        private void Tile_MouseLeave(object sender, MouseEventArgs e)
         {
-            if (null != PropertyChanged)
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            var tile = sender as Tile;
+            if (tile != null && (string)tile.Tag != "Pressed") tile.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#CC119EDA"));
         }
+        #endregion
     }
 }

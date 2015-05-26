@@ -2,54 +2,98 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
-                       MinHeight="600" MinWidth="800" ResizeMode="CanResizeWithGrip" Background="#FF979797" ShowIconOnTitleBar="False" ShowMaxRestoreButton="False" ShowMinButton="False" ShowTitleBar="False"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
+        MinHeight="600" MinWidth="800" ResizeMode="CanResizeWithGrip" Background="#FF44AEDE" ShowIconOnTitleBar="False" ShowMaxRestoreButton="False" ShowMinButton="False" ShowTitleBar="False"
          >
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="250"/>
         </Grid.ColumnDefinitions>
-        <ScrollViewer Name="ContentPanel" Margin="0" Background="WhiteSmoke">
-            <StackPanel>
-                <ItemsControl ItemsSource="{Binding ConsoleOutput, Mode=OneWay}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Path=.}" Style="{StaticResource ConsoleTextBlock}" TextWrapping="Wrap"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <TextBox GotFocus="InputBlockGotFocus" Text="{Binding ConsoleInput, Mode=TwoWay}" Background="GhostWhite" Name="InputBlock" BorderBrush="{x:Null}" SelectionBrush="{x:Null}" Style="{StaticResource ConsoleTextBox}" TextWrapping="Wrap"  />
-            </StackPanel>
-        </ScrollViewer>
-        <StackPanel Grid.Column="1">
-            <TextBlock Style="{StaticResource Settings}" Text="Ustawienia algorytmu" MinHeight="20" TextWrapping="WrapWithOverflow" ></TextBlock>
-            <TextBlock Style="{StaticResource Settings}" Text="Wersja algorytmu:" MinHeight="20" TextWrapping="WrapWithOverflow" ></TextBlock>
-            <StackPanel HorizontalAlignment="Left" Width="Auto" VerticalAlignment="Top" Orientation="Horizontal">
-                <Label Content="GPU"/>
-                <CheckBox Name="Gpu" VerticalContentAlignment="Center" />
-                <Label Content="CPU (Table)"/>
-                <CheckBox Name="CpuT" VerticalContentAlignment="Center" />
-                <Label Content="CPU (Bit)"/>
-                <CheckBox Name="CpuB" VerticalContentAlignment="Center" />
-             </StackPanel>
-            <TextBlock Style="{StaticResource Settings}" Text="Wybrana ścieżka (plik lub folder):" MinHeight="20" TextWrapping="WrapWithOverflow" ></TextBlock>
-            <TextBlock Style="{StaticResource Settings}" Text="{Binding Path}" MinHeight="20" TextWrapping="WrapWithOverflow" ></TextBlock>
+        
+        <Grid Background="White" Margin="5">
+            <TextBox VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" AcceptsReturn="True" Name="ContentPanel" IsReadOnly="True" BorderThickness="0">
+                <TextBox.Background>
+                    <ImageBrush ImageSource="pack://siteoforigin:,,,/Resources/logo.PNG" Opacity="0.15" Stretch="Uniform">
+                        <ImageBrush.RelativeTransform>
+                            <TransformGroup>
+                                <ScaleTransform CenterY="0.5" CenterX="0.5" ScaleX="0.5" ScaleY="0.5"/>
+                            </TransformGroup>
+                        </ImageBrush.RelativeTransform>
+                    </ImageBrush>
+                </TextBox.Background>
+            </TextBox>
+        </Grid>
 
-         
-   
-            <StackPanel Height="20"  HorizontalAlignment="Center" Width="Auto" Orientation="Horizontal">
-                <Button Style="{StaticResource SettingsButton}" Width="90" Margin="0,0,10,0" Content="Wybierz folder" Click="ChooseFolder_Click"/>
-                <Button Style="{StaticResource SettingsButton}" Width="90" Content="Wybierz plik" Click="ChooseFile_Click"/>
+        <StackPanel Grid.Column="1" Margin="5" Background="#FFF6F6F6">
+            <Border Background="#FF187197" Height="25" Margin="0,0,0,20">
+                <TextBlock Text="USTAWIENIA" Foreground="White" FontWeight="ExtraBold" HorizontalAlignment="Center" VerticalAlignment="Center" TextOptions.TextHintingMode="Animated" FontFamily="Tempus Sans ITC" />
+            </Border>
+
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,5">
+                <Line X1="0" Y1="0" X2="70" Y2="0" Stroke="LightGray" StrokeThickness="2"/>
+                <TextBlock Text="Typ algorytmu" VerticalAlignment="Center" HorizontalAlignment="Center" FontFamily="Berlin Sans FB Demi" Foreground="#FF878B8D"/>
+                <Line X1="0" Y1="0" X2="70" Y2="0" Stroke="LightGray" StrokeThickness="2"/>
+            </TextBlock>
+            
+            <StackPanel HorizontalAlignment="Center" Width="Auto" VerticalAlignment="Top" Orientation="Horizontal">
+                <controls:Tile Name="Gpu" Title="GPU" TiltFactor="2" Height="42" Click="AlgorithmSelection_Click" HorizontalContentAlignment="Center" Width="72" TitleFontSize="11" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                <controls:Tile Name="CpuT" Title="Table CPU" TiltFactor="2" Height="42" Click="AlgorithmSelection_Click" HorizontalContentAlignment="Center" Width="72" TitleFontSize="11" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                <controls:Tile Name="CpuB" Title="Bit CPU" TiltFactor="2" Height="42" Click="AlgorithmSelection_Click" HorizontalContentAlignment="Center" Width="72" TitleFontSize="11" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
             </StackPanel>
-            <TextBlock Style="{StaticResource Settings}" Text="Ustawienia konsoli" MinHeight="20" TextWrapping="WrapWithOverflow" ></TextBlock>
-            <StackPanel Height="20"  HorizontalAlignment="Center" Width="Auto" Orientation="Horizontal">
-                <Button Style="{StaticResource SettingsButton}" Width="60" Margin="0,0,10,0" Content="Czyść konsolę" Click="ClearLog_Click"/>
-                <Button Style="{StaticResource SettingsButton}" Width="60" Margin="0,0,10,0" Content="Utwórz plik log" Click="MakeLog_Click"/>
-                <Button Style="{StaticResource SettingsButton}" Width="60" Content="Zapisz statystyki" Click="SaveStatistics_Click"/>
+            <!--<TextBlock Style="{StaticResource Settings}" Text="Wybrana ścieżka (plik lub folder):" MinHeight="20" TextWrapping="WrapWithOverflow" Foreground="#FF8D1B20" ></TextBlock>
+            <TextBlock Style="{StaticResource Settings}" Text="{Binding Path}" MinHeight="20" TextWrapping="WrapWithOverflow" ></TextBlock>-->
+            <!--<Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />-->
+
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,5">
+                <Line X1="0" Y1="0" X2="67" Y2="0" Stroke="LightGray" StrokeThickness="2"/>
+                <TextBlock Text="Dane wejściowe" VerticalAlignment="Center" HorizontalAlignment="Center" FontFamily="Berlin Sans FB Demi" Foreground="#FF878B8D"/>
+                <Line X1="0" Y1="0" X2="67" Y2="0" Stroke="LightGray" StrokeThickness="2"/>
+            </TextBlock>
+
+            <StackPanel Height="100" Width="Auto" Orientation="Horizontal" HorizontalAlignment="Center">
+                <StackPanel Height="100" Width="Auto" Orientation="Vertical" HorizontalAlignment="Center">
+                    <controls:Tile Title="Plik" TiltFactor="2" Height="44" Click="ChooseGraphFile_Click" HorizontalContentAlignment="Center" Width="112" TitleFontSize="11" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                    <controls:Tile Title="Folder" TiltFactor="2" Height="44" Click="ChooseGraphFolder_Click" HorizontalContentAlignment="Center" Width="112" TitleFontSize="11" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                </StackPanel>
+                <controls:Tile Title="Wzorzec nazwy plików w folderze" TiltFactor="2" Height="100" Click="SetPattern_Click" HorizontalContentAlignment="Center" Width="112" TitleFontSize="11" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
             </StackPanel>
-            <Button Style="{StaticResource SettingsButton}" Width="90" Content="Uruchom" Click="Run_Click"/>
+
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,5">
+                <Line X1="0" Y1="0" X2="98" Y2="0" Stroke="LightGray" StrokeThickness="2"/>
+                <TextBlock Text="Pliki" VerticalAlignment="Center" HorizontalAlignment="Center" FontFamily="Berlin Sans FB Demi" Foreground="#FF878B8D"/>
+                <Line X1="0" Y1="0" X2="98" Y2="0" Stroke="LightGray" StrokeThickness="2"/>
+            </TextBlock>
+
+            <StackPanel Height="100" Width="Auto" Orientation="Horizontal" HorizontalAlignment="Center">
+                <!--<Button Style="{StaticResource SettingsButton}" Width="60" Margin="0,0,10,0" Content="Czyść konsolę" Click="ClearLog_Click"/>
+                <Button Style="{StaticResource SettingsButton}" Width="60" Margin="0,0,10,0" Content="Utwórz plik log" Click="ChooseLogFile_Click" />
+                <Button Style="{StaticResource SettingsButton}" Width="60" Content="Zapisz statystyki" Click="SaveStatistics_Click"/>-->
+                <controls:Tile Title="Plik logu" TiltFactor="2" Height="100" Click="ChooseLogFile_Click" HorizontalContentAlignment="Center" Width="112" TitleFontSize="11" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                <controls:Tile Title="Plik statystyk" TiltFactor="2" Height="100" Click="ChooseStatsFile_Click" HorizontalContentAlignment="Center" Width="112" TitleFontSize="11" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+            </StackPanel>
+
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,5">
+                <Line X1="0" Y1="0" X2="88" Y2="0" Stroke="LightGray" StrokeThickness="2"/>
+                <TextBlock Text="Konsola" VerticalAlignment="Center" HorizontalAlignment="Center" FontFamily="Berlin Sans FB Demi" Foreground="#FF878B8D"/>
+                <Line X1="0" Y1="0" X2="88" Y2="0" Stroke="LightGray" StrokeThickness="2"/>
+            </TextBlock>
+
+            <StackPanel Height="100" Width="Auto" Orientation="Horizontal" HorizontalAlignment="Center">
+                <!--<Button Style="{StaticResource SettingsButton}" Width="60" Margin="0,0,10,0" Content="Czyść konsolę" Click="ClearLog_Click"/>
+                <Button Style="{StaticResource SettingsButton}" Width="60" Margin="0,0,10,0" Content="Utwórz plik log" Click="ChooseLogFile_Click" />
+                <Button Style="{StaticResource SettingsButton}" Width="60" Content="Zapisz statystyki" Click="SaveStatistics_Click"/>-->
+                <StackPanel Height="100" Width="Auto" Orientation="Vertical" HorizontalAlignment="Center">
+                    <controls:Tile Title="Wyświetl ustawienia" TiltFactor="2" Height="44" Click="DisplaySettings_Click" HorizontalContentAlignment="Center" Width="112" TitleFontSize="11" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                    <controls:Tile Title="Wyświetl statystyki" TiltFactor="2" Height="44" Click="DisplayStats_Click" HorizontalContentAlignment="Center" Width="112" TitleFontSize="11" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                </StackPanel>
+                <controls:Tile Title="Czyść konsolę" TiltFactor="2" Height="100" Click="ClearLog_Click" HorizontalContentAlignment="Center" Width="112" TitleFontSize="11" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+            </StackPanel>
+
+            <Line X1="0" Y1="0" X2="225" Y2="0" Stroke="LightGray" StrokeThickness="2" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,13"/>
+
+            <controls:Tile Title="Uruchom" TiltFactor="2" Height="50" Click="Run_Click" HorizontalContentAlignment="Center" Width="230" TitleFontSize="11" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
         </StackPanel>
     </Grid>
 </controls:MetroWindow>
