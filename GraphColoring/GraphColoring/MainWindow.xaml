@@ -25,7 +25,7 @@
             </Border>
 
             <StackPanel Style="{StaticResource MenuOneRowSmall}">
-                <metro:Tile Title="Pomoc" Style="{StaticResource TileSmall}" Click="Help_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                <metro:Tile IsEnabled="True" Title="Pomoc" Style="{StaticResource TileSmall}" Click="Help_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
                 <metro:Tile Title="Ustawienia domyślne" Style="{StaticResource TileSmall}" Click="DefaultSettings_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
             </StackPanel>
 
@@ -66,23 +66,23 @@
 
             <StackPanel Style="{StaticResource MenuOneRowBig}">
                 <StackPanel Style="{StaticResource MenuOneRowSmallVertical}">
-                    <metro:Tile Title="Wyświetl ustawienia" Style="{StaticResource TileSmall}" Click="DisplaySettings_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                    <metro:Tile IsEnabled="True" Title="Wyświetl ustawienia" Style="{StaticResource TileSmall}" Click="DisplaySettings_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
                     <metro:Tile Title="Wyświetl statystyki" Style="{StaticResource TileSmall}" Click="DisplayStats_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
                 </StackPanel>
                 <StackPanel Style="{StaticResource MenuOneRowSmallVertical}">
-                    <metro:Tile Name="Language" Style="{StaticResource TileSmall}" Click="Language_Click" MouseEnter="Language_MouseEnter" MouseLeave="Language_MouseLeave">
+                    <metro:Tile IsEnabled="True" Name="Language" Style="{StaticResource TileSmall}" Click="Language_Click" MouseEnter="Language_MouseEnter" MouseLeave="Language_MouseLeave">
                         <metro:Tile.Background>
                             <ImageBrush ImageSource="pack://siteoforigin:,,,/Resources/Images/pl.jpg"/>
                         </metro:Tile.Background>
                     </metro:Tile>
-                    <metro:Tile Title="Czyść konsolę" Style="{StaticResource TileSmall}" Click="ClearLog_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                    <metro:Tile IsEnabled="True" Title="Czyść konsolę" Style="{StaticResource TileSmall}" Click="ClearLog_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
                 </StackPanel>
             </StackPanel>
 
             <Line Style="{StaticResource FullLine}"/>
 
             <metro:Tile Name="Start" Title="Uruchom" Style="{StaticResource TileSmall}" Width="230" Click="Run_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
-            <metro:Tile Name="Stop" Title="Przerwij" Style="{StaticResource TileSmall}" Visibility="Hidden" Width="230" Click="Stop_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+            <metro:Tile IsEnabled="True" Name="Stop" Title="Przerwij" Style="{StaticResource TileSmall}" Visibility="Hidden" Width="230" Click="Stop_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
         </StackPanel>
     </Grid>
 </metro:MetroWindow>

@@ -51,6 +51,7 @@
         <Setter Property="Foreground" Value="White" />
         <Setter Property="FontWeight" Value="ExtraBold" />
         <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="TextOptions.TextHintingMode" Value="Animated" />
         <Setter Property="FontFamily" Value="Tempus Sans ITC" />
     </Style>
@@ -82,6 +83,7 @@
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="Width" Value="112" />
         <Setter Property="TitleFontSize" Value="11" />
+        <Setter Property="IsEnabled" Value="{Binding EnabledValue}" />
     </Style>
 
     <Style x:Key="TileSmallTriple" TargetType="{x:Type controls:Tile}">
@@ -90,6 +92,7 @@
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="Width" Value="72" />
         <Setter Property="TitleFontSize" Value="11" />
+        <Setter Property="IsEnabled" Value="{Binding EnabledValue}" />
     </Style>
 
     <Style x:Key="BlockLine" TargetType="{x:Type TextBlock}">

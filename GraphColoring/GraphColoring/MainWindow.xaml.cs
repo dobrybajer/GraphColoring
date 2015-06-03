@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -27,8 +28,13 @@ namespace GraphColoring
     /// <summary>
     /// Klasa obsługująca UI i zdarzenia w nim występujące.
     /// </summary>
-    public partial class MainWindow
+    public partial class MainWindow : INotifyPropertyChanged
     {
+        // 5 TODO stworzenie statystyk graficznych na podstawie tekstowych (trudność: bardzo trudne)
+        // 2 TODO dodanie przewidywanego czasu i pamięci obliczeń (to co kiedyś w excelu wysyłałem) i dodanie do statystyk (trudność: w miarę łatwe)
+        // 3 TODO dodanie blokowania uruchomienia jeśli przewidywanie (punkt wyżej) stwierdzi że dany komputer ma za mało pamięci RAM (trudność: bardzo łatwe)
+        // 4 TODO poprawienie pliku Statistics oraz FileProcessing
+
         #region Definicje metod z załączonych plików DDL
 
         /// <summary>
@@ -131,6 +137,7 @@ namespace GraphColoring
         /// </summary>
         public string HelpDocPath { get; private set; }
 
+        private Action _cancelWork;
         private readonly Statistics _stats;
         private readonly FlowDocument _rtbContents;
 
@@ -143,6 +150,10 @@ namespace GraphColoring
         public MainWindow()
         {
             InitializeComponent();
+
+            DataContext = this;
+
+            EnabledValue = true;
 
             DllFolder = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) + Dll; 
             SetDllDirectory(DllFolder);
@@ -234,7 +245,7 @@ namespace GraphColoring
 
         #endregion
 
-        //TODO sprawdzic poprawnosc, dodać znaczniki XML
+        // 1 TODO sprawdzic poprawnosc, dodać znaczniki XML
         #region Funkcje uruchamiające obliczanie algorytmu różnymi metodami
 
         private void MethodGpu(string path, CancellationToken token)
@@ -349,7 +360,7 @@ namespace GraphColoring
 
         #endregion
 
-        //TODO: przerobić na kolor Statystyki (do przemyślenia)
+        // 6 TODO: przerobić na kolor Statystyki (do przemyślenia)
         #region Funkcje dodatkowe odpowiadające przyciskom z menu głównego
 
         /// <summary>
@@ -547,9 +558,8 @@ namespace GraphColoring
 
         #endregion
 
-        //TODO zablokować pewne opcje w async
         #region Główna funkcja uruchamiająca przetwarzanie
-        Action _cancelWork;
+        
         /// <summary>
         /// Funkcja wywoływana przez przycisk "Uruchom". Rozpoczyna obliczenie zależnie od wybranych wcześniej opcji.
         /// </summary>
@@ -569,7 +579,7 @@ namespace GraphColoring
                 return;
             }
 
-            Start.IsEnabled = false;
+            EnabledValue = !EnabledValue;
             Stop.Visibility = Visibility.Visible;
 
             try
@@ -617,7 +627,7 @@ namespace GraphColoring
                 WriteMessage(new[] {ee.Message}, new[] {_cError});
             }
 
-            Start.IsEnabled = true;
+            EnabledValue = !EnabledValue;
             Stop.Visibility = Visibility.Hidden;
             _cancelWork = null;
 
@@ -744,6 +754,38 @@ namespace GraphColoring
                 new ImageBrush { ImageSource = new BitmapImage(new Uri(ImageEn)) };
 
             tile.Opacity = 1;
+        }
+
+        #endregion
+
+        #region Obsługa zdarzenia blokującego dostępność menu podczas wykonywania obliczeń
+
+        /// <summary>
+        /// Zdarzenie implementujace interfejs INotifyPropertyChanged.
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// Funkcja wywołująca zdarzenie na zmiennej o podanej w parametrze nazwie.
+        /// </summary>
+        /// <param name="propertyName">Nazwa zmiennej.</param>
+        protected void OnPropertyChanged(string propertyName)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        private bool _isEnabled;
+
+        /// <summary>
+        /// Właściwość reagująca na zmianę wartości zmiennej na którą wskazuje.
+        /// </summary>
+        public bool EnabledValue
+        {
+            get { return _isEnabled; }
+            set { _isEnabled = value; OnPropertyChanged("EnabledValue"); }
         }
 
         #endregion
