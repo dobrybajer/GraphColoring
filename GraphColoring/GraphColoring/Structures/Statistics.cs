@@ -33,6 +33,11 @@ namespace GraphColoring.Structures
         {
             return _statsList.Aggregate("", (current, g) => current + g.SaveToFile());
         }
+
+        public bool IsEmpty()
+        {
+            return _statsList.Count == 0;
+        }
     }
 
     internal class GraphStat
@@ -156,19 +161,19 @@ namespace GraphColoring.Structures
 
             message += "Współczynnik zmiany czasu obliczeń cpu_table/gpu: ";
             if (_avgGpuTicks != -1 && _avgCpuTableTicks != -1)
-                message += string.Format("{0}" + nLine, (float)((float)_avgCpuTableTicks / (float)_avgGpuTicks));
+                message += string.Format("{0}" + nLine, _avgCpuTableTicks / (float)_avgGpuTicks);
             else
                 message += "Brak informacji." + nLine;
 
             message += "Współczynnik zmiany czasu obliczeń cpu_bit/gpu: ";
             if (_avgGpuTicks != -1 && _avgCpuBitTicks != -1)
-                message += string.Format("{0}" + nLine, (float)_avgCpuBitTicks / (float)_avgGpuTicks);
+                message += string.Format("{0}" + nLine, _avgCpuBitTicks / (float)_avgGpuTicks);
             else
                 message += "Brak informacji." + nLine;
 
             message += "Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: ";
             if (_avgCpuTableTicks != -1 && _avgCpuBitTicks != -1)
-                message += string.Format("{0}" + nLine, (float)_avgCpuTableTicks / (float)_avgCpuBitTicks);
+                message += string.Format("{0}" + nLine, _avgCpuTableTicks / (float)_avgCpuBitTicks);
             else
                 message += "Brak informacji." + nLine;
 

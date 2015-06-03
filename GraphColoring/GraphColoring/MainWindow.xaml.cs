@@ -1,20 +1,29 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Resources;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using GraphColoring.Resources.Strings;
 using GraphColoring.Structures;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
-using Control = System.Windows.Controls.Control;
-using MessageBox = System.Windows.MessageBox;
+using Application = System.Windows.Application;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
-using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
+[assembly: NeutralResourcesLanguage("pl-PL")]
 namespace GraphColoring
 {
+
     /// <summary>
     /// Klasa obsługująca UI i zdarzenia w nim występujące.
     /// </summary>
@@ -23,30 +32,66 @@ namespace GraphColoring
         #region Definicje metod z załączonych plików DDL
 
         /// <summary>
-        /// 
+        /// Zewnętrzna funkcja ustawiająca ścieżkę do folderu z plikami DLL używanymi w aplikacji.
         /// </summary>
-        /// <param name="pamiec"></param>
-        /// <param name="vertices"></param>
-        /// <param name="neighborsCount"></param>
-        /// <param name="n"></param>
-        /// <param name="flag"></param>
-        /// <returns></returns>
-        [DllImport("..\\..\\..\\Debug\\GraphColoringCPU.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int FindChromaticNumber([MarshalAs(UnmanagedType.LPArray)]int[] pamiec,[MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int flag = 0);
+        /// <param name="lpPathName">Ścieżka do folderu z plikami DLL.</param>
+        /// <returns>Wartość bool informująca o powodzeniu akcji.</returns>
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern bool SetDllDirectory(string lpPathName);
 
         /// <summary>
-        /// Finds the chromatic number gpu.
+        /// Funkcja wywołująca algorytm kolorowania grafu sekwencyjnie (z użyciem procesora CPU). Implementacja algorytmu zawarta oraz dostępna z pliku DLL.
         /// </summary>
-        /// <param name="wynik">The wynik.</param>
-        /// <param name="pamiec">Przechowuje statystyki zuzycia pamie</param>
-        /// <param name="vertices">The vertices.</param>
-        /// <param name="neighborsCount">The neighbors count.</param>
-        /// <param name="n">The n.</param>
-        /// <param name="allVertices">All vertices.</param>
-        /// <returns></returns>
-        [DllImport("..\\..\\..\\Debug\\GraphColoringGPU.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int FindChromaticNumberGPU([MarshalAs(UnmanagedType.LPArray)]int[] wynik, [MarshalAs(UnmanagedType.LPArray)]int[] pamiec, [MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int allVertices);
+        /// <param name="pamiec">Tablica przechowująca informacje o statystykach wykorzystania pamięci podczas działania algorytmu.</param>
+        /// <param name="vertices">Tablica przechowująca reprezentację grafu.</param>
+        /// <param name="neighborsCount">Tablica przechowująca informację o sąsiadach każdego wierzchołka.</param>
+        /// <param name="n">Liczba wierzchołków grafu wejściowego.</param>
+        /// <param name="flag">Flaga informująca, jaką modfikację algorytmu wywołujemy: 0 - tablicowa (domyślnie), 1 - bitowa.</param>
+        /// <returns>Liczba k oznaczająca, że dany graf jest nie więcej niż k-kolorowalny.</returns>
+        [DllImport("GraphColoringCPU.dll", CallingConvention = CallingConvention.Cdecl)]
+        static extern int FindChromaticNumber([MarshalAs(UnmanagedType.LPArray)]int[] pamiec,[MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int flag = 0);
+
+        /// <summary>
+        /// Funkcja wywołująca algorytm kolorowania grafu równolegle (z użyciem procesora GPU). Implementacja algorytmu zawarta oraz dostępna z pliku DLL.
+        /// </summary>
+        /// <param name="wynik">Wynik obliczeń zawarty w tablicy. Z niej wyciąga się końcowy wynik oznaczający kolorowalność grafu.</param>
+        /// <param name="pamiec">Tablica przechowująca informacje o statystykach wykorzystania pamięci podczas działania algorytmu.</param>
+        /// <param name="vertices">Tablica przechowująca reprezentację grafu.</param>
+        /// <param name="neighborsCount">Tablica przechowująca informację o sąsiadach każdego wierzchołka.</param>
+        /// <param name="n">Liczba wierzchołków grafu wejściowego.</param>
+        /// <param name="allVertices">Liczba wszystkich sąsiadów wszystkich wierzchołków.</param>
+        /// <returns>Liczba k oznaczająca, że dany graf jest nie więcej niż k-kolorowalny.</returns>
+        [DllImport("GraphColoringGPU.dll", CallingConvention = CallingConvention.Cdecl)]
+        static extern int FindChromaticNumberGPU([MarshalAs(UnmanagedType.LPArray)]int[] wynik, [MarshalAs(UnmanagedType.LPArray)]int[] pamiec, [MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int allVertices);
         
+        #endregion
+
+        #region Stałe
+
+        private const string Output = "\\Output\\";
+        private const string Dll = "\\DLL\\";
+        private const string Doc = "\\Doc\\Help.pdf";
+        private const string NavigateBlank = "about:blank";
+        private const string Log = "Log_";
+        private const string Stats = "Stats_";
+        private const string Type = ".txt";
+        private const string Markup = "yyyy-MM-dd HH:mm:ss > ";
+        private const string EndLine = "\r";
+        private const string PatternStar = "*";
+        private const string NotPressed = "NotPressed";
+        private const string Pressed = "Pressed";
+        private const string CheckboxPressed = "#CC119EDA";
+        private const string CulturePl = "pl-PL";
+        private const string CultureEn = "en-US";
+        private const string ImagePl = "pack://siteoforigin:,,,/Resources/Images/pl.jpg";
+        private const string ImageEn = "pack://siteoforigin:,,,/Resources/Images/en.jpg";
+        private static readonly Color TileMouseOn = Colors.DimGray;
+        private readonly Color _cNormal = Colors.DimGray;
+        private readonly Color _cPath = Colors.DodgerBlue;
+        private readonly Color _cResult = Colors.SeaGreen;
+        private readonly Color _cError = Colors.Red;
+        private readonly Color _cWarning = Colors.Orange;
+
         #endregion
 
         #region Zmienne
@@ -62,12 +107,12 @@ namespace GraphColoring
         public string GraphPath { get; private set; }
 
         /// <summary>
-        /// Zmienna przechowująca ścieżkę do pliku z logiem, domyślnie plik z logiem znajduje się w folderze z projektem. Ścieżka względna: "/Output/Log_{DATA}.txt", gdzie parametr {DATA} to aktualna data i czas w domyślnym formacie TIMESTAMP systemu WINDOWS
+        /// Zmienna przechowująca ścieżkę do pliku z logiem, domyślnie plik z logiem znajduje się w folderze z projektem. Ścieżka względna: "/Output/Log_{DATA}.txt", gdzie parametr {DATA} to aktualna data i czas w domyślnym formacie TIMESTAMP systemu WINDOWS.
         /// </summary>
         public string LogFile { get; private set; }
 
         /// <summary>
-        /// Zmienna przechowująca ścieżkę do pliku ze statystykami, domyślnie plik ze statystykami znajduje się w folderze z projektem. Ścieżka względna: "/Output/Statistics_{DATA}.txt", gdzie parametr {DATA} to aktualna data i czas w domyślnym formacie TIMESTAMP systemu WINDOWS
+        /// Zmienna przechowująca ścieżkę do pliku ze statystykami, domyślnie plik ze statystykami znajduje się w folderze z projektem. Ścieżka względna: "/Output/Statistics_{DATA}.txt", gdzie parametr {DATA} to aktualna data i czas w domyślnym formacie TIMESTAMP systemu WINDOWS.
         /// </summary>
         public string StatsFile { get; private set; }
 
@@ -76,7 +121,18 @@ namespace GraphColoring
         /// </summary>
         public string SearchPattern { get; private set; }
 
+        /// <summary>
+        /// Zmienna przechowująca ścieżkę do folderu z plikami DLL, w których zawarta jest implementacja algorytmu. 
+        /// </summary>
+        public string DllFolder { get; private set; }
+
+        /// <summary>
+        /// Zmienna przechowująca ścieżkę do pliku z instrukcją użytkownika.
+        /// </summary>
+        public string HelpDocPath { get; private set; }
+
         private readonly Statistics _stats;
+        private readonly FlowDocument _rtbContents;
 
         #endregion
 
@@ -86,69 +142,120 @@ namespace GraphColoring
         /// </summary>
         public MainWindow()
         {
-            InitializeComponent();    
+            InitializeComponent();
+
+            DllFolder = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) + Dll; 
+            SetDllDirectory(DllFolder);
+
+            HelpDocPath = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) + Doc;
+
+            var directory = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) + Output;
+            LogFile = Path.Combine(directory, String.Format("{0}{1:yyyy-MM-dd hh.mm.ss}{2}", Log, DateTime.Now, Type));
+            StatsFile = Path.Combine(directory, String.Format("{0}{1:yyyy-MM-dd hh.mm.ss}{2}", Stats, DateTime.Now, Type));
+
+            ContentPanel.Document = new FlowDocument();
+            _rtbContents = ContentPanel.Document;
+
             _stats = new Statistics();
-            var directory = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) + "\\Output\\";
-            LogFile = Path.Combine(directory, String.Format("Log_{0:yyyy-MM-dd hh/mm/ss}.txt", DateTime.Now));
-            StatsFile = Path.Combine(directory, "Stats_" + DateTime.Now + ".txt");
         }
         #endregion
 
         #region Logowanie wiadomości
-        private void WriteMessage(string message)
+
+        /// <summary>
+        /// Funkcja ogólna rozpoczynająca zapis wiadomości do konsoli oraz pliku z logiem.
+        /// </summary>
+        /// <param name="messages">Tablica przechowująca informacje (stringi) do zapisania.</param>
+        /// <param name="types">Tablica przechowująca informacje o kolorach wiadomości podanych w pierwszym parametrze, jakie pojawią się w konsoli (domyślnie wszystkie ciemnoszare).</param>
+        private void WriteMessage(IReadOnlyList<string> messages, IReadOnlyList<Color> types = null)
         {
             if (!string.IsNullOrEmpty(LogFile))
-            {
-                AppendToFile(message);
-            }
-
-            AddToOutput(message);
+                AppendToFile(messages.Aggregate((i, j) => i + j));
+            
+            AddToOutput(messages, types);
         }
 
+        /// <summary>
+        /// Funkcja ogólna rozpoczynająca zapis wiadomości do konsoli oraz pliku z logiem (wersja dla obliczeń w tle).
+        /// </summary>
+        /// <param name="messages">Tablica przechowująca informacje (stringi) do zapisania.</param>
+        /// <param name="types">Tablica przechowująca informacje o kolorach wiadomości podanych w pierwszym parametrze, jakie pojawią się w konsoli (domyślnie wszystkie ciemnoszare).</param>
+        private void WriteMessageUi(IReadOnlyList<string> messages, IReadOnlyList<Color> types = null)
+        {
+            Application.Current.Dispatcher.Invoke(() => {
+                WriteMessage(messages, types);
+            });
+        }
+
+        /// <summary>
+        /// Funkcja zapisująca wiadomości do pliku. Jeśli plik nie istnieje, zostaje automatycznie utworzony w domyślnej lokalizacji.
+        /// </summary>
+        /// <param name="message">Wiadomość w postaci string, która zostanie zapisana do pliku tekstowego.</param>
         private void AppendToFile(string message)
         {
-            //if (!File.Exists(LogFile))
-            //{
-            //    using (var fs = File.Create(LogFile))
-            //    {
-            //        using (var sw = new StreamWriter(fs))
-            //        {
-            //            sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss > ") + message);
-            //        }
-            //    }
-            //}
-            //else
-            //{
-                //using (var fs = new FileStream(LogFile, FileMode.Append , FileAccess.Write))
-                using (var sw = new StreamWriter(LogFile, true))
+            var exist = File.Exists(LogFile);
+
+            using (var sw = new StreamWriter(LogFile, true))
+            {
+                if (!exist)
                 {
-                    sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss > ") + message);
+                    sw.WriteLine(DateTime.Now.ToString(Markup) + Messages.LogFileNotExist + LogFile);
+                    AddToOutput(new[] {Messages.LogFileNotExist, LogFile}, new[] {_cNormal, _cPath});
                 }
-            //}
+                    
+                sw.WriteLine(DateTime.Now.ToString(Markup) + message);
+            }
         }
 
-        private void AddToOutput(string message)
+        /// <summary>
+        /// Funkcja zapisująca wiadomości do konsoli aplikacji.
+        /// </summary>
+        /// <param name="messages">Tablica przechowująca informacje (stringi) do zapisania.</param>
+        /// <param name="types">Tablica przechowująca informacje o kolorach wiadomości podanych w pierwszym parametrze, jakie pojawią się w konsoli (domyślnie wszystkie ciemnoszare).</param>
+        private void AddToOutput(IReadOnlyList<string> messages, IReadOnlyList<Color> types =  null)
         {
-            ContentPanel.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss > "));
-            ContentPanel.AppendText(message+"\r\n");
+            var paraMarkup = new Paragraph { Margin = new Thickness(0) };
+
+            paraMarkup.Inlines.Add(new Bold(new Run(DateTime.Now.ToString(Markup))));
+
+            for (var i = 0; i < messages.Count; ++i)
+            {
+                paraMarkup.Inlines.Add(types == null
+                    ? new Run(messages[i]) {Foreground = new SolidColorBrush(_cNormal)}
+                    : new Run(messages[i]) {Foreground = new SolidColorBrush(types[i])});
+            }
+
+            _rtbContents.Blocks.Add(paraMarkup);
+       
             ContentPanel.Focus();
-            ContentPanel.CaretIndex = ContentPanel.Text.Length;
+            ContentPanel.CaretPosition = ContentPanel.Document.ContentEnd;
             ContentPanel.ScrollToEnd();
         }
+
         #endregion
 
+        //TODO sprawdzic poprawnosc, dodać znaczniki XML
         #region Funkcje uruchamiające obliczanie algorytmu różnymi metodami
-        private void MethodGpu(string path)
+
+        private void MethodGpu(string path, CancellationToken token)
         {
             try
             {
                 var g = FileProcessing.ReadFile(path);
+                if (g == null || g.VerticesCount == 0)
+                {
+                    WriteMessage(new[] { Messages.GraphRunErrorReadingInput }, new[] { _cError });
+                    return;
+                }
+
                 var wynik = new int[g.VerticesCount];
-                var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
+                var pamiec = new int[2*(g.VerticesCount - 1) + 2];
 
                 var watch = Stopwatch.StartNew();
 
+                token.ThrowIfCancellationRequested();
                 FindChromaticNumberGPU(wynik, pamiec, g.Vertices, g.NeighboursCount, g.VerticesCount, g.AllVerticesCount);
+                token.ThrowIfCancellationRequested();
 
                 var wynikk = -2;
 
@@ -163,85 +270,118 @@ namespace GraphColoring
 
                 _stats.Add(path, 0, watch.Elapsed, pamiec);
 
-                WriteMessage(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", wynikk, watch.Elapsed));
+                WriteMessageUi(new[] { Messages.GraphRunResultPartOne, wynikk.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
             }
             catch (Exception e)
             {
-                WriteMessage("[GPU] Nieoczekiwany błąd, plik " + path + " nie został przetworzony\r\nKod błędu: " + e.Message);
+                WriteMessageUi(new[] { Messages.GraphGPU + Messages.GraphRunErrorPartOne, path, Messages.GraphRunErrorPartTwo, e.Message }, new[] { _cNormal, _cError, _cNormal, _cError });
             }
         }
 
-        private void MethodTableCpu(string path)
+        private void MethodTableCpu(string path, CancellationToken token)
         {
             try
             {
                 var g = FileProcessing.ReadFile(path);
+
+                if (g == null || g.VerticesCount == 0)
+                {
+                    WriteMessage(new[] { Messages.GraphRunErrorReadingInput }, new[] { _cError });
+                    return;
+                }
+
                 var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
 
                 var watch = Stopwatch.StartNew();
 
+                token.ThrowIfCancellationRequested();
                 var k = FindChromaticNumber(pamiec, g.Vertices, g.NeighboursCount, g.VerticesCount);
+                token.ThrowIfCancellationRequested();
 
                 watch.Stop();
 
                 _stats.Add(path, 1, watch.Elapsed, pamiec);
 
-                WriteMessage(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
+                WriteMessageUi(new[] { Messages.GraphRunResultPartOne, k.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
             }
             catch (Exception e)
             {
-                WriteMessage("[CPU Table] Nieoczekiwany błąd, plik " + path + " nie został przetworzony\r\nKod błędu: " + e.Message);
+                WriteMessageUi(new[] { Messages.GraphCPUT + Messages.GraphRunErrorPartOne, path, Messages.GraphRunErrorPartTwo, e.Message }, new[] { _cNormal, _cError, _cNormal, _cError });
             }
             
         }
 
-        private void MethodBitCpu(string path)
+        private void MethodBitCpu(string path, CancellationToken token)
         {
             try
             {
                 var g = FileProcessing.ReadFile(path);
+
+                if (g == null || g.VerticesCount == 0)
+                {
+                    WriteMessage(new[] { Messages.GraphRunErrorReadingInput }, new[] { _cError });
+                    return;
+                }
+
                 g = FileProcessing.ConvertToBitVersion(g);
+
                 var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
 
                 var watch = Stopwatch.StartNew();
 
+                token.ThrowIfCancellationRequested();
                 var k = FindChromaticNumber(pamiec, g.Vertices, g.NeighboursCount, g.VerticesCount, 1);
+                token.ThrowIfCancellationRequested();
 
                 watch.Stop();
 
                 _stats.Add(path, 2, watch.Elapsed, pamiec);
-
-                WriteMessage(string.Format("Graf jest co najwyżej {0}-kolorowalny.\nCzas obliczeń: {1}", k, watch.Elapsed));
+           
+                WriteMessageUi(new[] { Messages.GraphRunResultPartOne, k.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
+    
             }
             catch (Exception e)
             {
-                WriteMessage("[CPU Bit] Nieoczekiwany błąd, plik " + path + " nie został przetworzony\r\nKod błędu: " + e.Message);
+                WriteMessageUi(new[] { Messages.GraphCPUB + Messages.GraphRunErrorPartOne, path, Messages.GraphRunErrorPartTwo, e.Message }, new[] { _cNormal, _cError, _cNormal, _cError });
             }
 
         }
+
         #endregion
 
+        //TODO: przerobić na kolor Statystyki (do przemyślenia)
         #region Funkcje dodatkowe odpowiadające przyciskom z menu głównego
+
+        /// <summary>
+        /// Funkcja wywoływana przez przycisk "Plik". Otwiera okno dialogowe wyboru pliku, a następnie zapisuje wybrany plik do zmiennej "GraphPath". Wartość zmiennej "IsFile" ustawia na "true"
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
         private void ChooseGraphFile_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog1 = new OpenFileDialog
+            var openFileDialog = new OpenFileDialog
             {
-                Filter = @"Pliki tekstowe|*.txt",
-                Title = @"Wybierz plik tekstowy zawierający reprezentację grafu"
+                Filter = Messages.DialogChooseGraphFilter,
+                Title = Messages.DialogChooseGraphTitle
             };
 
-            if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 IsFile = true;
-                GraphPath = openFileDialog1.InitialDirectory + openFileDialog1.FileName;
-                WriteMessage("Ścieżka do wybranego pliku: " + GraphPath);
+                GraphPath = openFileDialog.InitialDirectory + openFileDialog.FileName;
+                WriteMessage(new[] {Messages.DialogChooseGraphFileResult, GraphPath}, new[] {_cNormal, _cPath});
             }
             else
             {
-                WriteMessage("Nie wybrałeś żadnego pliku.");
+                WriteMessage(new[] {Messages.DialogChooseGraphNoFile}, new[] {_cError});
             }
         }
 
+        /// <summary>
+        /// Funkcja wywoływana przez przycisk "Folder". Otwiera okno dialogowe wyboru folderu, a następnie zapisuje wybrany folder do zmiennej "GraphPath". Wartość zmiennej "IsFile" ustawia na "false"
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
         private void ChooseGraphFolder_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new FolderBrowserDialog();
@@ -250,174 +390,363 @@ namespace GraphColoring
             {
                 IsFile = false;
                 GraphPath = dialog.SelectedPath;
-                WriteMessage("Ścieżka do wybranego folderu: " + GraphPath); 
+                WriteMessage(new[] {Messages.DialogChooseGraphFolderResult, GraphPath}, new[] {_cNormal, _cPath});
             }
             else
             {
-                WriteMessage("Nie wybrałeś żadnego folderu."); 
+                WriteMessage(new[] {Messages.DialogChooseGraphNoFolder}, new[] {_cError});
             }
         }
 
+        /// <summary>
+        /// Funkcja wywoływana przez przycisk "Wybierz wzorzec nazwy plików w folderze". Otwiera okno dialogowe wprowadzania tekstu, a następnie zapisuje podany tekst do zmiennej "SearchPattern"
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
         private async void SetPattern_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = await this.ShowInputAsync("Wpisz wzorzec do wyszukania odpowiednich plików w wybranym folderze.", "Rozróżniane są małe i wielkie litery.");
+            var dialog = await this.ShowInputAsync(Messages.SetPatternTitle, Messages.SetPatternDesc);
             if (!string.IsNullOrEmpty(dialog))
+            {
                 SearchPattern = dialog;
+                WriteMessage(new[] { Messages.SetPatternResult, PatternStar+dialog+PatternStar }, new[] { _cNormal, _cPath });
+            }
+            else
+                WriteMessage(new[] {Messages.SetPatternWarning}, new[] {_cWarning});
         }
 
-        private void ChooseLogFile_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Funkcja wywoływana przez przycisk "Folder z plikami DLL". Otwiera okno dialogowe wyboru folderu, a następnie zapisuje wybrany folder do zmiennej "DllFolder"
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
+        private void SetDLLFolder_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new SaveFileDialog
-            {
-                Filter = @"Pliki tekstowe|*.txt",
-                Title = @"Wybierz plik do jakiego ma być zapisany log."
-            };
+            var dialog = new FolderBrowserDialog();
 
-            if (dialog.ShowDialog() == true)
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                LogFile = dialog.FileName;
-                WriteMessage(dialog.InitialDirectory + dialog.FileName);
+                DllFolder = dialog.SelectedPath;
+                WriteMessage(new[] { Messages.DialogChooseDLLFolder, DllFolder }, new[] { _cNormal, _cPath });
+                SetDllDirectory(DllFolder);
             }
             else
             {
-                WriteMessage("Nie wybrałeś żadnego pliku do zapisu pliku z logiem.");
+                WriteMessage(new[] { Messages.DialogChooseGraphNoFolder }, new[] { _cError });
             }
         }
 
-        private void ChooseStatsFile_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new SaveFileDialog
-            {
-                Filter = @"Pliki tekstowe|*.txt",
-                Title = @"Wybierz plik do jakiego mają być zapisane statystyki."
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                StatsFile = dialog.FileName;
-                WriteMessage(dialog.InitialDirectory + dialog.FileName);
-            }
-            else
-            {
-                WriteMessage("Nie wybrałeś żadnego pliku do zapisu pliku z logiem.");
-            }
-        }
-
+        /// <summary>
+        /// Funkcja wywoływana przez przycisk "Wyświetl ustawienia". Wypisuje w oknie dialogowym, a następnie konsoli, informacje o bieżących ustawieniach.
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
         private async void DisplaySettings_Click(object sender, RoutedEventArgs e)
         {
-            var isfile = string.IsNullOrEmpty(GraphPath) ? "Nie wybrano" : (IsFile ? "P" : "F");
+            var isfile = string.IsNullOrEmpty(GraphPath) ? Messages.SettingsBlankDefault : (IsFile ? Messages.SettingsIsFileAFile : Messages.SettingsIsFileADirectory);
+            var graphPath = string.IsNullOrEmpty(GraphPath) ? Messages.SettingsBlankDefault : GraphPath;
+            var searchPattern = string.IsNullOrEmpty(SearchPattern) ? Messages.SettingsBlankDefault : PatternStar + SearchPattern + PatternStar;
 
-            var message = string.Format("{0}{1}\r\n{2}{3}\r\n{4}{5}\r\n{6}{7}\r\n{8}{9}",
-                "Ścieżka do danych z reprezentacją grafu: ", GraphPath,
-                "Wzorzec, wg którego będą wybierane pliki z folderu (jeżeli dotyczy) :", SearchPattern,
-                "Czy wybrana ścieżka wskazuje na plik (P), czy folder (F): ", isfile,
-                "Ścieżka do pliku z logiem: ", LogFile,
-                "Ścieżka do pliku ze statystykami: ", StatsFile
-                );
+            var message = new[]
+            {
+                EndLine,
+                Messages.SettingsGraphPath, graphPath, EndLine,
+                Messages.SettingsPattern, searchPattern, EndLine,
+                Messages.SettingsIsFile, isfile, EndLine,
+                Messages.SettingsLogFilePath, LogFile, EndLine,
+                Messages.SettingsStatsFilePath, StatsFile,
+                Messages.SettingsDllPath, DllFolder
+            };
 
-            await this.ShowMessageAsync("Aktualne ustawienia", message);
-            WriteMessage("Aktualne ustawienia\r\n" + message);
+            await this.ShowMessageAsync(Messages.ActualSettings, message.Aggregate((i, j) => i + j));
+            WriteMessage(message, new[] { _cNormal, _cNormal, _cPath, _cNormal, _cNormal, _cPath, _cNormal, _cNormal, _cPath, _cNormal, _cNormal, _cPath, _cNormal, _cNormal, _cPath, _cNormal, _cPath });
         }
 
+        //TODO: przerobić na kolor
+        /// <summary>
+        /// Funkcja wywoływana przez przycisk "Wyświetl statystyki". Wypisuje zawartość pliku ze statystykami na konsolę.
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
         private void DisplayStats_Click(object sender, RoutedEventArgs e)
         {
-            WriteMessage(_stats.DisplayStats());
-        }
-        
-        private void ClearLog_Click(object sender, RoutedEventArgs e)
-        {
-            ContentPanel.Clear();
+            if (_stats.IsEmpty())
+                WriteMessage(new[] {Messages.StatsZeroRun}, new[] {_cWarning});
+            else
+                WriteMessage(new[] {_stats.DisplayStats()});
         }
 
-        private static void PressTile(Control tile)
+        /// <summary>
+        /// Funkcja wywoływana przez przycisk "Czyść konsolę". Czyści zawartość konsoli (kontrolka "RichTextBox").
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
+        private void ClearLog_Click(object sender, RoutedEventArgs e)
         {
-            if ((string)tile.Tag == "NotPressed" || (string)tile.Tag == null)
+            ContentPanel.Document.Blocks.Clear();
+        }
+
+        /// <summary>
+        /// Funkcja wywoływana przez przycisk "Pomoc". Uaktywnia kontrolkę WebBrowser i ładuje plik z pomocą. Jeśli takiego pliku nie ma wyświetla stosowny komunikat w konsoli.
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
+        private void Help_Click(object sender, RoutedEventArgs e)
+        {
+            var tile = sender as Tile;
+            if (tile == null) return;
+
+            if ((string)tile.Tag == NotPressed || (string)tile.Tag == null)
             {
-                tile.Tag = "Pressed";
-                tile.Background = new SolidColorBrush(Colors.DimGray);
+                if (!File.Exists(HelpDocPath))
+                {
+                    WriteMessage(new[] { Messages.ViewHelpNoFile }, new[] { _cError });
+                    return;
+                }
+                
+                tile.Tag = Pressed;
+                tile.Background = new SolidColorBrush(TileMouseOn);
+
+                Browser.Navigate(new Uri(HelpDocPath));
+                Browser.Visibility = Visibility.Visible;
             }
             else
             {
-                tile.Tag = "NotPressed";
-                if(tile.IsMouseDirectlyOver)
-                    tile.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#CC119EDA"));
+                tile.Tag = NotPressed;
+                if (tile.IsMouseDirectlyOver)
+                    tile.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(CheckboxPressed));
+
+                Browser.Visibility = Visibility.Hidden;
+                Browser.Navigate(NavigateBlank);
             }
         }
 
+        /// <summary>
+        /// Funkcja wywoływana przez przycisk "Ustawienia domyślne". Otwiera okno dialogowe wyboru opcji (OK/CANCEL), a następnie przywraca (bądź nie) ustawienia domyślne.
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
+        private async void DefaultSettings_Click(object sender, RoutedEventArgs e)
+        {
+            var result = await this.ShowMessageAsync(Messages.DefaultSettings, Messages.DefaultSettingsConfirmation, MessageDialogStyle.AffirmativeAndNegative);
+
+            if (result == MessageDialogResult.Affirmative)
+            {     
+                GraphPath = String.Empty;
+                SearchPattern = String.Empty;
+                DllFolder = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) + Dll;
+                SetDllDirectory(DllFolder);
+
+                WriteMessage(new[] { Messages.DefaultSettingsOK }, new[] { _cWarning });
+            }
+            else
+            {
+                WriteMessage(new[] {Messages.DefaultSettingsNOTOK}, new[] {_cWarning});
+            }
+        }
+
+        #endregion
+
+        //TODO zablokować pewne opcje w async
+        #region Główna funkcja uruchamiająca przetwarzanie
+        Action _cancelWork;
+        /// <summary>
+        /// Funkcja wywoływana przez przycisk "Uruchom". Rozpoczyna obliczenie zależnie od wybranych wcześniej opcji.
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
+        private async void Run_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(GraphPath))
+            {  
+                WriteMessage(new[]{Messages.RunNoInputData});
+                return;
+            }
+
+            if ((string)CpuT.Tag == NotPressed && (string)CpuB.Tag == NotPressed && (string)Gpu.Tag == NotPressed)
+            {
+                WriteMessage(new[]{Messages.RunNoMethod});
+                return;
+            }
+
+            Start.IsEnabled = false;
+            Stop.Visibility = Visibility.Visible;
+
+            try
+            {
+                var cancellationTokenSource = new CancellationTokenSource();
+
+                _cancelWork = () =>
+                {
+                    Stop.Visibility = Visibility.Hidden;
+                    cancellationTokenSource.Cancel();
+                };
+
+                var token = cancellationTokenSource.Token;
+
+                if (IsFile)
+                {
+                    if ((string) CpuT.Tag == Pressed)
+                        await Task.Run(() => MethodTableCpu(GraphPath, token), token);       
+                    if ((string)CpuB.Tag == Pressed)
+                        await Task.Run(() => MethodBitCpu(GraphPath, token), token);
+                    if ((string)Gpu.Tag == Pressed)
+                        await Task.Run(() => MethodGpu(GraphPath, token), token);
+                }
+                else
+                {
+                    var files = !string.IsNullOrEmpty(SearchPattern) ?
+                        Directory.GetFiles(GraphPath) :
+                        Directory.GetFiles(GraphPath, PatternStar + SearchPattern + PatternStar, SearchOption.TopDirectoryOnly);
+
+                    foreach (var f in files)
+                    {
+                        var f1 = f;
+
+                        if ((string)CpuT.Tag == Pressed)
+                            await Task.Run(() => MethodTableCpu(f1, token), token);
+                        if ((string)CpuB.Tag == Pressed)
+                            await Task.Run(() => MethodBitCpu(f1, token), token);
+                        if ((string)Gpu.Tag == Pressed)
+                            await Task.Run(() => MethodGpu(f1, token), token);
+                    }
+                }
+            }
+            catch (Exception ee)
+            {
+                WriteMessage(new[] {ee.Message}, new[] {_cError});
+            }
+
+            Start.IsEnabled = true;
+            Stop.Visibility = Visibility.Hidden;
+            _cancelWork = null;
+
+            _stats.SaveToFile(StatsFile);
+        }
+
+        /// <summary>
+        /// Funkcja wywoływana przez przycisk "Przerwij". Przerywa obliczenia rozpoczęte w osobnym wątku.
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
+        private void Stop_Click(object sender, RoutedEventArgs e)
+        {
+            if (_cancelWork != null)
+                _cancelWork();
+        }
+
+        #endregion
+
+        #region Funkcje obsługujące zdarzenia kafelków
+
+        /// <summary>
+        /// Funkcja wywoływana przez przyciski: "GPU", "Table CPU" oraz "Bit CPU". Zaznacza metody, jakie zostaną uruchomione podczas obliczeń.
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
         private void AlgorithmSelection_Click(object sender, RoutedEventArgs e)
         {
             var tile = sender as Tile;
             if (tile == null) return;
 
-            switch (tile.Name)
+            if ((string)tile.Tag == NotPressed || (string)tile.Tag == null)
             {
-                case "Gpu":
-                    PressTile(tile);
-                    break;
-                case "CpuT":
-                    PressTile(tile);
-                    break;
-                case "CpuB":
-                    PressTile(tile);
-                    break;
-            }
-        }
-
-        #endregion
-
-        #region Główna funkcja uruchamiająca przetwarzanie
-        private void Run_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(GraphPath))
-            {
-                WriteMessage("Błąd: Nie wybrano pliku, ani folderu z plikami zawierającymi reprezentację grafu.");
-                return;
-            }
-
-            if ((string)CpuT.Tag == "NotPressed" && (string)CpuB.Tag == "NotPressed" && (string)Gpu.Tag == "NotPressed")
-            {
-                WriteMessage("Błąd: Nie wybrano żadnego algorytmu rozwiązującego problem.");
-                return;
-            }
-
-            if (IsFile)
-            {
-                if ((string)CpuT.Tag=="Pressed")
-                    MethodTableCpu(GraphPath);
-                if ((string)CpuB.Tag == "Pressed")
-                    MethodBitCpu(GraphPath);
-                if ((string)Gpu.Tag == "Pressed")
-                    MethodGpu(GraphPath);
+                tile.Tag = Pressed;
+                tile.Background = new SolidColorBrush(TileMouseOn);
             }
             else
             {
-                var files = Directory.GetFiles(GraphPath, "*"+SearchPattern+"*", SearchOption.TopDirectoryOnly);
-                foreach (var f in files)
-                {
-                    if ((string)CpuT.Tag == "Pressed")
-                        MethodTableCpu(f);
-                    if ((string)CpuB.Tag == "Pressed")
-                        MethodBitCpu(f);
-                    if ((string)Gpu.Tag == "Pressed")
-                        MethodGpu(f);
-                }
-            }   
-            _stats.SaveToFile(StatsFile);
+                tile.Tag = NotPressed;
+                if (tile.IsMouseDirectlyOver)
+                    tile.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(CheckboxPressed));
+            }
         }
-        #endregion
 
-        #region Funkcje obsługujące zdarzenia kafelków
+        /// <summary>
+        /// Zdarzenie wywoływane w momencie znalezienia się kursora myszy nad dowolnym kafelkiem z menu.
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (MouseEnter).</param>
         private void Tile_MouseEnter(object sender, MouseEventArgs e)
         {
             var tile = sender as Tile;
-            if (tile != null) tile.Background = new SolidColorBrush(Colors.DimGray);
+            if (tile != null) tile.Background = new SolidColorBrush(TileMouseOn);
         }
 
+        /// <summary>
+        /// Zdarzenie wywoływane w momencie zniknięcia kursora myszy znad dowolnego kafelka z menu.
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (MouseLeave).</param>
         private void Tile_MouseLeave(object sender, MouseEventArgs e)
         {
             var tile = sender as Tile;
-            if (tile != null && (string)tile.Tag != "Pressed") tile.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#CC119EDA"));
+            if (tile != null && (string)tile.Tag != Pressed) tile.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(CheckboxPressed));
         }
+
+        /// <summary>
+        /// Funkcja wywoływana przez przycisk z obrazem flagi. Zmienia język (PL/EN) wyświetlnych komunikatów (nie zmienia języka kafelków menu).
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
+        private void Language_Click(object sender, RoutedEventArgs e)
+        {
+            var tile = sender as Tile;
+            if (Thread.CurrentThread.CurrentCulture.Name == CulturePl)
+            {
+                Thread.CurrentThread.CurrentUICulture = new CultureInfo(CultureEn);
+                Thread.CurrentThread.CurrentCulture = new CultureInfo(CultureEn);
+
+                if (tile == null) return;
+                tile.Background = new ImageBrush { ImageSource = new BitmapImage(new Uri(ImageEn)) };
+                tile.Tag = 1;
+            }
+            else
+            {
+                Thread.CurrentThread.CurrentUICulture = new CultureInfo(CulturePl);
+                Thread.CurrentThread.CurrentCulture = new CultureInfo(CulturePl);
+
+                if (tile == null) return;
+                tile.Background = new ImageBrush { ImageSource = new BitmapImage(new Uri(ImagePl)) };
+                tile.Tag = null;
+            }
+        }
+
+        /// <summary>
+        /// Zdarzenie wywoływane w momencie znalezienia się kursora myszy nad kafelkiem z obrazem flagi.
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (MouseEnter).</param>
+        private void Language_MouseEnter(object sender, MouseEventArgs e)
+        {
+            var tile = sender as Tile;
+            if (tile == null) return;
+
+            tile.Background = tile.Tag == null ?
+                new ImageBrush { ImageSource = new BitmapImage(new Uri(ImageEn)) } :
+                new ImageBrush { ImageSource = new BitmapImage(new Uri(ImagePl)) };
+
+            tile.Opacity = 0.5;
+        }
+
+        /// <summary>
+        /// Zdarzenie wywoływane w momencie znalezienia się kursora myszy nad kafelkiem z obrazem flagi.
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (MouseLeave).</param>
+        private void Language_MouseLeave(object sender, MouseEventArgs e)
+        {
+            var tile = sender as Tile;
+            if (tile == null) return;
+
+            tile.Background = Language.Tag == null ? 
+                new ImageBrush { ImageSource = new BitmapImage(new Uri(ImagePl)) } :
+                new ImageBrush { ImageSource = new BitmapImage(new Uri(ImageEn)) };
+
+            tile.Opacity = 1;
+        }
+
         #endregion
     }
+
 }

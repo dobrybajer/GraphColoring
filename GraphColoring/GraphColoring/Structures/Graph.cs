@@ -1,7 +1,4 @@
-﻿/// <summary>
-/// Przestrzeń nazw dla pliku wejściowego oraz jego przetwarzania.
-/// </summary>
-namespace GraphColoring.Structures
+﻿namespace GraphColoring.Structures
 {
     /// <summary>
     /// Publiczna klasa przechowująca informację o grafie w obiekcie.

@@ -1,7 +1,4 @@
-﻿/// <summary>
-/// Przestrzeń nazwy dla aplikacji.
-/// </summary>
-namespace GraphColoring
+﻿namespace GraphColoring
 {
     /// <summary>
     /// Interaction logic for App.xaml
