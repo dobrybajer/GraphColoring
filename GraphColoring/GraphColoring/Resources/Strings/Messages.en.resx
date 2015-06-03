@@ -1,0 +1,228 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ActualSettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="DialogChooseGraphFileResult" xml:space="preserve">
+    <value>Path to choosen file:</value>
+  </data>
+  <data name="DialogChooseGraphFilter" xml:space="preserve">
+    <value>Text files|*.txt</value>
+  </data>
+  <data name="DialogChooseGraphFolderResult" xml:space="preserve">
+    <value>Path to choosen directory:</value>
+  </data>
+  <data name="DialogChooseGraphNoFile" xml:space="preserve">
+    <value>No file selected.</value>
+  </data>
+  <data name="DialogChooseGraphNoFolder" xml:space="preserve">
+    <value>No directory selected</value>
+  </data>
+  <data name="DialogChooseGraphTitle" xml:space="preserve">
+    <value>Choose text file containing graph sttructure</value>
+  </data>
+  <data name="GraphRunErrorPartOne" xml:space="preserve">
+    <value>Unexpected error, file </value>
+  </data>
+  <data name="GraphRunErrorPartTwo" xml:space="preserve">
+    <value> has not been processed.
+Error code: </value>
+  </data>
+  <data name="GraphRunResultPartOne" xml:space="preserve">
+    <value>The graph is no more than  </value>
+  </data>
+  <data name="GraphRunResultPartTwo" xml:space="preserve">
+    <value>-colour.
+Computation time: </value>
+  </data>
+  <data name="LogFileNotExist" xml:space="preserve">
+    <value>Log file does not exist. New file was created automatically with path: </value>
+  </data>
+  <data name="RunNoInputData" xml:space="preserve">
+    <value>Error: No file or directory containing graphs representation are selected.</value>
+  </data>
+  <data name="RunNoMethod" xml:space="preserve">
+    <value>Error: No algorithm methods are selected.</value>
+  </data>
+  <data name="SetPatternDesc" xml:space="preserve">
+    <value>Are case sensitive.</value>
+  </data>
+  <data name="SetPatternResult" xml:space="preserve">
+    <value>Actual pattern for searching files in directory: </value>
+  </data>
+  <data name="SetPatternTitle" xml:space="preserve">
+    <value>Set pattern for searching particular files in a directory.</value>
+  </data>
+  <data name="SetPatternWarning" xml:space="preserve">
+    <value>Given patter is empty! If directory path is choosen, all files in it will be processed!</value>
+  </data>
+  <data name="SettingsBlankDefault" xml:space="preserve">
+    <value>Empty</value>
+  </data>
+  <data name="SettingsGraphPath" xml:space="preserve">
+    <value>Path to graph representation file: </value>
+  </data>
+  <data name="SettingsIsFile" xml:space="preserve">
+    <value>Is choosen path a file (F), or directory (D): </value>
+  </data>
+  <data name="SettingsIsFileADirectory" xml:space="preserve">
+    <value>D</value>
+  </data>
+  <data name="SettingsIsFileAFile" xml:space="preserve">
+    <value>F</value>
+  </data>
+  <data name="SettingsLogFilePath" xml:space="preserve">
+    <value>Path to log file: </value>
+  </data>
+  <data name="SettingsPattern" xml:space="preserve">
+    <value>Pattern used to search files in a directory (if applicable): </value>
+  </data>
+  <data name="SettingsStatsFilePath" xml:space="preserve">
+    <value>Path to statistics file: </value>
+  </data>
+  <data name="StatsZeroRun" xml:space="preserve">
+    <value>Current session has not started processing. Statistics file is empty.</value>
+  </data>
+  <data name="GraphRunErrorReadingInput" xml:space="preserve">
+    <value>Graph structure is not valid. Commpuation terminated.</value>
+  </data>
+  <data name="DialogChooseDLLFolder" xml:space="preserve">
+    <value>Selected folder containing DLL files: </value>
+  </data>
+  <data name="SettingsDllPath" xml:space="preserve">
+    <value>
+Path to folder with DLL files: </value>
+  </data>
+  <data name="ViewHelpNoFile" xml:space="preserve">
+    <value>Oops... help file not found :(</value>
+  </data>
+  <data name="DefaultSettings" xml:space="preserve">
+    <value>Default settings</value>
+  </data>
+  <data name="DefaultSettingsConfirmation" xml:space="preserve">
+    <value>Do you really want to restore default settings? This cannot be undone!</value>
+  </data>
+  <data name="DefaultSettingsNOTOK" xml:space="preserve">
+    <value>Restoring default settings cancelled.</value>
+  </data>
+  <data name="DefaultSettingsOK" xml:space="preserve">
+    <value>Default settings restored.</value>
+  </data>
+</root>
