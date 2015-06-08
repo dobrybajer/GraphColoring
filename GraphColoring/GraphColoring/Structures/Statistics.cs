@@ -123,19 +123,35 @@ namespace GraphColoring.Structures
 
             List<TimeSpan> times = null;
 
-            var tmp = _statsList.OrderByDescending(x => x.VerticesCount).First();
-            var processedVerticesCount = tmp.VerticesCount;
+            var processedVerticesCount = 0;
+            GraphStat tmp;
 
             switch (type)
             {
+                    
                 case 0: // GPU
-                    times = tmp.GpuTime;
+                    tmp = _statsList.OrderByDescending(y => y.VerticesCount).FirstOrDefault(x => x.GpuTime.Count != 0);
+                    if (tmp != null)
+                    {
+                        processedVerticesCount = tmp.VerticesCount;
+                        times = tmp.GpuTime;
+                    }
                     break;
                 case 1: // CPU Table
-                    times = tmp.CpuTableTime;
+                    tmp = _statsList.OrderByDescending(y => y.VerticesCount).FirstOrDefault(x => x.CpuTableTime.Count != 0);
+                    if (tmp != null)
+                    {
+                        processedVerticesCount = tmp.VerticesCount;
+                        times = tmp.CpuTableTime;
+                    }
                     break;
                 case 2: // CPU Bit
-                    times = tmp.CpuBitTime;
+                    tmp = _statsList.OrderByDescending(y => y.VerticesCount).FirstOrDefault(x => x.CpuBitTime.Count!=0);
+                    if (tmp != null)
+                    {
+                        processedVerticesCount = tmp.VerticesCount;
+                        times = tmp.CpuBitTime;
+                    }
                     break;
             }
 

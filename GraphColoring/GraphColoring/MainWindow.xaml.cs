@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -30,9 +31,9 @@ namespace GraphColoring
     /// </summary>
     public partial class MainWindow : INotifyPropertyChanged
     {
-        // 3 TODO stworzenie statystyk graficznych na podstawie tekstowych (trudność: bardzo trudne)
-        // 1 TODO dodanie do statystyk przewidywanego czasu i pamięci (trudność: w miarę łatwe)
-        // 2 TODO poprawienie pliku Statistics oraz FileProcessing
+        // 1 TODO stworzenie statystyk graficznych na podstawie tekstowych v0.5 (trudność: średnie)
+        // 2 TODO dodanie do statystyk przewidywanego czasu i pamięci (trudność: w miarę łatwe)
+        // 3 TODO poprawienie pliku Statistics oraz FileProcessing
         // 5 TODO poprawienie wiadomości w logu (konsoli)
 
         #region Definicje metod z załączonych plików DDL
@@ -151,9 +152,16 @@ namespace GraphColoring
         {
             InitializeComponent();
 
+            Chart.DataContext = new
+            {
+                Data = new ViewModel(),
+                View = this
+            };
+
             DataContext = this;
 
             EnabledValue = true;
+            VisibilityValue = Visibility.Hidden;
 
             DllFolder = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) + Dll; 
             SetDllDirectory(DllFolder);
@@ -523,16 +531,42 @@ namespace GraphColoring
         }
 
         /// <summary>
-        /// Funkcja wywoływana przez przycisk "Wyświetl statystyki". Wypisuje zawartość pliku ze statystykami na konsolę.
+        /// Funkcja wywoływana przez przycisk "Wyświetl statystyki". Wypisuje zawartość pliku ze statystykami na konsolę oraz wyświetla statystyki w postaci wykresu liniowego.
         /// </summary>
         /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
         /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
         private void DisplayStats_Click(object sender, RoutedEventArgs e)
         {
             if (_stats.IsEmpty())
+            {
                 WriteMessage(new[] {Messages.StatsZeroRun}, new[] {_cWarning});
+                return;
+            }
+
+            var tile = sender as Tile;
+            if (tile == null) return;
+
+            if (VisibilityValue == Visibility.Hidden)
+            {
+                VisibilityValue = Visibility.Visible;
+
+                tile.Tag = Pressed;
+                tile.Background = new SolidColorBrush(TileMouseOn);
+
+                ContentPanel.Visibility = Visibility.Hidden;
+            }
             else
-                WriteMessage(new[] {_stats.DisplayStats()});
+            {
+                VisibilityValue = Visibility.Hidden;
+
+                tile.Tag = NotPressed;
+                if (tile.IsMouseDirectlyOver)
+                    tile.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(CheckboxPressed));
+
+                ContentPanel.Visibility = Visibility.Visible;
+
+                WriteMessage(new[] { _stats.DisplayStats() });
+            }
         }
 
         /// <summary>
@@ -806,7 +840,7 @@ namespace GraphColoring
 
         #endregion
 
-        #region Obsługa zdarzenia blokującego dostępność menu podczas wykonywania obliczeń
+        #region Obsługa zdarzenia blokującego dostępność menu podczas wykonywania obliczeń oraz innych zależności
 
         /// <summary>
         /// Zdarzenie implementujace interfejs INotifyPropertyChanged.
@@ -826,6 +860,7 @@ namespace GraphColoring
         }
 
         private bool _isEnabled;
+        private Visibility _isVisible;
 
         /// <summary>
         /// Właściwość reagująca na zmianę wartości zmiennej na którą wskazuje.
@@ -836,7 +871,90 @@ namespace GraphColoring
             set { _isEnabled = value; OnPropertyChanged("EnabledValue"); }
         }
 
+        /// <summary>
+        /// Właściwość reagująca na zmianę wartości zmiennej na którą wskazuje.
+        /// </summary>
+        public Visibility VisibilityValue
+        {
+            get { return _isVisible; }
+            set { _isVisible = value; OnPropertyChanged("VisibilityValue"); }
+        }
+
         #endregion
     }
 
+    #region Klasy wzorca MVVM dla statystyk graficznych
+    /// <summary>
+    /// 
+    /// </summary>
+    public class Model
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public double X { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Y { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        public Model(double x, double y)
+        {
+            X = x;
+            Y = y;
+        }
+    }
+
+    // Create a ViewModel
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ViewModel
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public ObservableCollection<Model> CollectionGpu { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public ObservableCollection<Model> CollectionCput { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public ObservableCollection<Model> CollectionCpub { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public ViewModel()
+        {
+            CollectionGpu = new ObservableCollection<Model>();
+            CollectionCput = new ObservableCollection<Model>();
+            CollectionCpub = new ObservableCollection<Model>();
+            GenerateDatas();
+        }
+        private void GenerateDatas()
+        {
+            CollectionGpu.Add(new Model(0, 1));
+            CollectionGpu.Add(new Model(1, 2));
+            CollectionGpu.Add(new Model(2, 3));
+            CollectionGpu.Add(new Model(3, 4));
+
+            CollectionCput.Add(new Model(1, 2));
+            CollectionCput.Add(new Model(3, 4));
+            CollectionCput.Add(new Model(5, 6));
+            CollectionCput.Add(new Model(7, 8));
+
+            CollectionCpub.Add(new Model(-2, -1));
+            CollectionCpub.Add(new Model(-1, -2));
+            CollectionCpub.Add(new Model(-2, -3));
+            CollectionCpub.Add(new Model(-3, -4));
+        }
+    }
+    #endregion
 }

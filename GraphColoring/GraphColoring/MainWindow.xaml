@@ -5,7 +5,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Style="{StaticResource MainWindow}"
+        xmlns:sparrow="http://sparrowtoolkit.codeplex.com/wpf"
+                    Style="{StaticResource MainWindow}"
         ShowIconOnTitleBar="False" ShowMaxRestoreButton="False" ShowMinButton="False" ShowTitleBar="False">
     <Grid>
         
@@ -17,6 +18,20 @@
         <Grid Style="{StaticResource LeftPanel}">
             <WebBrowser Name="Browser" Style="{StaticResource HelpBrowser}"/>
             <RichTextBox Name="ContentPanel" Style="{StaticResource Rtb}" />
+            <sparrow:SparrowChart Name="Chart" Style="{StaticResource Chart}" Visibility="{Binding View.VisibilityValue}">
+                <sparrow:SparrowChart.XAxis>
+                    <sparrow:LinearXAxis/>
+                </sparrow:SparrowChart.XAxis>
+                <sparrow:SparrowChart.YAxis>
+                    <sparrow:LinearYAxis/>
+                </sparrow:SparrowChart.YAxis>
+                <sparrow:SparrowChart.Legend>
+                    <sparrow:Legend Header="Legend"/>
+                </sparrow:SparrowChart.Legend>
+                <sparrow:LineSeries PointsSource="{Binding Data.CollectionGpu}" XPath="X" YPath="Y" Label="GPU"/>
+                <sparrow:LineSeries PointsSource="{Binding Data.CollectionCput}" XPath="X" YPath="Y" Label="CPU Table"/>
+                <sparrow:LineSeries PointsSource="{Binding Data.CollectionCpub}" XPath="X" YPath="Y" Label="CPU Bit"/>
+            </sparrow:SparrowChart>
         </Grid>
 
         <StackPanel Grid.Column="1" Style="{StaticResource RightPanel}">
