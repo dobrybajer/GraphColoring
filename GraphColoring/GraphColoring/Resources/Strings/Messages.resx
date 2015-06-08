@@ -240,4 +240,22 @@ Czas obliczeń: </value>
   <data name="DefaultSettingsOK" xml:space="preserve">
     <value>Przywrócono ustawienia domyślne.</value>
   </data>
+  <data name="GraphRunErrorNoSpaceAvailable" xml:space="preserve">
+    <value>Nie udało się wykonać obliczeń.
+Przewidywana ilość pamięci RAM potrzebna do wykonania obliczeń: </value>
+  </data>
+  <data name="GraphRunErrorNoSpaceEndLine" xml:space="preserve">
+    <value> MB.
+Zadanie zakończone niepowodzeniem.</value>
+  </data>
+  <data name="GraphRunErrorNoSpaceRequired" xml:space="preserve">
+    <value> MB, 
+pamięć dostępna (wirtualna): </value>
+  </data>
+  <data name="GraphRunPredictTimeNoData" xml:space="preserve">
+    <value>Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.</value>
+  </data>
+  <data name="GraphRunPredictTimeStart" xml:space="preserve">
+    <value>Przewidywany czas wykonywania obliczeń: </value>
+  </data>
 </root>

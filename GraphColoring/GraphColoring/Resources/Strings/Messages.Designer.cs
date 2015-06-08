@@ -205,6 +205,36 @@ namespace GraphColoring.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nie udało się wykonać obliczeń.
+        ///Przewidywana ilość pamięci RAM potrzebna do wykonania obliczeń: .
+        /// </summary>
+        public static string GraphRunErrorNoSpaceAvailable {
+            get {
+                return ResourceManager.GetString("GraphRunErrorNoSpaceAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  MB.
+        ///Zadanie zakończone niepowodzeniem..
+        /// </summary>
+        public static string GraphRunErrorNoSpaceEndLine {
+            get {
+                return ResourceManager.GetString("GraphRunErrorNoSpaceEndLine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  MB, 
+        ///pamięć dostępna (wirtualna): .
+        /// </summary>
+        public static string GraphRunErrorNoSpaceRequired {
+            get {
+                return ResourceManager.GetString("GraphRunErrorNoSpaceRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Nieoczekiwany błąd, plik .
         /// </summary>
         public static string GraphRunErrorPartOne {
@@ -229,6 +259,24 @@ namespace GraphColoring.Resources.Strings {
         public static string GraphRunErrorReadingInput {
             get {
                 return ResourceManager.GetString("GraphRunErrorReadingInput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych..
+        /// </summary>
+        public static string GraphRunPredictTimeNoData {
+            get {
+                return ResourceManager.GetString("GraphRunPredictTimeNoData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Przewidywany czas wykonywania obliczeń: .
+        /// </summary>
+        public static string GraphRunPredictTimeStart {
+            get {
+                return ResourceManager.GetString("GraphRunPredictTimeStart", resourceCulture);
             }
         }
         

@@ -30,13 +30,13 @@ namespace GraphColoring
     /// </summary>
     public partial class MainWindow : INotifyPropertyChanged
     {
-        // 5 TODO stworzenie statystyk graficznych na podstawie tekstowych (trudność: bardzo trudne)
-        // 2 TODO dodanie przewidywanego czasu i pamięci obliczeń (to co kiedyś w excelu wysyłałem) i dodanie do statystyk (trudność: w miarę łatwe)
-        // 3 TODO dodanie blokowania uruchomienia jeśli przewidywanie (punkt wyżej) stwierdzi że dany komputer ma za mało pamięci RAM (trudność: bardzo łatwe)
-        // 4 TODO poprawienie pliku Statistics oraz FileProcessing
+        // 3 TODO stworzenie statystyk graficznych na podstawie tekstowych (trudność: bardzo trudne)
+        // 1 TODO dodanie do statystyk przewidywanego czasu i pamięci (trudność: w miarę łatwe)
+        // 2 TODO poprawienie pliku Statistics oraz FileProcessing
+        // 5 TODO poprawienie wiadomości w logu (konsoli)
 
         #region Definicje metod z załączonych plików DDL
-
+        //..\\..\\..\\..\\DLL\\
         /// <summary>
         /// Zewnętrzna funkcja ustawiająca ścieżkę do folderu z plikami DLL używanymi w aplikacji.
         /// </summary>
@@ -245,9 +245,14 @@ namespace GraphColoring
 
         #endregion
 
-        // 1 TODO sprawdzic poprawnosc, dodać znaczniki XML
+        // 4 TODO sprawdzenie czy działa wszystko dla GPU na kompie z GPU; dodanie blokowania uruchomienia (tylko dla GPU); limity pamięci wirtualnej
         #region Funkcje uruchamiające obliczanie algorytmu różnymi metodami
 
+        /// <summary>
+        /// Metoda uruchamiająca algorytm w wersji równoległej na procesorze GPU. Obliczenia wykonywane są w tle. Wykorzystuje bibliotekę GraphColoringGPU.dll
+        /// </summary>
+        /// <param name="path">Ścieżka do pliku tekstowego zawierającego reprezentację grafu.</param>
+        /// <param name="token">Token wykorzystywany do anulowania rozpoczętych w tle obliczeń.</param>
         private void MethodGpu(string path, CancellationToken token)
         {
             try
@@ -258,6 +263,12 @@ namespace GraphColoring
                     WriteMessage(new[] { Messages.GraphRunErrorReadingInput }, new[] { _cError });
                     return;
                 }
+
+                var predictedTime = _stats.PredictTime(g.VerticesCount, 0);
+                if (predictedTime.Ticks == 0)
+                    WriteMessageUi(new[] { Messages.GraphRunPredictTimeNoData }, new[] { _cWarning });
+                else
+                    WriteMessageUi(new[] { Messages.GraphRunPredictTimeStart, predictedTime.ToString() }, new[] { _cNormal, _cResult });
 
                 var wynik = new int[g.VerticesCount];
                 var pamiec = new int[2*(g.VerticesCount - 1) + 2];
@@ -279,7 +290,7 @@ namespace GraphColoring
 
                 watch.Stop();
 
-                _stats.Add(path, 0, watch.Elapsed, pamiec);
+                _stats.Add(path, g.VerticesCount, 0, watch.Elapsed, pamiec);
 
                 WriteMessageUi(new[] { Messages.GraphRunResultPartOne, wynikk.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
             }
@@ -289,6 +300,11 @@ namespace GraphColoring
             }
         }
 
+        /// <summary>
+        /// Metoda uruchamiająca algorytm w wersji synchronicznej na procesorze CPU (wersja tablicowa). Obliczenia wykonywane są w tle. Wykorzystuje bibliotekę GraphColoringGPU.dll
+        /// </summary>
+        /// <param name="path">Ścieżka do pliku tekstowego zawierającego reprezentację grafu.</param>
+        /// <param name="token">Token wykorzystywany do anulowania rozpoczętych w tle obliczeń.</param>
         private void MethodTableCpu(string path, CancellationToken token)
         {
             try
@@ -301,6 +317,21 @@ namespace GraphColoring
                     return;
                 }
 
+                var predictedSpace = _stats.PredictSpace(g.VerticesCount, 1);
+                if (predictedSpace != null)
+                {
+                    WriteMessageUi(new[] { Messages.GraphRunErrorNoSpaceAvailable, predictedSpace[0].ToString(CultureInfo.InvariantCulture), Messages.GraphRunErrorNoSpaceRequired, predictedSpace[1].ToString(CultureInfo.InvariantCulture), Messages.GraphRunErrorNoSpaceEndLine }, new[] { _cNormal, _cError, _cNormal, _cError, _cNormal });
+
+                    return;
+                }
+
+                var predictedTime = _stats.PredictTime(g.VerticesCount, 1);
+                if(predictedTime.Ticks == 0)
+                    WriteMessageUi(new[] { Messages.GraphRunPredictTimeNoData }, new[] { _cWarning });
+                else
+                    WriteMessageUi(new[] { Messages.GraphRunPredictTimeStart, predictedTime.ToString() }, new[] { _cNormal, _cResult });
+
+
                 var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
 
                 var watch = Stopwatch.StartNew();
@@ -311,7 +342,7 @@ namespace GraphColoring
 
                 watch.Stop();
 
-                _stats.Add(path, 1, watch.Elapsed, pamiec);
+                _stats.Add(path, g.VerticesCount, 1, watch.Elapsed, pamiec);
 
                 WriteMessageUi(new[] { Messages.GraphRunResultPartOne, k.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
             }
@@ -322,6 +353,11 @@ namespace GraphColoring
             
         }
 
+        /// <summary>
+        /// Metoda uruchamiająca algorytm w wersji synchronicznej na procesorze CPU (wersja bitowa). Obliczenia wykonywane są w tle. Wykorzystuje bibliotekę GraphColoringGPU.dll
+        /// </summary>
+        /// <param name="path">Ścieżka do pliku tekstowego zawierającego reprezentację grafu.</param>
+        /// <param name="token">Token wykorzystywany do anulowania rozpoczętych w tle obliczeń.</param>
         private void MethodBitCpu(string path, CancellationToken token)
         {
             try
@@ -333,6 +369,20 @@ namespace GraphColoring
                     WriteMessage(new[] { Messages.GraphRunErrorReadingInput }, new[] { _cError });
                     return;
                 }
+
+                var predictedSpace = _stats.PredictSpace(g.VerticesCount, 2);
+                if (predictedSpace != null)
+                {
+                    WriteMessageUi(new[] { Messages.GraphRunErrorNoSpaceAvailable, predictedSpace[0].ToString(CultureInfo.InvariantCulture), Messages.GraphRunErrorNoSpaceRequired, predictedSpace[1].ToString(CultureInfo.InvariantCulture), Messages.GraphRunErrorNoSpaceEndLine }, new[] { _cNormal, _cError, _cNormal, _cError, _cNormal });
+
+                    return;
+                }
+
+                var predictedTime = _stats.PredictTime(g.VerticesCount, 2);
+                if (predictedTime.Ticks == 0)
+                    WriteMessageUi(new[] { Messages.GraphRunPredictTimeNoData }, new[] { _cWarning });
+                else
+                    WriteMessageUi(new[] { Messages.GraphRunPredictTimeStart, predictedTime.ToString() }, new[] { _cNormal, _cResult });
 
                 g = FileProcessing.ConvertToBitVersion(g);
 
@@ -346,7 +396,7 @@ namespace GraphColoring
 
                 watch.Stop();
 
-                _stats.Add(path, 2, watch.Elapsed, pamiec);
+                _stats.Add(path, g.VerticesCount, 2, watch.Elapsed, pamiec);
            
                 WriteMessageUi(new[] { Messages.GraphRunResultPartOne, k.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
     
@@ -355,7 +405,6 @@ namespace GraphColoring
             {
                 WriteMessageUi(new[] { Messages.GraphCPUB + Messages.GraphRunErrorPartOne, path, Messages.GraphRunErrorPartTwo, e.Message }, new[] { _cNormal, _cError, _cNormal, _cError });
             }
-
         }
 
         #endregion
@@ -473,7 +522,6 @@ namespace GraphColoring
             WriteMessage(message, new[] { _cNormal, _cNormal, _cPath, _cNormal, _cNormal, _cPath, _cNormal, _cNormal, _cPath, _cNormal, _cNormal, _cPath, _cNormal, _cNormal, _cPath, _cNormal, _cPath });
         }
 
-        //TODO: przerobić na kolor
         /// <summary>
         /// Funkcja wywoływana przez przycisk "Wyświetl statystyki". Wypisuje zawartość pliku ze statystykami na konsolę.
         /// </summary>

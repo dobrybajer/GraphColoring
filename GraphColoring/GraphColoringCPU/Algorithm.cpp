@@ -375,7 +375,7 @@ namespace version_cpu
 	/// Parametr opcjonalny.
 	/// </param>
 	/// <returns>Licza k oznaczająca k - kolorowalność grafu, bądź wartość -1 w przypadku błędu.</returns>
-	int FindChromaticNumber(int* memoryUsage,int* vertices, int* offset, int n, int flag)
+	int FindChromaticNumber(int* memoryUsage, int* vertices, int* offset, int n, int flag)
 	{
 		memoryUsage[0] = getUsedMemory();
 

@@ -225,4 +225,22 @@ Path to folder with DLL files: </value>
   <data name="DefaultSettingsOK" xml:space="preserve">
     <value>Default settings restored.</value>
   </data>
+  <data name="GraphRunErrorNoSpaceAvailable" xml:space="preserve">
+    <value>Computation failed.
+Estimated amount of RAM needed to perform calculations: </value>
+  </data>
+  <data name="GraphRunErrorNoSpaceEndLine" xml:space="preserve">
+    <value> MB.
+Task failed.</value>
+  </data>
+  <data name="GraphRunErrorNoSpaceRequired" xml:space="preserve">
+    <value> MB, 
+space avaiable (virtual): </value>
+  </data>
+  <data name="GraphRunPredictTimeNoData" xml:space="preserve">
+    <value>Unfortunately, it was not possible to estimate the time needed to perform calculations - too little data.</value>
+  </data>
+  <data name="GraphRunPredictTimeStart" xml:space="preserve">
+    <value>Estimated calculations time: </value>
+  </data>
 </root>
