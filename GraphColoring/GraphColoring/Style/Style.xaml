@@ -135,7 +135,9 @@
     </Style>
 
     <Style x:Key="Chart" TargetType="{x:Type sparrowToolkit:SparrowChart}">
-        <!--<Setter Property="Visibility" Value="{Binding VisibilityValue}" />-->
+        <Setter Property="Visibility" Value="{Binding View.VisibilityValue}" />
+        <Setter Property="Margin" Value="5" />
+        <Setter Property="SmoothingMode" Value="AntiAlias" />
     </Style>
-
+    
 </ResourceDictionary>

@@ -1,5 +1,5 @@
 ﻿#include "Algorithm.h"
-#include <Windows.h>
+#include "Windows.h"
 #include "psapi.h"
 
 /// <summary>
@@ -15,6 +15,7 @@ namespace version_cpu
 	{
 		PROCESS_MEMORY_COUNTERS pmc;
 		GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
+
 		return (int)pmc.WorkingSetSize;
 	}
 
@@ -189,14 +190,10 @@ namespace version_cpu
 			actualVertices[i] |= (1 << i);
 		}
 
-		int licznik = 1;
-
 		// Główna funkcja tworząca tablicę licznoci zbiorów niezależnych dla wszystkich podzbiorów zbioru N-elementowego.
 		// Zaczynamy od 1, bo krok pierwszy wykonany wyżej.
 		for (int el = 1; el < n; el++)
 		{
-			memory[licznik++] = getUsedMemory();
-
 			int row = Combination_n_of_k(n, el + 1);
 
 			newVertices = new int[row]();
@@ -234,17 +231,20 @@ namespace version_cpu
 					l++;
 				}
 			}
+
+			memory[el] = getUsedMemory();
+
 			actualRow = row;
 			delete[] actualVertices;
 			actualVertices = new int[row]();
 			for (int i = 0; i < row; ++i)
 				actualVertices[i] = newVertices[i];
 
-			memory[licznik++] = getUsedMemory();
-
 			//delete[] newVertices;
 		}
 		delete[] actualVertices;
+
+		memory[n] = getUsedMemory();
 
 		return independentSets;
 	}
@@ -283,14 +283,10 @@ namespace version_cpu
 			actualVertices[i][0] = i;
 		}
 
-		int licznik = 1;
-
 		// Główna funkcja tworząca tablicę licznoci zbiorów niezależnych dla wszystkich podzbiorów zbioru N-elementowego.
 		// Zaczynamy od 1, bo krok pierwszy wykonany wyżej.
 		for (int el = 1; el < n; el++)
 		{
-			memory[licznik++] = getUsedMemory();
-
 			int col = el + 1;
 			int row = Combination_n_of_k(n, col);
 			
@@ -336,6 +332,8 @@ namespace version_cpu
 				}
 			}
 
+			memory[el] = getUsedMemory();
+
 			for (int i = 0; i < actualVerticesRowCount; ++i)
 			{
 				delete[] actualVertices[i];
@@ -343,8 +341,6 @@ namespace version_cpu
 			delete[] actualVertices;
 
 			actualVertices = newVertices;
-
-			memory[licznik++] = getUsedMemory();
 
 			//delete[] newVertices;
 
@@ -357,6 +353,8 @@ namespace version_cpu
 			delete[] actualVertices[i];
 		}
 		delete[] actualVertices;
+
+		memory[n] = getUsedMemory();
 
 		return independentSets;
 	}
@@ -395,14 +393,14 @@ namespace version_cpu
 
 			delete[] independentSets;
 
-			//memoryUsage[2 * (n - 1) + 1] = getUsedMemory();
+			memoryUsage[n + 1] = getUsedMemory();
 
 			return k;
 		}
 
 		delete[] independentSets;
 
-		//memoryUsage[2 * (n - 1) + 1] = getUsedMemory();
+		memoryUsage[n + 1] = getUsedMemory();
 
 		return -1;
 	}

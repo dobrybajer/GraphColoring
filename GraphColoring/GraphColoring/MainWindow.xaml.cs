@@ -31,10 +31,16 @@ namespace GraphColoring
     /// </summary>
     public partial class MainWindow : INotifyPropertyChanged
     {
-        // 1 TODO stworzenie statystyk graficznych na podstawie tekstowych v0.5 (trudność: średnie)
+        // 1 TODO stworzenie statystyk graficznych na podstawie tekstowych v0.8 (trudność: średnie) - zostało poprawienie pamięci oraz dodanie wykresu rozmmiar / czas
         // 2 TODO dodanie do statystyk przewidywanego czasu i pamięci (trudność: w miarę łatwe)
-        // 3 TODO poprawienie pliku Statistics oraz FileProcessing
-        // 5 TODO poprawienie wiadomości w logu (konsoli)
+        // 5 TODO poprawienie pliku Statistics oraz FileProcessing
+        // ? TODO poprawienie wiadomości w logu (konsoli)
+        // 7 TODO dodać bindingi gdzie się da
+        // 4 TODO dodać obsługę wielu wersji .NET
+        // 3 TODO sprawdzić zarządzanie folderami (automatyczne tworzenie jeśli brak)
+        // 6 TODO poprawić dwujęzyczność
+        // 2 TODO sprawdzić funkcję PredictSpace
+        // 8 TODO poprawić wykres (grafika); zamienić wartości na Style; blokowanie statystyk na czas uruchomienia
 
         #region Definicje metod z załączonych plików DDL
         //..\\..\\..\\..\\DLL\\
@@ -138,6 +144,7 @@ namespace GraphColoring
         /// </summary>
         public string HelpDocPath { get; private set; }
 
+        private readonly ViewModel _viewModel;
         private Action _cancelWork;
         private readonly Statistics _stats;
         private readonly FlowDocument _rtbContents;
@@ -150,11 +157,14 @@ namespace GraphColoring
         /// </summary>
         public MainWindow()
         {
+            
             InitializeComponent();
+
+            _viewModel = new ViewModel();
 
             Chart.DataContext = new
             {
-                Data = new ViewModel(),
+                Data = _viewModel,
                 View = this
             };
 
@@ -253,7 +263,7 @@ namespace GraphColoring
 
         #endregion
 
-        // 4 TODO sprawdzenie czy działa wszystko dla GPU na kompie z GPU; dodanie blokowania uruchomienia (tylko dla GPU); limity pamięci wirtualnej
+        // 0 TODO sprawdzenie czy działa wszystko dla GPU na kompie z GPU; dodanie blokowania uruchomienia (tylko dla GPU); limity pamięci wirtualnej
         #region Funkcje uruchamiające obliczanie algorytmu różnymi metodami
 
         /// <summary>
@@ -279,7 +289,7 @@ namespace GraphColoring
                     WriteMessageUi(new[] { Messages.GraphRunPredictTimeStart, predictedTime.ToString() }, new[] { _cNormal, _cResult });
 
                 var wynik = new int[g.VerticesCount];
-                var pamiec = new int[2*(g.VerticesCount - 1) + 2];
+                var pamiec = new int[g.VerticesCount + 2];
 
                 var watch = Stopwatch.StartNew();
 
@@ -299,6 +309,8 @@ namespace GraphColoring
                 watch.Stop();
 
                 _stats.Add(path, g.VerticesCount, 0, watch.Elapsed, pamiec);
+
+                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, 0));
 
                 WriteMessageUi(new[] { Messages.GraphRunResultPartOne, wynikk.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
             }
@@ -340,7 +352,7 @@ namespace GraphColoring
                     WriteMessageUi(new[] { Messages.GraphRunPredictTimeStart, predictedTime.ToString() }, new[] { _cNormal, _cResult });
 
 
-                var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
+                var pamiec = new int[g.VerticesCount + 2];
 
                 var watch = Stopwatch.StartNew();
 
@@ -351,6 +363,8 @@ namespace GraphColoring
                 watch.Stop();
 
                 _stats.Add(path, g.VerticesCount, 1, watch.Elapsed, pamiec);
+
+                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, 1));
 
                 WriteMessageUi(new[] { Messages.GraphRunResultPartOne, k.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
             }
@@ -394,7 +408,7 @@ namespace GraphColoring
 
                 g = FileProcessing.ConvertToBitVersion(g);
 
-                var pamiec = new int[2 * (g.VerticesCount - 1) + 2];
+                var pamiec = new int[g.VerticesCount + 2];
 
                 var watch = Stopwatch.StartNew();
 
@@ -405,6 +419,8 @@ namespace GraphColoring
                 watch.Stop();
 
                 _stats.Add(path, g.VerticesCount, 2, watch.Elapsed, pamiec);
+
+                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, 2));
            
                 WriteMessageUi(new[] { Messages.GraphRunResultPartOne, k.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
     
@@ -417,7 +433,6 @@ namespace GraphColoring
 
         #endregion
 
-        // 6 TODO: przerobić na kolor Statystyki (do przemyślenia)
         #region Funkcje dodatkowe odpowiadające przyciskom z menu głównego
 
         /// <summary>
@@ -663,6 +678,8 @@ namespace GraphColoring
 
             EnabledValue = !EnabledValue;
             Stop.Visibility = Visibility.Visible;
+            //VisibilityValue = Visibility.Hidden;
+            //ContentPanel.Visibility = Visibility.Visible;
 
             try
             {
@@ -678,6 +695,8 @@ namespace GraphColoring
 
                 if (IsFile)
                 {
+                    _viewModel.ClearChart();
+
                     if ((string) CpuT.Tag == Pressed)
                         await Task.Run(() => MethodTableCpu(GraphPath, token), token);       
                     if ((string)CpuB.Tag == Pressed)
@@ -693,6 +712,7 @@ namespace GraphColoring
 
                     foreach (var f in files)
                     {
+                        _viewModel.ClearChart();
                         var f1 = f;
 
                         if ((string)CpuT.Tag == Pressed)
@@ -702,7 +722,7 @@ namespace GraphColoring
                         if ((string)Gpu.Tag == Pressed)
                             await Task.Run(() => MethodGpu(f1, token), token);
                     }
-                }
+                }            
             }
             catch (Exception ee)
             {
@@ -712,7 +732,7 @@ namespace GraphColoring
             EnabledValue = !EnabledValue;
             Stop.Visibility = Visibility.Hidden;
             _cancelWork = null;
-
+      
             _stats.SaveToFile(StatsFile);
         }
 
@@ -885,76 +905,194 @@ namespace GraphColoring
 
     #region Klasy wzorca MVVM dla statystyk graficznych
     /// <summary>
-    /// 
+    /// Klasa zawierająca model jednego punktu na wykresie zależności wykorzystanej pamięci od iteracji w jakiej znajdują się obliczenia. Liczba iteracji to liczba wierzchołków + 1
     /// </summary>
-    public class Model
+    public class SpaceModel
     {
         /// <summary>
-        /// 
+        /// Współrzędna składowa osi X wykresu - reprezentuje iterację w jakiej znajduje się obliczenie
         /// </summary>
         public double X { get; set; }
         /// <summary>
-        /// 
+        /// Współrzędna składowa osi Y wykresu - reprezentuje wykorzystaną pamięć RAM w danej iteracji obliczeń
         /// </summary>
         public double Y { get; set; }
 
         /// <summary>
-        /// 
+        /// Domyślny konstruktor. Wsółrzędną X zaokrągla do maksymalnie 3 miejsc po przecinku.
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        public Model(double x, double y)
+        /// <param name="x">Iteracja w jakiej znajduje się obliczenie.</param>
+        /// <param name="y">Wartość użytej pamięci na potrzeby obliczeń algorytmu w danej chwili.</param>
+        public SpaceModel(double x, double y)
         {
             X = x;
-            Y = y;
+            Y = Math.Round(y, 2);
         }
     }
 
-    // Create a ViewModel
     /// <summary>
-    /// 
+    /// Klasa łącząca model danych z wykresem. Odpowiada za aktualizację wykresu na podstawie przekazanych danych.
     /// </summary>
     public class ViewModel
     {
+        #region Stałe reprezentujące konkretne wartości
+
+        private const double ToMb = 1048576;
+
+        #endregion
+
+        #region Zmienne reprezentuujące konkretne linie na wykresie.
         /// <summary>
-        /// 
+        /// Zmienna reprezentująca zależność wykorzystanej pamięci od iteracji obliczenia dla algorytmu GPU.
         /// </summary>
-        public ObservableCollection<Model> CollectionGpu { get; set; }
+        public ObservableCollection<SpaceModel> CollectionGpu { get; set; }
+
         /// <summary>
-        /// 
+        /// Zmienna reprezentująca zależność wykorzystanej pamięci od iteracji obliczenia dla algorytmu CPU w wersji tablicowej.
         /// </summary>
-        public ObservableCollection<Model> CollectionCput { get; set; }
+        public ObservableCollection<SpaceModel> CollectionCput { get; set; }
+
         /// <summary>
-        /// 
+        /// Zmienna reprezentująca zależność wykorzystanej pamięci od iteracji obliczenia dla algorytmu CPU w wersji bitowej.
         /// </summary>
-        public ObservableCollection<Model> CollectionCpub { get; set; }
+        public ObservableCollection<SpaceModel> CollectionCpub { get; set; }
+
         /// <summary>
-        /// 
+        /// Zmienna reprezentująca przewidywaną zależność wykorzystanej pamięci od iteracji obliczenia dla algorytmu GPU.
+        /// </summary>
+        public ObservableCollection<SpaceModel> CollectionGpuPredict { get; set; }
+        /// <summary>
+        /// Zmienna reprezentująca przewidywaną zależność wykorzystanej pamięci od iteracji obliczenia dla algorytmu CPU w wersji tablicowej.
+        /// </summary>
+        public ObservableCollection<SpaceModel> CollectionCputPredict { get; set; }
+        /// <summary>
+        /// Zmienna reprezentująca przewidywaną zależność wykorzystanej pamięci od iteracji obliczenia dla algorytmu CPU w wersji bitowej.
+        /// </summary>
+        public ObservableCollection<SpaceModel> CollectionCpubPredict { get; set; }
+        #endregion
+
+        #region Konsruktor
+        /// <summary>
+        /// Domyślny konstruktor. Inicjalizuje wszystkie zmienne.
         /// </summary>
         public ViewModel()
         {
-            CollectionGpu = new ObservableCollection<Model>();
-            CollectionCput = new ObservableCollection<Model>();
-            CollectionCpub = new ObservableCollection<Model>();
-            GenerateDatas();
+            CollectionGpu = new ObservableCollection<SpaceModel>();
+            CollectionCput = new ObservableCollection<SpaceModel>();
+            CollectionCpub = new ObservableCollection<SpaceModel>();
+
+            CollectionGpuPredict = new ObservableCollection<SpaceModel>();
+            CollectionCputPredict = new ObservableCollection<SpaceModel>();
+            CollectionCpubPredict = new ObservableCollection<SpaceModel>();
         }
-        private void GenerateDatas()
+        #endregion
+
+        #region Metody główne zarządzające danymi na wykresie
+        /// <summary>
+        /// Metoda dodająca dane do zmiennych przechowujących informację liniach wykresu.
+        /// </summary>
+        /// <param name="pamiec">Tablica przechowująca informację o użytej pamięci w poszczególnych iteracjach algorytmu.</param>
+        /// <param name="type">Typ algorytmu wywołującego daną metodę.</param>
+        public void AddData(int[] pamiec, int type)
         {
-            CollectionGpu.Add(new Model(0, 1));
-            CollectionGpu.Add(new Model(1, 2));
-            CollectionGpu.Add(new Model(2, 3));
-            CollectionGpu.Add(new Model(3, 4));
+            var predictSpace = PredictSpace(pamiec.Length - 2, type).ToArray();
 
-            CollectionCput.Add(new Model(1, 2));
-            CollectionCput.Add(new Model(3, 4));
-            CollectionCput.Add(new Model(5, 6));
-            CollectionCput.Add(new Model(7, 8));
+            var first = pamiec[0];
 
-            CollectionCpub.Add(new Model(-2, -1));
-            CollectionCpub.Add(new Model(-1, -2));
-            CollectionCpub.Add(new Model(-2, -3));
-            CollectionCpub.Add(new Model(-3, -4));
+            for (var i = 1; i < pamiec.Length; ++i)
+            {
+                switch (type)
+                {
+                    case 0:
+                        CollectionGpu.Add(new SpaceModel(i - 1, (pamiec[i] - first) / ToMb));
+                        CollectionGpuPredict.Add(new SpaceModel(i - 1, predictSpace[i]));
+                        break;
+                    case 1:
+                        CollectionCput.Add(new SpaceModel(i - 1, (pamiec[i] - first) / ToMb));
+                        CollectionCputPredict.Add(new SpaceModel(i - 1, predictSpace[i]));
+                        break;
+                    case 2:
+                        CollectionCpub.Add(new SpaceModel(i - 1, (pamiec[i] - first) / ToMb));
+                        CollectionCpubPredict.Add(new SpaceModel(i - 1, predictSpace[i]));
+                        break;
+                }
+            }
         }
+
+        /// <summary>
+        /// Czyszczenie wykresu.
+        /// </summary>
+        public void ClearChart()
+        {
+            CollectionGpu.Clear();
+            CollectionCput.Clear();
+            CollectionCpub.Clear();
+
+            CollectionGpuPredict.Clear();
+            CollectionCputPredict.Clear();
+            CollectionCpubPredict.Clear();
+        }
+        #endregion
+
+        #region Metody pomocnicze (statyczne)
+        /// <summary>
+        /// Metoda obliczająca przewidywane wykorzystanie pamięci dla każdej iteracji algorytmu w zależności od wybranej metody.
+        /// </summary>
+        /// <param name="n">Liczba wierzchołków grafu wejściowego.</param>
+        /// <param name="type">Typ metody algorytmu wywołującej daną metodę.</param>
+        /// <returns>Tablica przechowująca informację o przewidywanym użyciu pamięci w poszczególnych iteracjach algorytmu.</returns>
+        private static IEnumerable<double> PredictSpace(int n, int type)
+        {
+            var powerNumber = (1 << n) / ToMb * sizeof (int);
+            var tmp = new double[n + 2];
+            tmp[0] = tmp[n + 1] = 0;
+            tmp[n] = powerNumber;
+
+            for (var i = 1; i < n; ++i)
+            {
+                var actualVertices = Combination_n_of_k((ulong) n, (ulong) i);
+                var newVertices = Combination_n_of_k((ulong) n, (ulong) i + 1);
+
+                switch (type)
+                {
+                    case 0: // GPU
+                        tmp[i] = powerNumber + ((int)(actualVertices + 1) * i + (int)newVertices * (i + 1)) / ToMb * sizeof(int);
+                        break;
+                    case 1: // CPU Table
+                        tmp[i] = powerNumber + ((int)actualVertices * i + (int)newVertices * (i + 1)) / ToMb * sizeof(int);
+                        break;
+                    case 2: // CPU Bit
+                        tmp[i] = powerNumber + (actualVertices + newVertices) / ToMb * sizeof(int);
+                        break;
+                }
+            }
+
+            return tmp;
+        }
+
+        /// <summary>
+        /// Funckja obliczająca liczbę kombinacji bez powtórzeń liczby n z liczby k.
+        /// </summary>
+        /// <param name="n">Górna liczba w Dwumianie Newtona.</param>
+        /// <param name="k">Dolna liczba w Dwumianie Newtona.</param>
+        /// <returns>Liczba kombinacji.</returns>
+        private static ulong Combination_n_of_k(ulong n, ulong k)
+        {
+            if (k > n) return 0;
+            if (k == 0 || k == n) return 1;
+
+            if (k * 2 > n) k = n - k;
+
+            ulong r = 1;
+            for (ulong d = 1; d <= k; ++d)
+            {
+                r *= n--;
+                r /= d;
+            }
+            return r;
+        }
+
+        #endregion
     }
     #endregion
 }

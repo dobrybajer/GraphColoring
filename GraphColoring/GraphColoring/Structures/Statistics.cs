@@ -167,7 +167,7 @@ namespace GraphColoring.Structures
         /// <param name="n">Górna liczba w Dwumianie Newtona.</param>
         /// <param name="k">Dolna liczba w Dwumianie Newtona.</param>
         /// <returns>Liczba kombinacji.</returns>
-        static ulong Combination_n_of_k(ulong n, ulong k)
+        public static ulong Combination_n_of_k(ulong n, ulong k)
 	    {
 		    if (k > n) return 0;
 		    if (k == 0 || k == n) return 1;
