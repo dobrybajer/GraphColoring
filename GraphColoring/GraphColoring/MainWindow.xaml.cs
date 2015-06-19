@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -14,13 +12,13 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using GraphColoring.Resources.Strings;
 using GraphColoring.Structures;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using Application = System.Windows.Application;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
+//using System.Windows.Media.Imaging;
 
 [assembly: NeutralResourcesLanguage("pl-PL")]
 namespace GraphColoring
@@ -29,21 +27,17 @@ namespace GraphColoring
     /// <summary>
     /// Klasa obsługująca UI i zdarzenia w nim występujące.
     /// </summary>
-    public partial class MainWindow : INotifyPropertyChanged
+    public partial class MainWindow
     {
-        // 1 TODO stworzenie statystyk graficznych na podstawie tekstowych v0.8 (trudność: średnie) - zostało poprawienie pamięci oraz dodanie wykresu rozmmiar / czas
-        // 2 TODO dodanie do statystyk przewidywanego czasu i pamięci (trudność: w miarę łatwe)
-        // 5 TODO poprawienie pliku Statistics oraz FileProcessing
-        // ? TODO poprawienie wiadomości w logu (konsoli)
-        // 7 TODO dodać bindingi gdzie się da
-        // 4 TODO dodać obsługę wielu wersji .NET
-        // 3 TODO sprawdzić zarządzanie folderami (automatyczne tworzenie jeśli brak)
-        // 6 TODO poprawić dwujęzyczność
-        // 2 TODO sprawdzić funkcję PredictSpace
-        // 8 TODO poprawić wykres (grafika); zamienić wartości na Style; blokowanie statystyk na czas uruchomienia
+        // ? TODO dodać obsługę wielu wersji .NET
+        // 2 TODO dodać bindingi gdzie się da
+        // 3 TODO dodac obsługę konkretnych błędów np. zły format pliku itp.
+        // 4 TODO poprawić wykres (grafika); zamienić wartości na Style; blokowanie statystyk na czas uruchomienia (funkcja addata)
+        // 5 TODO poprawienie wiadomości w logu (konsoli)
+        // 6 TODO poprawienie pliku Statistics (SaveToFile method)
+        // ? poprawić dwujęzyczność 
 
         #region Definicje metod z załączonych plików DDL
-        //..\\..\\..\\..\\DLL\\
         /// <summary>
         /// Zewnętrzna funkcja ustawiająca ścieżkę do folderu z plikami DLL używanymi w aplikacji.
         /// </summary>
@@ -62,7 +56,7 @@ namespace GraphColoring
         /// <param name="flag">Flaga informująca, jaką modfikację algorytmu wywołujemy: 0 - tablicowa (domyślnie), 1 - bitowa.</param>
         /// <returns>Liczba k oznaczająca, że dany graf jest nie więcej niż k-kolorowalny.</returns>
         [DllImport("GraphColoringCPU.dll", CallingConvention = CallingConvention.Cdecl)]
-        static extern int FindChromaticNumber([MarshalAs(UnmanagedType.LPArray)]int[] pamiec,[MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int flag = 0);
+        static extern int FindChromaticNumber([MarshalAs(UnmanagedType.LPArray)]double[] pamiec,[MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int flag = 0);
 
         /// <summary>
         /// Funkcja wywołująca algorytm kolorowania grafu równolegle (z użyciem procesora GPU). Implementacja algorytmu zawarta oraz dostępna z pliku DLL.
@@ -75,15 +69,16 @@ namespace GraphColoring
         /// <param name="allVertices">Liczba wszystkich sąsiadów wszystkich wierzchołków.</param>
         /// <returns>Liczba k oznaczająca, że dany graf jest nie więcej niż k-kolorowalny.</returns>
         [DllImport("GraphColoringGPU.dll", CallingConvention = CallingConvention.Cdecl)]
-        static extern int FindChromaticNumberGPU([MarshalAs(UnmanagedType.LPArray)]int[] wynik, [MarshalAs(UnmanagedType.LPArray)]int[] pamiec, [MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int allVertices);
+        static extern int FindChromaticNumberGPU([MarshalAs(UnmanagedType.LPArray)]int[] wynik, [MarshalAs(UnmanagedType.LPArray)]double[] pamiec, [MarshalAs(UnmanagedType.LPArray)]int[] vertices, [MarshalAs(UnmanagedType.LPArray)]int[] neighborsCount, int n, int allVertices);
         
         #endregion
 
         #region Stałe
 
         private const string Output = "\\Output\\";
-        private const string Dll = "\\DLL\\";
-        private const string Doc = "\\Doc\\Help.pdf";
+        private const string Dll = "\\DLL\\"; //"..\\..\\..\\Debug\\";
+        private const string Doc = "\\Doc\\";
+        private const string DocFile = "\\Doc\\Help.pdf";
         private const string NavigateBlank = "about:blank";
         private const string Log = "Log_";
         private const string Stats = "Stats_";
@@ -94,10 +89,10 @@ namespace GraphColoring
         private const string NotPressed = "NotPressed";
         private const string Pressed = "Pressed";
         private const string CheckboxPressed = "#CC119EDA";
-        private const string CulturePl = "pl-PL";
-        private const string CultureEn = "en-US";
-        private const string ImagePl = "pack://siteoforigin:,,,/Resources/Images/pl.jpg";
-        private const string ImageEn = "pack://siteoforigin:,,,/Resources/Images/en.jpg";
+        //private const string CulturePl = "pl-PL";
+        //private const string CultureEn = "en-US";
+        //private const string ImagePl = "pack://siteoforigin:,,,/Resources/Images/pl.jpg";
+        //private const string ImageEn = "pack://siteoforigin:,,,/Resources/Images/en.jpg";
         private static readonly Color TileMouseOn = Colors.DimGray;
         private readonly Color _cNormal = Colors.DimGray;
         private readonly Color _cPath = Colors.DodgerBlue;
@@ -144,6 +139,7 @@ namespace GraphColoring
         /// </summary>
         public string HelpDocPath { get; private set; }
 
+        private readonly Bindings _bindings;
         private readonly ViewModel _viewModel;
         private Action _cancelWork;
         private readonly Statistics _stats;
@@ -152,41 +148,55 @@ namespace GraphColoring
         #endregion
 
         #region Konstruktor okna głównego
+
         /// <summary>
         /// Konstruktor okna głównego. Inicjalizuje dodatkowe zmienne użyte w aplikacji.
         /// </summary>
         public MainWindow()
         {
-            
             InitializeComponent();
 
+            _bindings = new Bindings { EnabledValue = true, VisibilityValue = Visibility.Hidden };
+
+            DataContext = _bindings;
+
+            _stats = new Statistics();
             _viewModel = new ViewModel();
 
             Chart.DataContext = new
             {
                 Data = _viewModel,
-                View = this
+                View = _bindings
             };
 
-            DataContext = this;
+            var directory = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory()));
 
-            EnabledValue = true;
-            VisibilityValue = Visibility.Hidden;
-
-            DllFolder = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) + Dll; 
+            DllFolder = directory + Dll; 
             SetDllDirectory(DllFolder);
 
-            HelpDocPath = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) + Doc;
+            HelpDocPath = directory + DocFile;
 
-            var directory = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) + Output;
-            LogFile = Path.Combine(directory, String.Format("{0}{1:yyyy-MM-dd hh.mm.ss}{2}", Log, DateTime.Now, Type));
-            StatsFile = Path.Combine(directory, String.Format("{0}{1:yyyy-MM-dd hh.mm.ss}{2}", Stats, DateTime.Now, Type));
+            CreateFoldersIfNotExists();
+
+            LogFile = Path.Combine(directory + Output, String.Format("{0}{1:yyyy-MM-dd hh.mm.ss}{2}", Log, DateTime.Now, Type));
+            StatsFile = Path.Combine(directory + Output, String.Format("{0}{1:yyyy-MM-dd hh.mm.ss}{2}", Stats, DateTime.Now, Type));
 
             ContentPanel.Document = new FlowDocument();
             _rtbContents = ContentPanel.Document;
-
-            _stats = new Statistics();
         }
+
+        /// <summary>
+        /// Funkcja przygotowuje środowisko pod kątem istnienia folderów.
+        /// </summary>
+        private void CreateFoldersIfNotExists()
+        {
+            var directory = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory()));
+
+            Directory.CreateDirectory(DllFolder);
+            Directory.CreateDirectory(directory + Doc);
+            Directory.CreateDirectory(directory + Output);
+        }
+
         #endregion
 
         #region Logowanie wiadomości
@@ -289,7 +299,7 @@ namespace GraphColoring
                     WriteMessageUi(new[] { Messages.GraphRunPredictTimeStart, predictedTime.ToString() }, new[] { _cNormal, _cResult });
 
                 var wynik = new int[g.VerticesCount];
-                var pamiec = new int[g.VerticesCount + 2];
+                var pamiec = new double[g.VerticesCount + 4];
 
                 var watch = Stopwatch.StartNew();
 
@@ -310,7 +320,7 @@ namespace GraphColoring
 
                 _stats.Add(path, g.VerticesCount, 0, watch.Elapsed, pamiec);
 
-                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, 0));
+                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, watch.ElapsedMilliseconds, 0));
 
                 WriteMessageUi(new[] { Messages.GraphRunResultPartOne, wynikk.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
             }
@@ -352,7 +362,7 @@ namespace GraphColoring
                     WriteMessageUi(new[] { Messages.GraphRunPredictTimeStart, predictedTime.ToString() }, new[] { _cNormal, _cResult });
 
 
-                var pamiec = new int[g.VerticesCount + 2];
+                var pamiec = new double[g.VerticesCount + 2];
 
                 var watch = Stopwatch.StartNew();
 
@@ -364,7 +374,7 @@ namespace GraphColoring
 
                 _stats.Add(path, g.VerticesCount, 1, watch.Elapsed, pamiec);
 
-                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, 1));
+                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, watch.ElapsedMilliseconds, 1));
 
                 WriteMessageUi(new[] { Messages.GraphRunResultPartOne, k.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
             }
@@ -408,7 +418,7 @@ namespace GraphColoring
 
                 g = FileProcessing.ConvertToBitVersion(g);
 
-                var pamiec = new int[g.VerticesCount + 2];
+                var pamiec = new double[g.VerticesCount + 2];
 
                 var watch = Stopwatch.StartNew();
 
@@ -420,7 +430,7 @@ namespace GraphColoring
 
                 _stats.Add(path, g.VerticesCount, 2, watch.Elapsed, pamiec);
 
-                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, 2));
+                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, watch.ElapsedMilliseconds, 2));
            
                 WriteMessageUi(new[] { Messages.GraphRunResultPartOne, k.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
     
@@ -452,11 +462,12 @@ namespace GraphColoring
             {
                 IsFile = true;
                 GraphPath = openFileDialog.InitialDirectory + openFileDialog.FileName;
-                WriteMessage(new[] {Messages.DialogChooseGraphFileResult, GraphPath}, new[] {_cNormal, _cPath});
+
+                WriteMessage(new[] { Messages.DialogChooseGraphFileResult, GraphPath }, new[] { _cNormal, _cPath });
             }
             else
             {
-                WriteMessage(new[] {Messages.DialogChooseGraphNoFile}, new[] {_cError});
+                WriteMessage(new[] { Messages.DialogChooseGraphNoFile }, new[] { _cError });
             }
         }
 
@@ -473,11 +484,12 @@ namespace GraphColoring
             {
                 IsFile = false;
                 GraphPath = dialog.SelectedPath;
-                WriteMessage(new[] {Messages.DialogChooseGraphFolderResult, GraphPath}, new[] {_cNormal, _cPath});
+
+                WriteMessage(new[] { Messages.DialogChooseGraphFolderResult, GraphPath }, new[] { _cNormal, _cPath });
             }
             else
             {
-                WriteMessage(new[] {Messages.DialogChooseGraphNoFolder}, new[] {_cError});
+                WriteMessage(new[] { Messages.DialogChooseGraphNoFolder }, new[] { _cError });
             }
         }
 
@@ -492,10 +504,11 @@ namespace GraphColoring
             if (!string.IsNullOrEmpty(dialog))
             {
                 SearchPattern = dialog;
-                WriteMessage(new[] { Messages.SetPatternResult, PatternStar+dialog+PatternStar }, new[] { _cNormal, _cPath });
+
+                WriteMessage(new[] { Messages.SetPatternResult, PatternStar + dialog + PatternStar }, new[] { _cNormal, _cPath });
             }
             else
-                WriteMessage(new[] {Messages.SetPatternWarning}, new[] {_cWarning});
+                WriteMessage(new[] { Messages.SetPatternWarning }, new[] { _cWarning });
         }
 
         /// <summary>
@@ -510,8 +523,9 @@ namespace GraphColoring
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 DllFolder = dialog.SelectedPath;
-                WriteMessage(new[] { Messages.DialogChooseDLLFolder, DllFolder }, new[] { _cNormal, _cPath });
                 SetDllDirectory(DllFolder);
+
+                WriteMessage(new[] { Messages.DialogChooseDLLFolder, DllFolder }, new[] { _cNormal, _cPath });
             }
             else
             {
@@ -546,24 +560,24 @@ namespace GraphColoring
         }
 
         /// <summary>
-        /// Funkcja wywoływana przez przycisk "Wyświetl statystyki". Wypisuje zawartość pliku ze statystykami na konsolę oraz wyświetla statystyki w postaci wykresu liniowego.
+        /// Funkcja wywoływana przez przycisk "Statystyki - wykresy". Wyświetla wykresy statystyk pamięci oraz czasu obliczceń.
         /// </summary>
         /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
         /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
-        private void DisplayStats_Click(object sender, RoutedEventArgs e)
+        private void DisplayStatCharts_Click(object sender, RoutedEventArgs e)
         {
             if (_stats.IsEmpty())
             {
-                WriteMessage(new[] {Messages.StatsZeroRun}, new[] {_cWarning});
+                WriteMessage(new[] { Messages.StatsZeroRun }, new[] { _cWarning });
                 return;
             }
 
             var tile = sender as Tile;
             if (tile == null) return;
 
-            if (VisibilityValue == Visibility.Hidden)
+            if (_bindings.VisibilityValue == Visibility.Hidden)
             {
-                VisibilityValue = Visibility.Visible;
+                _bindings.VisibilityValue = Visibility.Visible;
 
                 tile.Tag = Pressed;
                 tile.Background = new SolidColorBrush(TileMouseOn);
@@ -572,16 +586,30 @@ namespace GraphColoring
             }
             else
             {
-                VisibilityValue = Visibility.Hidden;
+                _bindings.VisibilityValue = Visibility.Hidden;
 
                 tile.Tag = NotPressed;
                 if (tile.IsMouseDirectlyOver)
                     tile.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(CheckboxPressed));
 
                 ContentPanel.Visibility = Visibility.Visible;
-
-                WriteMessage(new[] { _stats.DisplayStats() });
             }
+        }
+
+        /// <summary>
+        /// Funkcja wywoływana przez przycisk "Statystyki - dane". Wypisuje zawartość pliku ze statystykami na konsolę oraz wyświetla statystyki w postaci wykresu liniowego.
+        /// </summary>
+        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
+        private void DisplayStats_Click(object sender, RoutedEventArgs e)
+        {
+            if (_stats.IsEmpty())
+            {
+                WriteMessage(new[] { Messages.StatsZeroRun }, new[] { _cWarning });
+                return;
+            }
+
+            WriteMessage(new[] { _stats.DisplayStats() });
         }
 
         /// <summary>
@@ -642,6 +670,7 @@ namespace GraphColoring
             {     
                 GraphPath = String.Empty;
                 SearchPattern = String.Empty;
+
                 DllFolder = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) + Dll;
                 SetDllDirectory(DllFolder);
 
@@ -649,7 +678,7 @@ namespace GraphColoring
             }
             else
             {
-                WriteMessage(new[] {Messages.DefaultSettingsNOTOK}, new[] {_cWarning});
+                WriteMessage(new[] { Messages.DefaultSettingsNOTOK }, new[] { _cWarning });
             }
         }
 
@@ -666,17 +695,17 @@ namespace GraphColoring
         {
             if (string.IsNullOrEmpty(GraphPath))
             {  
-                WriteMessage(new[]{Messages.RunNoInputData});
+                WriteMessage(new[] { Messages.RunNoInputData });
                 return;
             }
 
             if ((string)CpuT.Tag == NotPressed && (string)CpuB.Tag == NotPressed && (string)Gpu.Tag == NotPressed)
             {
-                WriteMessage(new[]{Messages.RunNoMethod});
+                WriteMessage(new[] { Messages.RunNoMethod });
                 return;
             }
 
-            EnabledValue = !EnabledValue;
+            _bindings.EnabledValue = !_bindings.EnabledValue;
             Stop.Visibility = Visibility.Visible;
             //VisibilityValue = Visibility.Hidden;
             //ContentPanel.Visibility = Visibility.Visible;
@@ -726,10 +755,10 @@ namespace GraphColoring
             }
             catch (Exception ee)
             {
-                WriteMessage(new[] {ee.Message}, new[] {_cError});
+                WriteMessage(new[] { ee.Message }, new[] { _cError });
             }
 
-            EnabledValue = !EnabledValue;
+            _bindings.EnabledValue = !_bindings.EnabledValue;
             Stop.Visibility = Visibility.Hidden;
             _cancelWork = null;
       
@@ -796,303 +825,71 @@ namespace GraphColoring
             if (tile != null && (string)tile.Tag != Pressed) tile.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(CheckboxPressed));
         }
 
-        /// <summary>
-        /// Funkcja wywoływana przez przycisk z obrazem flagi. Zmienia język (PL/EN) wyświetlnych komunikatów (nie zmienia języka kafelków menu).
-        /// </summary>
-        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
-        /// <param name="e">Domyślne zdarzenie kafelka (Click).</param>
-        private void Language_Click(object sender, RoutedEventArgs e)
-        {
-            var tile = sender as Tile;
-            if (Thread.CurrentThread.CurrentCulture.Name == CulturePl)
-            {
-                Thread.CurrentThread.CurrentUICulture = new CultureInfo(CultureEn);
-                Thread.CurrentThread.CurrentCulture = new CultureInfo(CultureEn);
+        #region Tymczasowo nieużywane funkcje obsługi kafelka dwujęzyczności
+        ///// <summary>
+        ///// Funkcja wywoływana przez przycisk z obrazem flagi. Zmienia język (PL/EN) wyświetlnych komunikatów (nie zmienia języka kafelków menu).
+        ///// </summary>
+        // <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        // <param name="e">Domyślne zdarzenie kafelka (Click).</param>
+        //private void Language_Click(object sender, RoutedEventArgs e)
+        //{
+        //    var tile = sender as Tile;
+        //    if (Thread.CurrentThread.CurrentCulture.Name == CulturePl)
+        //    {
+        //        Thread.CurrentThread.CurrentUICulture = new CultureInfo(CultureEn);
+        //        Thread.CurrentThread.CurrentCulture = new CultureInfo(CultureEn);
 
-                if (tile == null) return;
-                tile.Background = new ImageBrush { ImageSource = new BitmapImage(new Uri(ImageEn)) };
-                tile.Tag = 1;
-            }
-            else
-            {
-                Thread.CurrentThread.CurrentUICulture = new CultureInfo(CulturePl);
-                Thread.CurrentThread.CurrentCulture = new CultureInfo(CulturePl);
+        //        if (tile == null) return;
+        //        tile.Background = new ImageBrush { ImageSource = new BitmapImage(new Uri(ImageEn)) };
+        //        tile.Tag = 1;
+        //    }
+        //    else
+        //    {
+        //        Thread.CurrentThread.CurrentUICulture = new CultureInfo(CulturePl);
+        //        Thread.CurrentThread.CurrentCulture = new CultureInfo(CulturePl);
 
-                if (tile == null) return;
-                tile.Background = new ImageBrush { ImageSource = new BitmapImage(new Uri(ImagePl)) };
-                tile.Tag = null;
-            }
-        }
+        //        if (tile == null) return;
+        //        tile.Background = new ImageBrush { ImageSource = new BitmapImage(new Uri(ImagePl)) };
+        //        tile.Tag = null;
+        //    }
+        //}
 
-        /// <summary>
-        /// Zdarzenie wywoływane w momencie znalezienia się kursora myszy nad kafelkiem z obrazem flagi.
-        /// </summary>
-        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
-        /// <param name="e">Domyślne zdarzenie kafelka (MouseEnter).</param>
-        private void Language_MouseEnter(object sender, MouseEventArgs e)
-        {
-            var tile = sender as Tile;
-            if (tile == null) return;
+        ///// <summary>
+        ///// Zdarzenie wywoływane w momencie znalezienia się kursora myszy nad kafelkiem z obrazem flagi.
+        ///// </summary>
+        // <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        // <param name="e">Domyślne zdarzenie kafelka (MouseEnter).</param>
+        //private void Language_MouseEnter(object sender, MouseEventArgs e)
+        //{
+        //    var tile = sender as Tile;
+        //    if (tile == null) return;
 
-            tile.Background = tile.Tag == null ?
-                new ImageBrush { ImageSource = new BitmapImage(new Uri(ImageEn)) } :
-                new ImageBrush { ImageSource = new BitmapImage(new Uri(ImagePl)) };
+        //    tile.Background = tile.Tag == null ?
+        //        new ImageBrush { ImageSource = new BitmapImage(new Uri(ImageEn)) } :
+        //        new ImageBrush { ImageSource = new BitmapImage(new Uri(ImagePl)) };
 
-            tile.Opacity = 0.5;
-        }
+        //    tile.Opacity = 0.5;
+        //}
 
-        /// <summary>
-        /// Zdarzenie wywoływane w momencie znalezienia się kursora myszy nad kafelkiem z obrazem flagi.
-        /// </summary>
-        /// <param name="sender">Domyślny obiekt kafelka (Tile).</param>
-        /// <param name="e">Domyślne zdarzenie kafelka (MouseLeave).</param>
-        private void Language_MouseLeave(object sender, MouseEventArgs e)
-        {
-            var tile = sender as Tile;
-            if (tile == null) return;
+        ///// <summary>
+        ///// Zdarzenie wywoływane w momencie znalezienia się kursora myszy nad kafelkiem z obrazem flagi.
+        ///// </summary>
+        // <param name="sender">Domyślny obiekt kafelka (Tile).</param>
+        // <param name="e">Domyślne zdarzenie kafelka (MouseLeave).</param>
+        //private void Language_MouseLeave(object sender, MouseEventArgs e)
+        //{
+        //    var tile = sender as Tile;
+        //    if (tile == null) return;
 
-            tile.Background = Language.Tag == null ? 
-                new ImageBrush { ImageSource = new BitmapImage(new Uri(ImagePl)) } :
-                new ImageBrush { ImageSource = new BitmapImage(new Uri(ImageEn)) };
+        //    tile.Background = tile.Tag == null ? 
+        //        new ImageBrush { ImageSource = new BitmapImage(new Uri(ImagePl)) } :
+        //        new ImageBrush { ImageSource = new BitmapImage(new Uri(ImageEn)) };
 
-            tile.Opacity = 1;
-        }
+        //    tile.Opacity = 1;
+        //}
 
         #endregion
-
-        #region Obsługa zdarzenia blokującego dostępność menu podczas wykonywania obliczeń oraz innych zależności
-
-        /// <summary>
-        /// Zdarzenie implementujace interfejs INotifyPropertyChanged.
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Funkcja wywołująca zdarzenie na zmiennej o podanej w parametrze nazwie.
-        /// </summary>
-        /// <param name="propertyName">Nazwa zmiennej.</param>
-        protected void OnPropertyChanged(string propertyName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-
-        private bool _isEnabled;
-        private Visibility _isVisible;
-
-        /// <summary>
-        /// Właściwość reagująca na zmianę wartości zmiennej na którą wskazuje.
-        /// </summary>
-        public bool EnabledValue
-        {
-            get { return _isEnabled; }
-            set { _isEnabled = value; OnPropertyChanged("EnabledValue"); }
-        }
-
-        /// <summary>
-        /// Właściwość reagująca na zmianę wartości zmiennej na którą wskazuje.
-        /// </summary>
-        public Visibility VisibilityValue
-        {
-            get { return _isVisible; }
-            set { _isVisible = value; OnPropertyChanged("VisibilityValue"); }
-        }
 
         #endregion
     }
-
-    #region Klasy wzorca MVVM dla statystyk graficznych
-    /// <summary>
-    /// Klasa zawierająca model jednego punktu na wykresie zależności wykorzystanej pamięci od iteracji w jakiej znajdują się obliczenia. Liczba iteracji to liczba wierzchołków + 1
-    /// </summary>
-    public class SpaceModel
-    {
-        /// <summary>
-        /// Współrzędna składowa osi X wykresu - reprezentuje iterację w jakiej znajduje się obliczenie
-        /// </summary>
-        public double X { get; set; }
-        /// <summary>
-        /// Współrzędna składowa osi Y wykresu - reprezentuje wykorzystaną pamięć RAM w danej iteracji obliczeń
-        /// </summary>
-        public double Y { get; set; }
-
-        /// <summary>
-        /// Domyślny konstruktor. Wsółrzędną X zaokrągla do maksymalnie 3 miejsc po przecinku.
-        /// </summary>
-        /// <param name="x">Iteracja w jakiej znajduje się obliczenie.</param>
-        /// <param name="y">Wartość użytej pamięci na potrzeby obliczeń algorytmu w danej chwili.</param>
-        public SpaceModel(double x, double y)
-        {
-            X = x;
-            Y = Math.Round(y, 2);
-        }
-    }
-
-    /// <summary>
-    /// Klasa łącząca model danych z wykresem. Odpowiada za aktualizację wykresu na podstawie przekazanych danych.
-    /// </summary>
-    public class ViewModel
-    {
-        #region Stałe reprezentujące konkretne wartości
-
-        private const double ToMb = 1048576;
-
-        #endregion
-
-        #region Zmienne reprezentuujące konkretne linie na wykresie.
-        /// <summary>
-        /// Zmienna reprezentująca zależność wykorzystanej pamięci od iteracji obliczenia dla algorytmu GPU.
-        /// </summary>
-        public ObservableCollection<SpaceModel> CollectionGpu { get; set; }
-
-        /// <summary>
-        /// Zmienna reprezentująca zależność wykorzystanej pamięci od iteracji obliczenia dla algorytmu CPU w wersji tablicowej.
-        /// </summary>
-        public ObservableCollection<SpaceModel> CollectionCput { get; set; }
-
-        /// <summary>
-        /// Zmienna reprezentująca zależność wykorzystanej pamięci od iteracji obliczenia dla algorytmu CPU w wersji bitowej.
-        /// </summary>
-        public ObservableCollection<SpaceModel> CollectionCpub { get; set; }
-
-        /// <summary>
-        /// Zmienna reprezentująca przewidywaną zależność wykorzystanej pamięci od iteracji obliczenia dla algorytmu GPU.
-        /// </summary>
-        public ObservableCollection<SpaceModel> CollectionGpuPredict { get; set; }
-        /// <summary>
-        /// Zmienna reprezentująca przewidywaną zależność wykorzystanej pamięci od iteracji obliczenia dla algorytmu CPU w wersji tablicowej.
-        /// </summary>
-        public ObservableCollection<SpaceModel> CollectionCputPredict { get; set; }
-        /// <summary>
-        /// Zmienna reprezentująca przewidywaną zależność wykorzystanej pamięci od iteracji obliczenia dla algorytmu CPU w wersji bitowej.
-        /// </summary>
-        public ObservableCollection<SpaceModel> CollectionCpubPredict { get; set; }
-        #endregion
-
-        #region Konsruktor
-        /// <summary>
-        /// Domyślny konstruktor. Inicjalizuje wszystkie zmienne.
-        /// </summary>
-        public ViewModel()
-        {
-            CollectionGpu = new ObservableCollection<SpaceModel>();
-            CollectionCput = new ObservableCollection<SpaceModel>();
-            CollectionCpub = new ObservableCollection<SpaceModel>();
-
-            CollectionGpuPredict = new ObservableCollection<SpaceModel>();
-            CollectionCputPredict = new ObservableCollection<SpaceModel>();
-            CollectionCpubPredict = new ObservableCollection<SpaceModel>();
-        }
-        #endregion
-
-        #region Metody główne zarządzające danymi na wykresie
-        /// <summary>
-        /// Metoda dodająca dane do zmiennych przechowujących informację liniach wykresu.
-        /// </summary>
-        /// <param name="pamiec">Tablica przechowująca informację o użytej pamięci w poszczególnych iteracjach algorytmu.</param>
-        /// <param name="type">Typ algorytmu wywołującego daną metodę.</param>
-        public void AddData(int[] pamiec, int type)
-        {
-            var predictSpace = PredictSpace(pamiec.Length - 2, type).ToArray();
-
-            var first = pamiec[0];
-
-            for (var i = 1; i < pamiec.Length; ++i)
-            {
-                switch (type)
-                {
-                    case 0:
-                        CollectionGpu.Add(new SpaceModel(i - 1, (pamiec[i] - first) / ToMb));
-                        CollectionGpuPredict.Add(new SpaceModel(i - 1, predictSpace[i]));
-                        break;
-                    case 1:
-                        CollectionCput.Add(new SpaceModel(i - 1, (pamiec[i] - first) / ToMb));
-                        CollectionCputPredict.Add(new SpaceModel(i - 1, predictSpace[i]));
-                        break;
-                    case 2:
-                        CollectionCpub.Add(new SpaceModel(i - 1, (pamiec[i] - first) / ToMb));
-                        CollectionCpubPredict.Add(new SpaceModel(i - 1, predictSpace[i]));
-                        break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Czyszczenie wykresu.
-        /// </summary>
-        public void ClearChart()
-        {
-            CollectionGpu.Clear();
-            CollectionCput.Clear();
-            CollectionCpub.Clear();
-
-            CollectionGpuPredict.Clear();
-            CollectionCputPredict.Clear();
-            CollectionCpubPredict.Clear();
-        }
-        #endregion
-
-        #region Metody pomocnicze (statyczne)
-        /// <summary>
-        /// Metoda obliczająca przewidywane wykorzystanie pamięci dla każdej iteracji algorytmu w zależności od wybranej metody.
-        /// </summary>
-        /// <param name="n">Liczba wierzchołków grafu wejściowego.</param>
-        /// <param name="type">Typ metody algorytmu wywołującej daną metodę.</param>
-        /// <returns>Tablica przechowująca informację o przewidywanym użyciu pamięci w poszczególnych iteracjach algorytmu.</returns>
-        private static IEnumerable<double> PredictSpace(int n, int type)
-        {
-            var powerNumber = (1 << n) / ToMb * sizeof (int);
-            var tmp = new double[n + 2];
-            tmp[0] = tmp[n + 1] = 0;
-            tmp[n] = powerNumber;
-
-            for (var i = 1; i < n; ++i)
-            {
-                var actualVertices = Combination_n_of_k((ulong) n, (ulong) i);
-                var newVertices = Combination_n_of_k((ulong) n, (ulong) i + 1);
-
-                switch (type)
-                {
-                    case 0: // GPU
-                        tmp[i] = powerNumber + ((int)(actualVertices + 1) * i + (int)newVertices * (i + 1)) / ToMb * sizeof(int);
-                        break;
-                    case 1: // CPU Table
-                        tmp[i] = powerNumber + ((int)actualVertices * i + (int)newVertices * (i + 1)) / ToMb * sizeof(int);
-                        break;
-                    case 2: // CPU Bit
-                        tmp[i] = powerNumber + (actualVertices + newVertices) / ToMb * sizeof(int);
-                        break;
-                }
-            }
-
-            return tmp;
-        }
-
-        /// <summary>
-        /// Funckja obliczająca liczbę kombinacji bez powtórzeń liczby n z liczby k.
-        /// </summary>
-        /// <param name="n">Górna liczba w Dwumianie Newtona.</param>
-        /// <param name="k">Dolna liczba w Dwumianie Newtona.</param>
-        /// <returns>Liczba kombinacji.</returns>
-        private static ulong Combination_n_of_k(ulong n, ulong k)
-        {
-            if (k > n) return 0;
-            if (k == 0 || k == n) return 1;
-
-            if (k * 2 > n) k = n - k;
-
-            ulong r = 1;
-            for (ulong d = 1; d <= k; ++d)
-            {
-                r *= n--;
-                r /= d;
-            }
-            return r;
-        }
-
-        #endregion
-    }
-    #endregion
 }

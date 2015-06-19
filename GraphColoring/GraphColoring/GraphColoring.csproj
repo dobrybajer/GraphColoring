@@ -78,6 +78,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Messages.en.resx</DependentUpon>
     </Compile>
+    <Compile Include="Structures\Bindings.cs" />
+    <Compile Include="Structures\ChartMVM.cs" />
+    <Compile Include="Structures\Common.cs" />
     <Compile Include="Structures\FileProcessing.cs" />
     <Compile Include="Structures\Graph.cs" />
     <Compile Include="Structures\Statistics.cs" />

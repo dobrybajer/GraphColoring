@@ -39,7 +39,7 @@ namespace GraphColoring.Structures
         /// <param name="type">Typ algorytmu wywołującego metodę.</param>
         /// <param name="time">Czas obliczeń danego algorytmu.</param>
         /// <param name="memoryUsage">Tablica zawierająca pamięć używaną przez aplikację podczas działania algorytmu.</param>
-        public void Add(string fileName, int n, int type, TimeSpan time, int[] memoryUsage)
+        public void Add(string fileName, int n, int type, TimeSpan time, double[] memoryUsage)
         {
             var i = _statsList.FindIndex(x => x.FileName == fileName);
             if (i == -1)
@@ -89,7 +89,7 @@ namespace GraphColoring.Structures
         {
             var pcInfo = new ComputerInfo();
 
-            var vertices = Combination_n_of_k((ulong)n, (ulong)n / 2);
+            var vertices = Common.Combination_n_of_k((ulong)n, (ulong)n / 2);
             var maxColumnCount = (ulong)(n + 1) / 2;
             double totalMemoryRequired = 0;
 
@@ -158,58 +158,7 @@ namespace GraphColoring.Structures
             if (times == null || times.Count == 0) return new TimeSpan(0);
 
             var ticks = times.Sum(t => t.Ticks) / times.Count;
-            return new TimeSpan((long)(ticks * Pow(n - processedVerticesCount)));
-        }
-
-        /// <summary>
-        /// Funckja obliczająca liczbę kombinacji bez powtórzeń liczby n z liczby k.
-        /// </summary>
-        /// <param name="n">Górna liczba w Dwumianie Newtona.</param>
-        /// <param name="k">Dolna liczba w Dwumianie Newtona.</param>
-        /// <returns>Liczba kombinacji.</returns>
-        public static ulong Combination_n_of_k(ulong n, ulong k)
-	    {
-		    if (k > n) return 0;
-		    if (k == 0 || k == n) return 1;
-
-		    if (k * 2 > n) k = n - k;
-
-            ulong r = 1;
-            for (ulong d = 1; d <= k; ++d)
-            {
-			    r *= n--;
-			    r /= d;
-		    }
-		    return r;
-	    }
-
-        /// <summary>
-        /// Funckja licząca potęgi liczby 2 (zarówno dodatnie jak i ujemne tj. ułamki)
-        /// </summary>
-        /// <param name="n">Wykładnik potęgi.</param>
-        /// <returns>Liczba 2 podniesiona do odpowiedniej potęgi.</returns>
-        static double Pow(int n)
-        {
-            double result = 1;
-
-            if (n > 0)
-            {
-                while (n > 0)
-                {
-                    result *= 2;
-                    n--;
-                }
-            }
-            else
-            {
-                while (n < 0)
-                {
-                    result /= 2;
-                    n++;
-                }
-            }
-
-		    return result;
+            return new TimeSpan((long)(ticks * Common.Pow(n - processedVerticesCount)));
         }
 
         #endregion
@@ -226,9 +175,9 @@ namespace GraphColoring.Structures
         private long _avgCpuTableTicks = -1;
         private long _avgCpuBitTicks = -1;
 
-        private List<int> _memoryGpuUsage;
-        private List<int> _memoryCpuTableUsage;
-        private List<int> _memoryCpuBitUsage;
+        private List<double> _memoryGpuUsage;
+        private List<double> _memoryCpuTableUsage;
+        private List<double> _memoryCpuBitUsage;
 
         public string FileName { get; set; }
         public int VerticesCount { get; set; }
@@ -247,7 +196,7 @@ namespace GraphColoring.Structures
         /// <param name="type">Typ algorytmu wywołującego metodę.</param>
         /// <param name="time">Czas obliczeń danego algorytmu.</param>
         /// <param name="memory">Tablica zawierająca pamięć używaną przez aplikację podczas działania algorytmu.</param>
-        public GraphStat(string fileName, int n, int type, TimeSpan time, IEnumerable<int> memory)
+        public GraphStat(string fileName, int n, int type, TimeSpan time, IEnumerable<double> memory)
         {
             FileName = fileName;
             VerticesCount = n;
@@ -260,15 +209,15 @@ namespace GraphColoring.Structures
             {
                 case 0:
                     GpuTime.Add(time);
-                    _memoryGpuUsage = new List<int>(memory);
+                    _memoryGpuUsage = new List<double>(memory);
                     break;
                 case 1:
                     CpuTableTime.Add(time);
-                    _memoryCpuTableUsage = new List<int>(memory);
+                    _memoryCpuTableUsage = new List<double>(memory);
                     break;
                 case 2:
                     CpuBitTime.Add(time);
-                    _memoryCpuBitUsage = new List<int>(memory);
+                    _memoryCpuBitUsage = new List<double>(memory);
                     break;
             }
         }
@@ -283,21 +232,21 @@ namespace GraphColoring.Structures
         /// <param name="type">Typ algorytmu wywołującego metodę.</param>
         /// <param name="time">Czas obliczeń danego algorytmu.</param>
         /// <param name="memory">Tablica zawierająca pamięć używaną przez aplikację podczas działania algorytmu.</param>
-        public void Update(int type, TimeSpan time, IEnumerable<int> memory)
+        public void Update(int type, TimeSpan time, IEnumerable<double> memory)
         {
             switch (type)
             {
                 case 0:
                     GpuTime.Add(time);
-                    _memoryGpuUsage = new List<int>(memory);
+                    _memoryGpuUsage = new List<double>(memory);
                     break;
                 case 1:
                     CpuTableTime.Add(time);
-                    _memoryCpuTableUsage = new List<int>(memory);
+                    _memoryCpuTableUsage = new List<double>(memory);
                     break;
                 case 2:
                     CpuBitTime.Add(time);
-                    _memoryCpuBitUsage = new List<int>(memory);
+                    _memoryCpuBitUsage = new List<double>(memory);
                     break;
             }
         }
@@ -321,11 +270,11 @@ namespace GraphColoring.Structures
                 message += string.Format("{0}" + nLine, new TimeSpan(ticks));
                 message += "Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: ";
                 var first = _memoryGpuUsage.First();
-                message += string.Format("{0}" + nLine, (float)first / 1000000);
+                message += string.Format("{0}" + nLine, first);
                 message += "Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: ";
-                message = _memoryGpuUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", (float)(m - first) / 1000000));
+                message = _memoryGpuUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", m - first));
                 message += nLine + "Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: ";
-                message += string.Format("{0}" + nLine, (float)(_memoryGpuUsage.Last() - first) / 1000000) + nLine;
+                message += string.Format("{0}" + nLine, _memoryGpuUsage.Last() - first) + nLine;
             }
             if (CpuTableTime.Count != 0)
             {
@@ -339,11 +288,11 @@ namespace GraphColoring.Structures
                 message += string.Format("{0}" + nLine, new TimeSpan(ticks));
                 message += "Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: ";
                 var first = _memoryCpuTableUsage.First();
-                message += string.Format("{0}" + nLine, (float)first / 1000000);
+                message += string.Format("{0}" + nLine, first);
                 message += "Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: ";
-                message = _memoryCpuTableUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", (float)(m - first) / 1000000));
+                message = _memoryCpuTableUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", m - first));
                 message += nLine + "Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: ";
-                message += string.Format("{0}" + nLine, (float)(_memoryCpuTableUsage.Last() - first) / 1000000) + nLine;
+                message += string.Format("{0}" + nLine, _memoryCpuTableUsage.Last() - first) + nLine;
             }
             if (CpuBitTime.Count != 0)
             {
@@ -357,11 +306,11 @@ namespace GraphColoring.Structures
                 message += string.Format("{0}" + nLine, new TimeSpan(ticks));
                 message += "Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: ";
                 var first = _memoryCpuBitUsage.First();
-                message += string.Format("{0}" + nLine, (float)first / 1000000);
+                message += string.Format("{0}" + nLine, first);
                 message += "Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: ";
-                message = _memoryCpuBitUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", (float)(m - first) / 1000000));
+                message = _memoryCpuBitUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", m - first));
                 message += nLine + "Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: ";
-                message += string.Format("{0}" + nLine, (float)(_memoryCpuBitUsage.Last() - first) / 1000000) + nLine;
+                message += string.Format("{0}" + nLine, _memoryCpuBitUsage.Last() - first) + nLine;
             }
 
             message += "Współczynnik zmiany czasu obliczeń cpu_table/gpu: ";

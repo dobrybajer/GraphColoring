@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -17,12 +18,14 @@ namespace GraphColoring.Structures
         /// </summary>
         /// <param name="path">Ścieżka do pliku z danymi.</param>
         /// <returns>Wynikowy graf utworzony na podstawie danych z pliku tekstowego.</returns>
+        [SuppressMessage("ReSharper", "PossibleIntendedRethrow")]
         public static Graph ReadFile(string path)
         {
             try
             {
                 var pas = false;
                 var tmp = path.Split('\\');
+
                 if (tmp[tmp.Length - 1][0] == 'D')
                 {
                     var oldpath = tmp[0] + "\\";
@@ -55,6 +58,7 @@ namespace GraphColoring.Structures
 
                     if (pas)
                         File.Delete(path);
+
                     Thread.Sleep(100);
 
                     return new Graph(vertices.ToArray(), neighborsCount.ToArray());
@@ -62,10 +66,7 @@ namespace GraphColoring.Structures
             }
             catch (Exception e)
             {
-                Console.WriteLine(@"Podczas przetwarzania pliku z danymi wystapił błąd:");
-                Console.WriteLine(e.Message);
-
-                return null;
+                throw e;
             }
         }
 
@@ -90,21 +91,24 @@ namespace GraphColoring.Structures
                     case "p":
                         var item = line.Split(' ');
                         sw.WriteLine(item[2]);
+
                         for (var i = 0; i < Convert.ToInt32(item[2]); i++)
-                        {
                             elementy.Add(new List<int>());
-                        }
+                        
                         break;
                     case "e":
                         var ele = line.Split(' ');
+
                         elementy.ElementAt(Convert.ToInt32(ele[1]) - 1).Add(Convert.ToInt32(ele[2]) - 1);
                         elementy.ElementAt(Convert.ToInt32(ele[2]) - 1).Add(Convert.ToInt32(ele[1]) - 1);
+
                         break;
                 }
             }
             foreach (var it in elementy)
             {
                 string wiersz = null;
+
                 for (var j = 0; j < it.Count; j++)
                 {
                     wiersz += it.ElementAt(j).ToString();

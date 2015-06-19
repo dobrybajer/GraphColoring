@@ -87,6 +87,20 @@
         <Setter Property="IsEnabled" Value="{Binding EnabledValue}" />
     </Style>
 
+    <Style x:Key="TileSmallLanguage" TargetType="{x:Type controls:Tile}">
+        <Setter Property="TiltFactor" Value="2" />
+        <Setter Property="Height" Value="44" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="Width" Value="112" />
+        <Setter Property="TitleFontSize" Value="11" />
+        <Setter Property="IsEnabled" Value="{Binding EnabledValue}" />
+        <Setter Property="Background">
+            <Setter.Value>
+                <ImageBrush ImageSource="pack://siteoforigin:,,,/Resources/Images/pl.jpg"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="TileSmallTriple" TargetType="{x:Type controls:Tile}">
         <Setter Property="TiltFactor" Value="2" />
         <Setter Property="Height" Value="42" />
@@ -139,5 +153,5 @@
         <Setter Property="Margin" Value="5" />
         <Setter Property="SmoothingMode" Value="AntiAlias" />
     </Style>
-    
+
 </ResourceDictionary>

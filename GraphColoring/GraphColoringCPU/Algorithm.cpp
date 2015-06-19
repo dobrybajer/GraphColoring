@@ -7,16 +7,18 @@
 /// </summary>
 namespace version_cpu
 {
+	const double ToMb = 1048576;
+
 	/// <summary>
 	/// Metoda zwraca aktualne zużycie pamięci RAM przez aplikację.
 	/// </summary>
 	/// <returns>Rozmiar pamięci.</returns>
-	int getUsedMemory()
+	double getUsedMemory()
 	{
 		PROCESS_MEMORY_COUNTERS pmc;
 		GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
 
-		return (int)pmc.WorkingSetSize;
+		return pmc.WorkingSetSize / ToMb;
 	}
 
 	/// <summary>
@@ -170,7 +172,7 @@ namespace version_cpu
 	/// </param>
 	/// <param name="n">Liczba wierzchołków w grafie.</param>
 	/// <returns>Tablica zbiorów niezależnych.</returns>
-	int* BuildingIndependentSets_BitVersion(int*memory,int* vertices, int n)
+	int* BuildingIndependentSets_BitVersion(double* memory, int* vertices, int n)
 	{
 		int* independentSets;
 		int* actualVertices;
@@ -183,6 +185,7 @@ namespace version_cpu
 
 		// Krok 1 algorytmu: przypisanie wartoci 1 (iloć niezależnych zbiorów) dla podzbiorów 1-elementowych, oraz dodanie ich do aktualnie przetwarzanych elementów (1 poziom tworzenia wszystkich podzbiorów)
 		actualVertices = new int[n]();
+		newVertices = new int[1]();
 
 		for (int i = 0; i < n; ++i)
 		{
@@ -236,13 +239,13 @@ namespace version_cpu
 
 			actualRow = row;
 			delete[] actualVertices;
-			actualVertices = new int[row]();
-			for (int i = 0; i < row; ++i)
-				actualVertices[i] = newVertices[i];
 
-			//delete[] newVertices;
+			if (el != n - 1)
+				actualVertices = newVertices;
+			
 		}
-		delete[] actualVertices;
+		
+		delete[] newVertices;
 
 		memory[n] = getUsedMemory();
 
@@ -259,7 +262,7 @@ namespace version_cpu
 	/// <param name="vertices">Lista pozycji początkowych sąsiadów dla danego wierzchołka.</param>
 	/// <param name="n">Liczba wierzchołków w grafie.</param>
 	/// <returns>Tablica zbiorów niezależnych.</returns>
-	int* BuildingIndependentSets_TableVersion(int* memory,  int* vertices, int* offset, int n)
+	int* BuildingIndependentSets_TableVersion(double* memory, int* vertices, int* offset, int n)
 	{
 		int* independentSets;
 		int** actualVertices;
@@ -273,6 +276,7 @@ namespace version_cpu
 
 		// Krok 1 algorytmu: przypisanie wartoci 1 (iloć niezależnych zbiorów) dla podzbiorów 1-elementowych, oraz dodanie ich do aktualnie przetwarzanych elementów (1 poziom tworzenia wszystkich podzbiorów)
 		actualVertices = CreateVertices(n, 1);
+		newVertices = CreateVertices(1, 1);
 
 		actualVerticesRowCount = n;
 		actualVerticesColCount = 1;
@@ -340,19 +344,14 @@ namespace version_cpu
 			}
 			delete[] actualVertices;
 
-			actualVertices = newVertices;
-
-			//delete[] newVertices;
+			if (el != n - 1)
+				actualVertices = newVertices;
 
 			actualVerticesRowCount = row;
 			actualVerticesColCount = col;
 		}
 
-		for (int i = 0; i < actualVerticesRowCount; ++i)
-		{
-			delete[] actualVertices[i];
-		}
-		delete[] actualVertices;
+		delete[] newVertices;
 
 		memory[n] = getUsedMemory();
 
@@ -373,13 +372,13 @@ namespace version_cpu
 	/// Parametr opcjonalny.
 	/// </param>
 	/// <returns>Licza k oznaczająca k - kolorowalność grafu, bądź wartość -1 w przypadku błędu.</returns>
-	int FindChromaticNumber(int* memoryUsage, int* vertices, int* offset, int n, int flag)
+	int FindChromaticNumber(double* memoryUsage, int* vertices, int* offset, int n, int flag)
 	{
 		memoryUsage[0] = getUsedMemory();
 
 		int* independentSets = flag == 1 ? 
-			BuildingIndependentSets_BitVersion(memoryUsage,vertices, n) :
-			BuildingIndependentSets_TableVersion(memoryUsage,vertices, offset, n);
+			BuildingIndependentSets_BitVersion(memoryUsage, vertices, n) :
+			BuildingIndependentSets_TableVersion(memoryUsage, vertices, offset, n);
 
 		int PowerNumber = (1 << n);
 
