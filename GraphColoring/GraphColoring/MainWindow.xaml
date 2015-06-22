@@ -24,44 +24,41 @@
                     <RowDefinition Height="0.5*"/>
                     <RowDefinition Height="0.5*"/>
                 </Grid.RowDefinitions>
-                
-                <!--TODO-->
+
                 <sparrow:SparrowChart Style="{StaticResource Chart}">
                     <sparrow:SparrowChart.XAxis>
-                        <sparrow:LinearXAxis Interval="1"/>
+                        <sparrow:LinearXAxis Interval="1" Header="Iteracje algorytmu (n + 1)"/>
                     </sparrow:SparrowChart.XAxis>
                     <sparrow:SparrowChart.YAxis>
-                        <sparrow:LinearYAxis/>
+                        <sparrow:LinearYAxis Header="Pamięć RAM [MB]"/>                 
                     </sparrow:SparrowChart.YAxis>
                     <sparrow:SparrowChart.Legend>
-                        <sparrow:Legend Header="Legend" Dock="Right"/>
+                        <sparrow:Legend Header="Legenda" Dock="Right" />
                     </sparrow:SparrowChart.Legend>
                     <sparrow:LineSeries PointsSource="{Binding Data.CollectionGpu}" XPath="X" YPath="Y" Label="GPU" StrokeThickness="3"/>
                     <sparrow:LineSeries PointsSource="{Binding Data.CollectionCput}" XPath="X" YPath="Y" Label="CPU Table" StrokeThickness="3"/>
                     <sparrow:LineSeries PointsSource="{Binding Data.CollectionCpub}" XPath="X" YPath="Y" Label="CPU Bit" StrokeThickness="3"/>
-                    <sparrow:LineSeries PointsSource="{Binding Data.CollectionGpuPredict}" XPath="X" YPath="Y" Label="GPU - Prediction"/>
-                    <sparrow:LineSeries PointsSource="{Binding Data.CollectionCputPredict}" XPath="X" YPath="Y" Label="CPU Table - Prediction"/>
-                    <sparrow:LineSeries PointsSource="{Binding Data.CollectionCpubPredict}" XPath="X" YPath="Y" Label="CPU Bit - Prediction"/>
+                    <sparrow:LineSeries PointsSource="{Binding Data.CollectionGpuPredict}" XPath="X" YPath="Y" Label="GPU - Predykcja"/>
+                    <sparrow:LineSeries PointsSource="{Binding Data.CollectionCputPredict}" XPath="X" YPath="Y" Label="CPU Table - Predykcja"/>
+                    <sparrow:LineSeries PointsSource="{Binding Data.CollectionCpubPredict}" XPath="X" YPath="Y" Label="CPU Bit - Predykcja"/>  
                 </sparrow:SparrowChart>
                 <sparrow:SparrowChart Grid.Row="1" Style="{StaticResource Chart}">
                     <sparrow:SparrowChart.XAxis>
-                        <sparrow:LinearXAxis Interval="1"/>
+                        <sparrow:LinearXAxis Interval="1" Header="Rozmiar zadania (n)"/>
                     </sparrow:SparrowChart.XAxis>
                     <sparrow:SparrowChart.YAxis>
-                        <sparrow:LinearYAxis/>
+                        <sparrow:LinearYAxis Header="Czas [ms]"/>
                     </sparrow:SparrowChart.YAxis>
                     <sparrow:SparrowChart.Legend>
-                        <sparrow:Legend Header="Legend" Dock="Right"/>
+                        <sparrow:Legend Header="Legenda" Dock="Right"/>
                     </sparrow:SparrowChart.Legend>
-                    <!--<sparrow:LineSeries PointsSource="{Binding Data.TimeGpuAvg}" XPath="X" YPath="Y" Label="GPU Avg Time" StrokeThickness="3"/>
-                    <sparrow:LineSeries PointsSource="{Binding Data.TimeCputAvg}" XPath="X" YPath="Y" Label="CPU Table Avg Time" StrokeThickness="3"/>
-                    <sparrow:LineSeries PointsSource="{Binding Data.TimeCpubAvg}" XPath="X" YPath="Y" Label="CPU Bit Avg Time" StrokeThickness="3"/>-->
-                    <sparrow:LineSeries Points="{Binding Data.TimeGpu}" XPath="X" YPath="Y" Label="GPU Times" StrokeThickness="5"/>
-                    <sparrow:LineSeries Points="{Binding Data.TimeCput}" XPath="X" YPath="Y" Label="CPU Table Times" StrokeThickness="5"/>
-                    <sparrow:LineSeries Points="{Binding Data.TimeCpub}" XPath="X" YPath="Y" Label="CPU Bit Times" StrokeThickness="5"/>
-                   
+                    <sparrow:LineSeries PointsSource="{Binding Data.TimeGpuAvg}" XPath="X" YPath="Y" Label="Czas średni GPU" StrokeThickness="3" Stroke="DarkOrchid"/>
+                    <sparrow:LineSeries PointsSource="{Binding Data.TimeCputAvg}" XPath="X" YPath="Y" Label="Czas średni CPU Table" StrokeThickness="3" Stroke="Tomato"/>
+                    <sparrow:LineSeries PointsSource="{Binding Data.TimeCpubAvg}" XPath="X" YPath="Y" Label="Czas średni CPU Bit" StrokeThickness="3" Stroke="LightGreen"/>
+                    <sparrow:ScatterSeries PointsSource="{Binding Data.TimeGpu}" XPath="X" YPath="Y" Label="GPU" ScatterSize="5" Stroke="Indigo" Fill="Indigo"/>
+                    <sparrow:ScatterSeries PointsSource="{Binding Data.TimeCput}" XPath="X" YPath="Y" Label="CPU Table" ScatterSize="5" Stroke="DarkRed" Fill="DarkRed"/>
+                    <sparrow:ScatterSeries PointsSource="{Binding Data.TimeCpub}" XPath="X" YPath="Y" Label="CPU Bit" ScatterSize="5" Stroke="DarkGreen" Fill="DarkGreen"/>
                 </sparrow:SparrowChart>
-                <!--TODO-->
             </Grid>
         </Grid>
 
@@ -69,10 +66,10 @@
             <Border Style="{StaticResource RightPanelHeaderBorder}">
                 <TextBlock Style="{StaticResource RightPanelHeader}" />
             </Border>
-
+       
             <StackPanel Style="{StaticResource MenuOneRowSmall}">
                 <metro:Tile IsEnabled="True" Title="Pomoc" Style="{StaticResource TileSmall}" Click="Help_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
-                <metro:Tile Title="Ustawienia domyślne" Style="{StaticResource TileSmall}" Click="DefaultSettings_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                <metro:Tile Name="TileResetSettings" Title="Ustawienia domyślne" Style="{StaticResource TileSmall}" Click="DefaultSettings_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
             </StackPanel>
 
             <TextBlock Style="{StaticResource BlockLine}">
@@ -100,7 +97,7 @@
                 </StackPanel>
                 <StackPanel Style="{StaticResource MenuOneRowSmallVertical}">
                     <metro:Tile Title="Folder z plikami DLL" Style="{StaticResource TileSmall}" Click="SetDLLFolder_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
-                    <metro:Tile Title="Wzorzec nazwy plików w folderze" Style="{StaticResource TileSmall}" Click="SetPattern_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                    <metro:Tile Name="TilePattern" Title="Wzorzec nazwy plików w folderze" Style="{StaticResource TileSmall}" Click="SetPattern_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
                 </StackPanel>
             </StackPanel>
 
@@ -112,20 +109,20 @@
 
             <StackPanel Style="{StaticResource MenuOneRowBig}">
                 <StackPanel Style="{StaticResource MenuOneRowSmallVertical}">
-                    <metro:Tile IsEnabled="True" Title="Wyświetl ustawienia" Style="{StaticResource TileSmall}" Click="DisplaySettings_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
-                    <metro:Tile Title="Statystyki - dane" Style="{StaticResource TileSmall}" Click="DisplayStats_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                    <metro:Tile Name="TileSettings" IsEnabled="True" Title="Wyświetl ustawienia" Style="{StaticResource TileSmall}" Click="DisplaySettings_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                    <metro:Tile Name="TileStats" Title="Statystyki - dane" Style="{StaticResource TileSmall}" Click="DisplayStats_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
                 </StackPanel>
                 <StackPanel Style="{StaticResource MenuOneRowSmallVertical}">
                     <!--<metro:Tile IsEnabled="True" Style="{StaticResource TileSmallLanguage}" Click="Language_Click" MouseEnter="Language_MouseEnter" MouseLeave="Language_MouseLeave"/>-->
                     <metro:Tile IsEnabled="True" Title="Czyść konsolę" Style="{StaticResource TileSmall}" Click="ClearLog_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
-                    <metro:Tile Title="Statystyki - wykresy" Style="{StaticResource TileSmall}" Click="DisplayStatCharts_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+                    <metro:Tile Name="TileCharts" Title="Statystyki - wykresy" Style="{StaticResource TileSmall}" Click="DisplayStatCharts_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
                 </StackPanel>
             </StackPanel>
 
             <Line Style="{StaticResource FullLine}"/>
 
-            <metro:Tile Name="Start" Title="Uruchom" Style="{StaticResource TileSmall}" Width="230" Click="Run_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
-            <metro:Tile IsEnabled="True" Name="Stop" Title="Przerwij" Style="{StaticResource TileSmall}" Visibility="Hidden" Width="230" Click="Stop_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+            <metro:Tile Name="TileStart" Title="Uruchom" Style="{StaticResource TileSmall}" Width="230" Click="Run_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
+            <metro:Tile IsEnabled="True" Title="Przerwij" Style="{StaticResource TileSmall}" Visibility="{Binding StopButtonVisibilityValue}" Width="230" Click="Stop_Click" MouseEnter="Tile_MouseEnter" MouseLeave="Tile_MouseLeave"/>
         </StackPanel>
     </Grid>
 </metro:MetroWindow>

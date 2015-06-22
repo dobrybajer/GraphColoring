@@ -6,6 +6,11 @@
     public class Graph
     {
         /// <summary>
+        /// Pole przechowujące wartość gęstości grafu.
+        /// </summary>
+        private readonly double _density;
+
+        /// <summary>
         /// Pole przechowujące listę sąsiadów dla wszystkich wierzchołków po kolei.
         /// </summary>
         private readonly int[] _vertices;
@@ -48,14 +53,24 @@
         }
 
         /// <summary>
+        /// Właściwość zwracająca gęstość grafu jako stosunek sumy liczby wszystkich sąsiadów wszystkich wierzchołków do liczby sąsiadów w grafie pełnym dla danego rozmiaru zadania.
+        /// </summary>
+        public double Density
+        {
+            get { return _density; }
+        }
+
+        /// <summary>
         /// Konstruktor. Na podstawie listy wierzchołków tworzy obiekt grafu.
         /// </summary>
         /// <param name="vertices">Lista sąsiadów każdego z wierzchołków danego grafu.</param>
         /// <param name="neighboursCount">Lista ostatnich numerów sąsiadów wierzchołka z tablicy "vertices".</param>
-        public Graph(int[] vertices, int[] neighboursCount)
+        /// <param name="density">Gęstość grafu.</param>
+        public Graph(int[] vertices, int[] neighboursCount, double density)
         {
             _vertices = vertices;
             _neighboursCount = neighboursCount;
+            _density = density;
         }
     }
 }

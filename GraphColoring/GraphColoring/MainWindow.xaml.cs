@@ -16,8 +16,10 @@ using GraphColoring.Resources.Strings;
 using GraphColoring.Structures;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
+using Microsoft.Win32;
 using Application = System.Windows.Application;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
+using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 //using System.Windows.Media.Imaging;
 
 [assembly: NeutralResourcesLanguage("pl-PL")]
@@ -29,13 +31,7 @@ namespace GraphColoring
     /// </summary>
     public partial class MainWindow
     {
-        // ? TODO dodać obsługę wielu wersji .NET
-        // 2 TODO dodać bindingi gdzie się da
-        // 3 TODO dodac obsługę konkretnych błędów np. zły format pliku itp.
-        // 4 TODO poprawić wykres (grafika); zamienić wartości na Style; blokowanie statystyk na czas uruchomienia (funkcja addata)
-        // 5 TODO poprawienie wiadomości w logu (konsoli)
-        // 6 TODO poprawienie pliku Statistics (SaveToFile method)
-        // ? poprawić dwujęzyczność 
+        // 2 TODO wykres - bug/error
 
         #region Definicje metod z załączonych plików DDL
         /// <summary>
@@ -156,7 +152,7 @@ namespace GraphColoring
         {
             InitializeComponent();
 
-            _bindings = new Bindings { EnabledValue = true, VisibilityValue = Visibility.Hidden };
+            _bindings = new Bindings { EnabledValue = true, VisibilityValue = Visibility.Hidden, StopButtonVisibilityValue = Visibility.Hidden };
 
             DataContext = _bindings;
 
@@ -273,31 +269,114 @@ namespace GraphColoring
 
         #endregion
 
-        // 0 TODO sprawdzenie czy działa wszystko dla GPU na kompie z GPU; dodanie blokowania uruchomienia (tylko dla GPU); limity pamięci wirtualnej
+        // 0 TODO sprawdzenie czy działa wszystko dla GPU na kompie z GPU; dodanie blokowania uruchomienia (tylko dla GPU); limity pamięci wirtualnej; poprawic tak zeby pamiec GPU i CPU miala tyle samo pkt na wykresie
         #region Funkcje uruchamiające obliczanie algorytmu różnymi metodami
+
+        /// <summary>
+        /// Funkcja pomocniczna wyświetlająca w konsoli przewidywany czas obliczeń dla wybranych ustawień.
+        /// </summary>
+        /// <param name="g">Graf wejściowy.</param>
+        /// <param name="type">Typ algorytmu.</param>
+        private void PredictTime(Graph g, int type)
+        {
+            var predictedTime = _stats.PredictTime(g.VerticesCount, type);
+            if (predictedTime.Ticks == 0)
+                WriteMessageUi(new[] { Messages.GraphRunPredictTimeNoData }, new[] { _cWarning });
+            else
+            {
+                var output = predictedTime.TotalMilliseconds < 1000 ? 
+                    Messages.PredictTimeLessThanSecond : 
+                    string.Format("{0:##.###}s", predictedTime.TotalMilliseconds / 1000 * g.Density);
+
+                WriteMessageUi(new[] { Messages.GraphRunPredictTimeStart, output }, new[] { _cNormal, _cPath });
+            }
+
+            switch (type)
+            {
+                case 0:
+                    WriteMessageUi(new[] { Messages.PredictTimeMethodInfo, Messages.GraphGPU }, new[] { _cNormal, _cPath });
+                    break;
+                case 1:
+                    WriteMessageUi(new[] { Messages.PredictTimeMethodInfo, Messages.GraphCPUT }, new[] { _cNormal, _cPath });
+                    break;
+                case 2:
+                    WriteMessageUi(new[] { Messages.PredictTimeMethodInfo, Messages.GraphCPUB }, new[] { _cNormal, _cPath });
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Funkcja pomocniczna wyświetlająca komunikat w przypadku braku dostępnej pamięci potrzebnej do wykonania obliczeń bieżącego zadania.
+        /// </summary>
+        /// <param name="g">Graf wejściowy.</param>
+        /// <param name="type">Typ algorytmu.</param>
+        /// <returns>False - brak dostępnej pamięci, true - wszystko w porządku.</returns>
+        private bool PredictSpace(Graph g, int type)
+        {
+            var predictedSpace = _stats.PredictSpace(g.VerticesCount, type);
+            if (predictedSpace == null) return false;
+
+            WriteMessageUi(new[] { Messages.GraphRunErrorNoSpaceAvailable, predictedSpace[0].ToString(CultureInfo.InvariantCulture), Messages.GraphRunErrorNoSpaceRequired, predictedSpace[1].ToString(CultureInfo.InvariantCulture), Messages.GraphRunErrorNoSpaceEndLine }, new[] { _cNormal, _cError, _cNormal, _cError, _cNormal });
+
+            return true;
+        }
+
+        /// <summary>
+        /// Funkcja pomocnicza wykonująca przygotowanie danych oraz wyświetlająca wstępne informacje w konsoli.
+        /// </summary>
+        /// <param name="path">Ścieżka do pliku z reprezentacją grafu.</param>
+        /// <returns>Wynikowy graf, bądź NULL w przypadku błędu.</returns>
+        private Graph Preprocessing(string path)
+        {
+            var g = FileProcessing.ReadFile(path);
+            if (g == null || g.VerticesCount == 0)
+            {
+                WriteMessage(new[] {Messages.GraphRunErrorReadingInput, path}, new[] {_cError, _cPath});
+                return null;
+            }
+
+            WriteMessage(new[] 
+            { 
+                Messages.PreprocessingFirst, path, 
+                Messages.PreprocessingSecond, g.VerticesCount.ToString(), 
+                Messages.PreprocessingThird, string.Format("{0:##}%", g.Density * 100)
+            }, new[] { _cNormal, _cPath, _cNormal, _cPath, _cNormal, _cPath, _cNormal });
+
+            return g;
+        }
+
+        /// <summary>
+        /// Funkcja pomocnicza sprawdzająca istnienie pliku DLL dla odpowiedniej metody algorytmu.
+        /// </summary>
+        /// <param name="type">Typ metody algorytmu.</param>
+        /// <returns>True - plik istnieje, false - plik nie istnieje.</returns>
+        private bool CheckDll(int type)
+        {
+            var dllFile = type == 0 ? "GraphColoringGPU.dll" : "GraphColoringCPU.dll";
+
+            if(File.Exists(DllFolder + dllFile)) return false;
+
+            WriteMessageUi(new[] { Messages.DllFileMissing, DllFolder + dllFile }, new[] { _cError, _cPath });
+
+            return true;
+        }
 
         /// <summary>
         /// Metoda uruchamiająca algorytm w wersji równoległej na procesorze GPU. Obliczenia wykonywane są w tle. Wykorzystuje bibliotekę GraphColoringGPU.dll
         /// </summary>
+        /// <param name="g">Wczytany graf wejściowy.</param>
         /// <param name="path">Ścieżka do pliku tekstowego zawierającego reprezentację grafu.</param>
         /// <param name="token">Token wykorzystywany do anulowania rozpoczętych w tle obliczeń.</param>
-        private void MethodGpu(string path, CancellationToken token)
+        private void MethodGpu(Graph g, string path, CancellationToken token)
         {
             try
             {
-                var g = FileProcessing.ReadFile(path);
-                if (g == null || g.VerticesCount == 0)
-                {
-                    WriteMessage(new[] { Messages.GraphRunErrorReadingInput }, new[] { _cError });
-                    return;
-                }
+                const int type = 0;
 
-                var predictedTime = _stats.PredictTime(g.VerticesCount, 0);
-                if (predictedTime.Ticks == 0)
-                    WriteMessageUi(new[] { Messages.GraphRunPredictTimeNoData }, new[] { _cWarning });
-                else
-                    WriteMessageUi(new[] { Messages.GraphRunPredictTimeStart, predictedTime.ToString() }, new[] { _cNormal, _cResult });
+                if (CheckDll(type)) return;
 
+                PredictTime(g, type);
+                    
                 var wynik = new int[g.VerticesCount];
                 var pamiec = new double[g.VerticesCount + 4];
 
@@ -318,9 +397,9 @@ namespace GraphColoring
 
                 watch.Stop();
 
-                _stats.Add(path, g.VerticesCount, 0, watch.Elapsed, pamiec);
+                _stats.Add(path, g.VerticesCount, g.Density, type, watch.Elapsed, pamiec);
 
-                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, watch.ElapsedMilliseconds, 0));
+                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, watch.ElapsedMilliseconds, type));
 
                 WriteMessageUi(new[] { Messages.GraphRunResultPartOne, wynikk.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
             }
@@ -333,34 +412,19 @@ namespace GraphColoring
         /// <summary>
         /// Metoda uruchamiająca algorytm w wersji synchronicznej na procesorze CPU (wersja tablicowa). Obliczenia wykonywane są w tle. Wykorzystuje bibliotekę GraphColoringGPU.dll
         /// </summary>
+        /// <param name="g">Wczytany graf wejściowy.</param>
         /// <param name="path">Ścieżka do pliku tekstowego zawierającego reprezentację grafu.</param>
         /// <param name="token">Token wykorzystywany do anulowania rozpoczętych w tle obliczeń.</param>
-        private void MethodTableCpu(string path, CancellationToken token)
+        private void MethodTableCpu(Graph g, string path, CancellationToken token)
         {
             try
             {
-                var g = FileProcessing.ReadFile(path);
+                const int type = 1;
 
-                if (g == null || g.VerticesCount == 0)
-                {
-                    WriteMessage(new[] { Messages.GraphRunErrorReadingInput }, new[] { _cError });
-                    return;
-                }
+                if (CheckDll(type)) return;
+                if (PredictSpace(g, type)) return;
 
-                var predictedSpace = _stats.PredictSpace(g.VerticesCount, 1);
-                if (predictedSpace != null)
-                {
-                    WriteMessageUi(new[] { Messages.GraphRunErrorNoSpaceAvailable, predictedSpace[0].ToString(CultureInfo.InvariantCulture), Messages.GraphRunErrorNoSpaceRequired, predictedSpace[1].ToString(CultureInfo.InvariantCulture), Messages.GraphRunErrorNoSpaceEndLine }, new[] { _cNormal, _cError, _cNormal, _cError, _cNormal });
-
-                    return;
-                }
-
-                var predictedTime = _stats.PredictTime(g.VerticesCount, 1);
-                if(predictedTime.Ticks == 0)
-                    WriteMessageUi(new[] { Messages.GraphRunPredictTimeNoData }, new[] { _cWarning });
-                else
-                    WriteMessageUi(new[] { Messages.GraphRunPredictTimeStart, predictedTime.ToString() }, new[] { _cNormal, _cResult });
-
+                PredictTime(g, type);
 
                 var pamiec = new double[g.VerticesCount + 2];
 
@@ -372,9 +436,9 @@ namespace GraphColoring
 
                 watch.Stop();
 
-                _stats.Add(path, g.VerticesCount, 1, watch.Elapsed, pamiec);
+                _stats.Add(path, g.VerticesCount, g.Density, type, watch.Elapsed, pamiec);
 
-                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, watch.ElapsedMilliseconds, 1));
+                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, watch.ElapsedMilliseconds, type));
 
                 WriteMessageUi(new[] { Messages.GraphRunResultPartOne, k.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
             }
@@ -388,33 +452,19 @@ namespace GraphColoring
         /// <summary>
         /// Metoda uruchamiająca algorytm w wersji synchronicznej na procesorze CPU (wersja bitowa). Obliczenia wykonywane są w tle. Wykorzystuje bibliotekę GraphColoringGPU.dll
         /// </summary>
+        /// <param name="g">Wczytany graf wejściowy.</param>
         /// <param name="path">Ścieżka do pliku tekstowego zawierającego reprezentację grafu.</param>
         /// <param name="token">Token wykorzystywany do anulowania rozpoczętych w tle obliczeń.</param>
-        private void MethodBitCpu(string path, CancellationToken token)
+        private void MethodBitCpu(Graph g, string path, CancellationToken token)
         {
             try
             {
-                var g = FileProcessing.ReadFile(path);
+                const int type = 2;
 
-                if (g == null || g.VerticesCount == 0)
-                {
-                    WriteMessage(new[] { Messages.GraphRunErrorReadingInput }, new[] { _cError });
-                    return;
-                }
+                if (CheckDll(type)) return;
+                if (PredictSpace(g, type)) return;
 
-                var predictedSpace = _stats.PredictSpace(g.VerticesCount, 2);
-                if (predictedSpace != null)
-                {
-                    WriteMessageUi(new[] { Messages.GraphRunErrorNoSpaceAvailable, predictedSpace[0].ToString(CultureInfo.InvariantCulture), Messages.GraphRunErrorNoSpaceRequired, predictedSpace[1].ToString(CultureInfo.InvariantCulture), Messages.GraphRunErrorNoSpaceEndLine }, new[] { _cNormal, _cError, _cNormal, _cError, _cNormal });
-
-                    return;
-                }
-
-                var predictedTime = _stats.PredictTime(g.VerticesCount, 2);
-                if (predictedTime.Ticks == 0)
-                    WriteMessageUi(new[] { Messages.GraphRunPredictTimeNoData }, new[] { _cWarning });
-                else
-                    WriteMessageUi(new[] { Messages.GraphRunPredictTimeStart, predictedTime.ToString() }, new[] { _cNormal, _cResult });
+                PredictTime(g, type);
 
                 g = FileProcessing.ConvertToBitVersion(g);
 
@@ -428,9 +478,9 @@ namespace GraphColoring
 
                 watch.Stop();
 
-                _stats.Add(path, g.VerticesCount, 2, watch.Elapsed, pamiec);
+                _stats.Add(path, g.VerticesCount, g.Density, type, watch.Elapsed, pamiec);
 
-                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, watch.ElapsedMilliseconds, 2));
+                Application.Current.Dispatcher.Invoke(() => _viewModel.AddData(pamiec, watch.ElapsedMilliseconds, type));
            
                 WriteMessageUi(new[] { Messages.GraphRunResultPartOne, k.ToString(), Messages.GraphRunResultPartTwo, watch.Elapsed.ToString() }, new[] { _cNormal, _cResult, _cNormal, _cResult });
     
@@ -583,6 +633,8 @@ namespace GraphColoring
                 tile.Background = new SolidColorBrush(TileMouseOn);
 
                 ContentPanel.Visibility = Visibility.Hidden;
+
+                SetEnabledValues(false, false);
             }
             else
             {
@@ -593,6 +645,8 @@ namespace GraphColoring
                     tile.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(CheckboxPressed));
 
                 ContentPanel.Visibility = Visibility.Visible;
+
+                SetEnabledValues(true, false);
             }
         }
 
@@ -631,6 +685,12 @@ namespace GraphColoring
         {
             var tile = sender as Tile;
             if (tile == null) return;
+  
+            if (!AdobeReaderExist())
+            {
+                WriteMessage(new[] { Messages.ViewHelpNoAdobeReader }, new[] { _cError });
+                return;
+            } 
 
             if ((string)tile.Tag == NotPressed || (string)tile.Tag == null)
             {
@@ -639,12 +699,14 @@ namespace GraphColoring
                     WriteMessage(new[] { Messages.ViewHelpNoFile }, new[] { _cError });
                     return;
                 }
-                
+
                 tile.Tag = Pressed;
                 tile.Background = new SolidColorBrush(TileMouseOn);
 
                 Browser.Navigate(new Uri(HelpDocPath));
                 Browser.Visibility = Visibility.Visible;
+
+                SetEnabledValues(false);
             }
             else
             {
@@ -654,6 +716,8 @@ namespace GraphColoring
 
                 Browser.Visibility = Visibility.Hidden;
                 Browser.Navigate(NavigateBlank);
+
+                SetEnabledValues(true);
             }
         }
 
@@ -668,8 +732,8 @@ namespace GraphColoring
 
             if (result == MessageDialogResult.Affirmative)
             {     
-                GraphPath = String.Empty;
-                SearchPattern = String.Empty;
+                GraphPath = string.Empty;
+                SearchPattern = string.Empty;
 
                 DllFolder = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) + Dll;
                 SetDllDirectory(DllFolder);
@@ -680,6 +744,57 @@ namespace GraphColoring
             {
                 WriteMessage(new[] { Messages.DefaultSettingsNOTOK }, new[] { _cWarning });
             }
+        }
+
+        /// <summary>
+        /// Pomocnicza funkcja zarządzająca dostępnością przycisków menu w zależności od wybranej akcji.
+        /// </summary>
+        /// <param name="value">Wartość dostępności poszczególnych przycisków (bool).</param>
+        /// <param name="type">Domyślnie wartość true - akcja przycisku Pomoc, wartość false - przycisku Wykresy.</param>
+        private void SetEnabledValues(bool value, bool type = true)
+        {
+            if (type)
+            {
+                TileCharts.IsEnabled = value;   
+                TileResetSettings.IsEnabled = value;
+                TilePattern.IsEnabled = value;
+                TileSettings.IsEnabled = value;
+            }
+
+            if ((string) TileCharts.Tag == Pressed && type) return;
+
+            TileStats.IsEnabled = value;
+            //TileStart.IsEnabled = value;
+        }
+
+        /// <summary>
+        /// Pomocnicza funkcja sprawdzająca, czy w systemie jest zainstalowany program Adobe Acrobat Reader.
+        /// </summary>
+        /// <returns>True - program jest zainstalowany, false - w p.p.</returns>
+        private static bool AdobeReaderExist()
+        {
+            RegistryKey acroRead = null;
+
+            var openSubKey = Registry.LocalMachine.OpenSubKey("Software");
+
+            if (openSubKey == null) return false;
+
+            var adobe = openSubKey.OpenSubKey("Adobe");
+
+            if (adobe == null)
+            {
+                var policies = openSubKey.OpenSubKey("Policies");
+
+                if (policies == null)
+                    return false;
+
+                adobe = policies.OpenSubKey("Adobe");
+            }
+
+            if (adobe != null)
+                acroRead = adobe.OpenSubKey("Acrobat Reader");
+
+            return acroRead != null;
         }
 
         #endregion
@@ -694,21 +809,21 @@ namespace GraphColoring
         private async void Run_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(GraphPath))
-            {  
-                WriteMessage(new[] { Messages.RunNoInputData });
+            {
+                WriteMessage(new[] { Messages.RunNoInputData }, new[] { _cError });
                 return;
             }
 
-            if ((string)CpuT.Tag == NotPressed && (string)CpuB.Tag == NotPressed && (string)Gpu.Tag == NotPressed)
+            if ((CpuT.Tag == null || (string)CpuT.Tag == NotPressed) &&
+                (CpuB.Tag == null || (string)CpuB.Tag == NotPressed) &&
+                (Gpu.Tag == null || (string)Gpu.Tag == NotPressed))
             {
-                WriteMessage(new[] { Messages.RunNoMethod });
+                WriteMessage(new[] { Messages.RunNoMethod }, new[] { _cError });
                 return;
             }
 
             _bindings.EnabledValue = !_bindings.EnabledValue;
-            Stop.Visibility = Visibility.Visible;
-            //VisibilityValue = Visibility.Hidden;
-            //ContentPanel.Visibility = Visibility.Visible;
+            _bindings.StopButtonVisibilityValue = Visibility.Visible;
 
             try
             {
@@ -716,7 +831,7 @@ namespace GraphColoring
 
                 _cancelWork = () =>
                 {
-                    Stop.Visibility = Visibility.Hidden;
+                    _bindings.StopButtonVisibilityValue = Visibility.Hidden;
                     cancellationTokenSource.Cancel();
                 };
 
@@ -726,12 +841,19 @@ namespace GraphColoring
                 {
                     _viewModel.ClearChart();
 
+                    var g = Preprocessing(GraphPath);
+                    if (g == null)
+                    {
+                        CancelComputation();
+                        return;
+                    }
+
                     if ((string) CpuT.Tag == Pressed)
-                        await Task.Run(() => MethodTableCpu(GraphPath, token), token);       
+                        await Task.Run(() => MethodTableCpu(g, GraphPath, token), token);       
                     if ((string)CpuB.Tag == Pressed)
-                        await Task.Run(() => MethodBitCpu(GraphPath, token), token);
+                        await Task.Run(() => MethodBitCpu(g, GraphPath, token), token);
                     if ((string)Gpu.Tag == Pressed)
-                        await Task.Run(() => MethodGpu(GraphPath, token), token);
+                        await Task.Run(() => MethodGpu(g, GraphPath, token), token);
                 }
                 else
                 {
@@ -744,12 +866,15 @@ namespace GraphColoring
                         _viewModel.ClearChart();
                         var f1 = f;
 
+                        var g = Preprocessing(f1);
+                        if (g == null) continue;
+
                         if ((string)CpuT.Tag == Pressed)
-                            await Task.Run(() => MethodTableCpu(f1, token), token);
+                            await Task.Run(() => MethodTableCpu(g, f1, token), token);
                         if ((string)CpuB.Tag == Pressed)
-                            await Task.Run(() => MethodBitCpu(f1, token), token);
+                            await Task.Run(() => MethodBitCpu(g, f1, token), token);
                         if ((string)Gpu.Tag == Pressed)
-                            await Task.Run(() => MethodGpu(f1, token), token);
+                            await Task.Run(() => MethodGpu(g, f1, token), token);
                     }
                 }            
             }
@@ -758,11 +883,19 @@ namespace GraphColoring
                 WriteMessage(new[] { ee.Message }, new[] { _cError });
             }
 
-            _bindings.EnabledValue = !_bindings.EnabledValue;
-            Stop.Visibility = Visibility.Hidden;
-            _cancelWork = null;
+            CancelComputation();
       
             _stats.SaveToFile(StatsFile);
+        }
+
+        /// <summary>
+        /// Funckja pomocnicza zawierająca zestaw instrukcji do wykonania po zakończeniu obliczeń.
+        /// </summary>
+        private void CancelComputation()
+        {
+            _bindings.EnabledValue = !_bindings.EnabledValue;
+            _bindings.StopButtonVisibilityValue = Visibility.Hidden;
+            _cancelWork = null;
         }
 
         /// <summary>

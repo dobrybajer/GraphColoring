@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Sparrow.Chart;
 
 namespace GraphColoring.Structures
 {
@@ -20,7 +20,10 @@ namespace GraphColoring.Structures
         /// <param name="item"></param>
         public void SmartInsert(int index, T item)
         {
-            Items.Insert(index, item);
+            if(index < Items.Count)
+                Items.Insert(index, item);
+            else
+                Items.Add(item);
 
             OnPropertyChanged(new PropertyChangedEventArgs("Count"));
             OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
@@ -34,7 +37,8 @@ namespace GraphColoring.Structures
         /// <param name="item"></param>
         public void SmartUpdate(int index, T item)
         {
-            Items[index] = item;
+            if(index < Items.Count)
+                Items[index] = item;
 
             OnPropertyChanged(new PropertyChangedEventArgs("Count"));
             OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
@@ -50,7 +54,7 @@ namespace GraphColoring.Structures
         /// <summary>
         /// Współrzędna składowa osi X wykresu - reprezentuje iterację w jakiej znajduje się obliczenie
         /// </summary>
-        public double X { get; set; }
+        public int X { get; set; }
 
         /// <summary>
         /// Współrzędna składowa osi Y wykresu - reprezentuje wykorzystaną pamięć RAM w danej iteracji obliczeń
@@ -62,10 +66,10 @@ namespace GraphColoring.Structures
         /// </summary>
         /// <param name="x">Iteracja w jakiej znajduje się obliczenie.</param>
         /// <param name="y">Wartość użytej pamięci na potrzeby obliczeń algorytmu w danej chwili.</param>
-        public SpaceModel(double x, double y)
+        public SpaceModel(int x, double y)
         {
             X = x;
-            Y = y;
+            Y = Math.Round(y, 5);
         }
     }
 
@@ -158,7 +162,7 @@ namespace GraphColoring.Structures
         /// <summary>
         /// Kolekcja reprezentująca zależność czasu obliczenia od rozmiaru zadania dla algorytmu CPU w wersji bitowej.
         /// </summary>
-        public SmartCollection<DoublePoint> TimeCpub { get; set; }
+        public SmartCollection<TimeModel> TimeCpub { get; set; }
 
         /// <summary>
         /// Kolekcja reprezentująca zależność średniego czasu obliczenia od rozmiaru zadania dla algorytmu CPU w wersji bitowej.
@@ -166,7 +170,7 @@ namespace GraphColoring.Structures
         public SmartCollection<TimeModel> TimeCpubAvg { get; set; }
         #endregion
 
-        #region Konsruktor
+        #region Konstruktor
         /// <summary>
         /// Domyślny konstruktor. Inicjalizuje wszystkie zmienne.
         /// </summary>
@@ -182,7 +186,7 @@ namespace GraphColoring.Structures
 
             TimeGpu = new SmartCollection<TimeModel>();
             TimeCput = new SmartCollection<TimeModel>();
-            TimeCpub = new SmartCollection<DoublePoint>();
+            TimeCpub = new SmartCollection<TimeModel>();
 
             TimeGpuAvg = new SmartCollection<TimeModel>();
             TimeCputAvg = new SmartCollection<TimeModel>();
@@ -204,6 +208,8 @@ namespace GraphColoring.Structures
         /// <param name="type">Typ algorytmu wywołującego daną metodę.</param>
         public void AddData(double[] pamiec, long timeElapsed, int type)
         {
+            if (pamiec == null || pamiec.Length == 0) return;
+
             var n = type == 0 ? pamiec.Length - 4 : pamiec.Length - 2;
             var predictSpace = PredictSpace((ulong)n, type).ToArray();
 
@@ -234,43 +240,16 @@ namespace GraphColoring.Structures
                 }
             }
 
-            double avgTime;
-            int index;
-
             switch (type)
             {
                 case 0:
-                    TimeGpu.Add(new TimeModel(n, timeElapsed));
-                    avgTime = TimeGpu.Where(x => x.X == n).Average(y => y.Y);
-                    index = FindIndex(n, TimeGpuAvg);
-
-                    if (index < 0)
-                        TimeGpuAvg.SmartUpdate(-index, new TimeModel(n, avgTime));
-                    else
-                        TimeGpuAvg.SmartInsert(index, new TimeModel(n, avgTime));
-
+                    AddTime(TimeGpu, TimeGpuAvg, n, timeElapsed);
                     break;
                 case 1:
-                    TimeCput.Add(new TimeModel(n, timeElapsed));
-                    avgTime = TimeCput.Where(x => x.X == n).Average(y => y.Y);
-                    index = FindIndex(n, TimeCputAvg);
-
-                    if (index < 0)
-                        TimeCputAvg.SmartUpdate(-index, new TimeModel(n, avgTime));
-                    else
-                        TimeCputAvg.SmartInsert(index, new TimeModel(n, avgTime));
-
+                    AddTime(TimeCput, TimeCputAvg, n, timeElapsed);
                     break;
                 case 2:
-                    TimeCpub.Add(new DoublePoint { Data = n, Value = timeElapsed });
-                    //avgTime = TimeCpub.Where(x => x.X == n).Average(y => y.Y);
-                    //index = FindIndex(n, TimeCpubAvg);
-
-                    //if (index < 0)
-                    //    TimeCpubAvg.SmartUpdate(-index, new TimeModel(n, avgTime));
-                    //else
-                    //    TimeCpubAvg.SmartInsert(index, new TimeModel(n, avgTime));
-
+                    AddTime(TimeCpub, TimeCpubAvg, n, timeElapsed);
                     break;
             }
         }
@@ -291,6 +270,27 @@ namespace GraphColoring.Structures
         #endregion
 
         #region Metody pomocnicze (statyczne)
+
+        /// <summary>
+        /// Metoda dodająca dane statystyczne do kolekcji przechowujących informacje o czasie wykonania algorytmu.
+        /// </summary>
+        /// <param name="colTime">Kolekcja z czasami wykonania algorytmu.</param>
+        /// <param name="colTimeAvg">Kolekcja z czasem średnim wyliczonym na podstawie kolekcji z czasami poszczegołnymi.</param>
+        /// <param name="n">Liczba wierzchołków w grafie.</param>
+        /// <param name="time">Czas obliczenia pojedynczego zadania.</param>
+        private static void AddTime(ICollection<TimeModel> colTime, SmartCollection<TimeModel> colTimeAvg, int n,
+           long time)
+        {
+            colTime.Add(new TimeModel(n, time));
+            var avgTime = colTime.Where(x => x.X == n).Average(y => y.Y);
+            avgTime = avgTime < 0 ? 0 : avgTime;
+            var index = FindIndex(n, colTimeAvg);
+
+            if (index < 0)
+                colTimeAvg.SmartUpdate(-index, new TimeModel(n, avgTime));
+            else
+                colTimeAvg.SmartInsert(index, new TimeModel(n, avgTime));
+        }
 
         /// <summary>
         /// Metoda znajduje indeks wskazujący na miejsce, w którym ma być wstawiony nowy punkt na wykreesie czasu.
@@ -332,13 +332,13 @@ namespace GraphColoring.Structures
                 switch (type)
                 {
                     case 0: // GPU
-                        tmp[i] = powerNumber + actualVertices / Common.ToMb * i + newVertices / Common.ToMb * (i + 1) + actualVertices / Common.ToMb;
+                        tmp[i] = powerNumber + (actualVertices * i + newVertices * (i + 1) + actualVertices) / Common.ToMb;
                         break;
                     case 1: // CPU Table
-                        tmp[i] = powerNumber + actualVertices / Common.ToMb * i + newVertices / Common.ToMb * (i + 1);
+                        tmp[i] = powerNumber + (actualVertices * i + newVertices * (i + 1)) / Common.ToMb;
                         break;
                     case 2: // CPU Bit
-                        tmp[i] = powerNumber + actualVertices / Common.ToMb + newVertices / Common.ToMb;
+                        tmp[i] = powerNumber + (actualVertices + newVertices) / Common.ToMb;
                         break;
                 }
             }

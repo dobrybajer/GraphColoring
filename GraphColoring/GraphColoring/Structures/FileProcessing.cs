@@ -26,7 +26,7 @@ namespace GraphColoring.Structures
                 var pas = false;
                 var tmp = path.Split('\\');
 
-                if (tmp[tmp.Length - 1][0] == 'D')
+                if (tmp[tmp.Length - 1][0] == 'D' || tmp[tmp.Length - 1][0] == 'd')
                 {
                     var oldpath = tmp[0] + "\\";
 
@@ -43,30 +43,36 @@ namespace GraphColoring.Structures
                 {
                     var vertices = new List<int>();
                     var neighborsCount = new List<int>();
-
+                    var verticesCnt = 0;
                     string line;
 
-                    if (!sr.EndOfStream)
-                        sr.ReadLine();
+                    if (!sr.EndOfStream && (line = sr.ReadLine()) != null)
+                        verticesCnt = int.Parse(line);
 
                     while ((line = sr.ReadLine()) != null)
                     {
-                        vertices.AddRange(line.Split(',').Select(Int32.Parse).ToList());
+                        vertices.AddRange(line.Split(',').Select(int.Parse).ToList());
                         neighborsCount.Add(vertices.Count);
                     }
                     sr.Close();
+
+                    if (verticesCnt != neighborsCount.Count || vertices.Exists(x => x >= verticesCnt))
+                        return null;
+
+                    var density = verticesCnt == 1 ? 1 : vertices.ToArray().Length / ((verticesCnt - 1) * (double)(verticesCnt - 1));
+                    density = density > 1 ? 1 : density;
 
                     if (pas)
                         File.Delete(path);
 
                     Thread.Sleep(100);
 
-                    return new Graph(vertices.ToArray(), neighborsCount.ToArray());
+                    return new Graph(vertices.ToArray(), neighborsCount.ToArray(), density);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                throw e;
+                return null;
             }
         }
 
@@ -138,7 +144,7 @@ namespace GraphColoring.Structures
                 }
             }
 
-            return new Graph(v, g.NeighboursCount.ToArray());
+            return new Graph(v, g.NeighboursCount.ToArray(), g.Density);
         }
     }
 }

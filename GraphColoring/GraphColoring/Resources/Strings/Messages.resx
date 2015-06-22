@@ -121,34 +121,31 @@
     <value>Ustawienia</value>
   </data>
   <data name="DialogChooseGraphFileResult" xml:space="preserve">
-    <value>Ścieżka do wybranego pliku:</value>
+    <value>Wybrany plik: </value>
   </data>
   <data name="DialogChooseGraphFilter" xml:space="preserve">
     <value>Pliki tekstowe|*.txt</value>
   </data>
   <data name="DialogChooseGraphFolderResult" xml:space="preserve">
-    <value>Ścieżka do wybranego folderu:</value>
+    <value>Wybrany folder: </value>
   </data>
   <data name="DialogChooseGraphNoFile" xml:space="preserve">
-    <value>Nie wybrałeś żadnego pliku.</value>
+    <value>Nie wybrano żadnego pliku.</value>
   </data>
   <data name="DialogChooseGraphNoFolder" xml:space="preserve">
-    <value>Nie wybrałeś żadnego folderu.</value>
+    <value>Nie wybrano żadnego folderu.</value>
   </data>
   <data name="DialogChooseGraphTitle" xml:space="preserve">
     <value>Wybierz plik tekstowy zawierający reprezentację grafu</value>
   </data>
-  <data name="DLLPath" xml:space="preserve">
-    <value>..\\..\\..\\Debug\\</value>
-  </data>
   <data name="GraphCPUB" xml:space="preserve">
-    <value>[CPU Bit] </value>
+    <value>CPU Bit </value>
   </data>
   <data name="GraphCPUT" xml:space="preserve">
-    <value>[CPU Table] </value>
+    <value>CPU Table </value>
   </data>
   <data name="GraphGPU" xml:space="preserve">
-    <value>[GPU] </value>
+    <value>GPU </value>
   </data>
   <data name="GraphRunErrorPartOne" xml:space="preserve">
     <value>Nieoczekiwany błąd, plik </value>
@@ -158,29 +155,29 @@
 Kod błędu: </value>
   </data>
   <data name="GraphRunResultPartOne" xml:space="preserve">
-    <value>Graf jest co najwyżej </value>
+    <value>Liczba chromatyczna grafu wynosi: </value>
   </data>
   <data name="GraphRunResultPartTwo" xml:space="preserve">
-    <value>-kolorowalny.
+    <value>.
 Czas obliczeń: </value>
   </data>
   <data name="LogFileNotExist" xml:space="preserve">
-    <value>Plik z logiem nie istnieje. Został automatycznie utworzony plik z pełną ścieżką: </value>
+    <value>Automatycznie utworzono plik logu: </value>
   </data>
   <data name="RunNoInputData" xml:space="preserve">
-    <value>Błąd: Nie wybrano pliku, ani folderu z plikami zawierającymi reprezentację grafu.</value>
+    <value>Nie wybrano pliku, ani folderu z plikami zawierającymi reprezentację grafu.</value>
   </data>
   <data name="RunNoMethod" xml:space="preserve">
-    <value>Błąd: Nie wybrano żadnego algorytmu rozwiązującego problem.</value>
+    <value>Nie wybrano żadnej metody algorytmu rozwiązującego problem.</value>
   </data>
   <data name="SetPatternDesc" xml:space="preserve">
-    <value>Rozróżniane są małe i wielkie litery.</value>
+    <value>Rozróżniane są małe i wielkie litery</value>
   </data>
   <data name="SetPatternResult" xml:space="preserve">
     <value>Aktualny wzorzec wyszukiwania plików w folderze: </value>
   </data>
   <data name="SetPatternTitle" xml:space="preserve">
-    <value>Wpisz wzorzec do wyszukania odpowiednich plików w wybranym folderze.</value>
+    <value>Wpisz wzorzec do wyszukania odpowiednich plików w wybranym folderze</value>
   </data>
   <data name="SetPatternWarning" xml:space="preserve">
     <value>Podany wzorzec jest pusty! W przypadku uruchomienia algorytmu z wybranym folderem zostaną przetworzone wszystkie pliki znajdujące się w folderze!</value>
@@ -210,10 +207,10 @@ Czas obliczeń: </value>
     <value>Ścieżka do pliku ze statystykami: </value>
   </data>
   <data name="StatsZeroRun" xml:space="preserve">
-    <value>W bieżącej sesji nie uruchomiono żadnego przetwarzania. Plik ze statystykami jest pusty.</value>
+    <value>W bieżącej sesji nie wykonano żadnych obliczeń. Brak statystyk do wyświetlenia.</value>
   </data>
   <data name="GraphRunErrorReadingInput" xml:space="preserve">
-    <value>Nieprawidłowy format pliku z grafem. Zakończono przetwarzanie.</value>
+    <value>Nieprawidłowy format pliku z grafem. Zakończono wykonywanie obliczeń: </value>
   </data>
   <data name="DialogChooseDLLFolder" xml:space="preserve">
     <value>Wybrany folder zawierający pliki DLL to: </value>
@@ -235,7 +232,7 @@ Czas obliczeń: </value>
     <value>Czy na pewno chcesz przywrócić ustawienia domyślne? Tej operacji nie da się cofnąć!</value>
   </data>
   <data name="DefaultSettingsNOTOK" xml:space="preserve">
-    <value>Anulowano przywracanie ustawień domyślne.</value>
+    <value>Anulowano przywracanie ustawień domyślnych.</value>
   </data>
   <data name="DefaultSettingsOK" xml:space="preserve">
     <value>Przywrócono ustawienia domyślne.</value>
@@ -257,5 +254,32 @@ pamięć dostępna (wirtualna): </value>
   </data>
   <data name="GraphRunPredictTimeStart" xml:space="preserve">
     <value>Przewidywany czas wykonywania obliczeń: </value>
+  </data>
+  <data name="ViewHelpNoAdobeReader" xml:space="preserve">
+    <value>Brak zainstalowanego programu Adobe Reader. Zainstaluj najnowszą wersję w celu otworzenia pliku z pomocą.</value>
+  </data>
+  <data name="DllFileMissing" xml:space="preserve">
+    <value>Nie znaleziono pliku DLL w podanej lokalizacji: </value>
+  </data>
+  <data name="PredictTimeLessThanSecond" xml:space="preserve">
+    <value>mniej niż sekundę</value>
+  </data>
+  <data name="PredictTimeMethodInfo" xml:space="preserve">
+    <value>Przetwarzanie metodą </value>
+  </data>
+  <data name="PreprocessingFirst" xml:space="preserve">
+    <value>
+Rozpoczynam obliczenia dla pliku: </value>
+  </data>
+  <data name="PreprocessingForth" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="PreprocessingSecond" xml:space="preserve">
+    <value>
+Liczba wierzchołków grafu: </value>
+  </data>
+  <data name="PreprocessingThird" xml:space="preserve">
+    <value>
+Gęstość grafu: </value>
   </data>
 </root>

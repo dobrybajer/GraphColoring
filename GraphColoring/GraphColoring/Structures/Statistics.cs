@@ -13,7 +13,6 @@ namespace GraphColoring.Structures
     {
         #region Zmienne
 
-        private const double ToMb = 1048576; 
         private readonly List<GraphStat> _statsList;
 
         #endregion
@@ -31,19 +30,21 @@ namespace GraphColoring.Structures
         #endregion
 
         #region Zarządzanie statystykami
+
         /// <summary>
         /// Metoda dodająca statystyki dla danego problemu. Identyfikowanie następuje po nazwie pliku tekstowego zawierającego reprezentację grafu.
         /// </summary>
         /// <param name="fileName">Nazwa pliku tekstowego zawierającego reprezentację grafu.</param>
         /// <param name="n">Liczba wierzchołków wejścciowego grafu.</param>
+        /// <param name="density">Gęstość grafu.</param>
         /// <param name="type">Typ algorytmu wywołującego metodę.</param>
         /// <param name="time">Czas obliczeń danego algorytmu.</param>
         /// <param name="memoryUsage">Tablica zawierająca pamięć używaną przez aplikację podczas działania algorytmu.</param>
-        public void Add(string fileName, int n, int type, TimeSpan time, double[] memoryUsage)
+        public void Add(string fileName, int n, double density, int type, TimeSpan time, double[] memoryUsage)
         {
             var i = _statsList.FindIndex(x => x.FileName == fileName);
             if (i == -1)
-                _statsList.Add(new GraphStat(fileName, n, type, time, memoryUsage));
+                _statsList.Add(new GraphStat(fileName, n, density, type, time, memoryUsage));
             else
                 _statsList[i].Update(type, time, memoryUsage);
         }
@@ -92,21 +93,22 @@ namespace GraphColoring.Structures
             var vertices = Common.Combination_n_of_k((ulong)n, (ulong)n / 2);
             var maxColumnCount = (ulong)(n + 1) / 2;
             double totalMemoryRequired = 0;
+            var availMemory = pcInfo.AvailableVirtualMemory / Common.ToMb / sizeof (int);
 
             switch (type)
             {
                 case 0: // GPU
-                    return new[] { (Math.Pow(2, n) + 2 * vertices * maxColumnCount + vertices) * sizeof(int) / ToMb };
+                    return new[] { (Math.Pow(2, n) + 2 * vertices * maxColumnCount + vertices) / Common.ToMb };
                 case 1: // CPU Table
-                    totalMemoryRequired = (Math.Pow(2, n) + 2 * vertices * maxColumnCount) * sizeof(int);
+                    totalMemoryRequired = (Math.Pow(2, n) + 2 * vertices * maxColumnCount) / Common.ToMb;
                     break;
                 case 2: // CPU Bit
-                    totalMemoryRequired = (Math.Pow(2, n) + 2 * vertices) * sizeof(int);
+                    totalMemoryRequired = (Math.Pow(2, n) + 2 * vertices) / Common.ToMb;
                     break;
             }
 
-            return totalMemoryRequired > pcInfo.AvailableVirtualMemory
-                ? new[] {totalMemoryRequired / ToMb, pcInfo.AvailableVirtualMemory / ToMb}
+            return totalMemoryRequired > availMemory
+                ? new[] { totalMemoryRequired, availMemory }
                 : null;
         }
 
@@ -124,11 +126,10 @@ namespace GraphColoring.Structures
             List<TimeSpan> times = null;
 
             var processedVerticesCount = 0;
-            GraphStat tmp;
+            GraphStat tmp = null;
 
             switch (type)
             {
-                    
                 case 0: // GPU
                     tmp = _statsList.OrderByDescending(y => y.VerticesCount).FirstOrDefault(x => x.GpuTime.Count != 0);
                     if (tmp != null)
@@ -158,7 +159,7 @@ namespace GraphColoring.Structures
             if (times == null || times.Count == 0) return new TimeSpan(0);
 
             var ticks = times.Sum(t => t.Ticks) / times.Count;
-            return new TimeSpan((long)(ticks * Common.Pow(n - processedVerticesCount)));
+            return new TimeSpan((long)(ticks * Common.Pow(n - processedVerticesCount) / tmp.Density));
         }
 
         #endregion
@@ -179,6 +180,7 @@ namespace GraphColoring.Structures
         private List<double> _memoryCpuTableUsage;
         private List<double> _memoryCpuBitUsage;
 
+        public double Density { get; set; }
         public string FileName { get; set; }
         public int VerticesCount { get; set; }
         public List<TimeSpan> GpuTime { get; set; }
@@ -188,18 +190,21 @@ namespace GraphColoring.Structures
         #endregion
 
         #region Konstruktor
+
         /// <summary>
         /// Domyślny konstruktor. Inicjalizuje zmienne używane w klasie.
         /// </summary>
         /// <param name="fileName">Nazwa pliku tekstowego zawierającego reprezentację grafu.</param>
         /// <param name="n">Liczba wierzchołków wejścciowego grafu.</param>
+        /// <param name="density">Gęstość grafu.</param>
         /// <param name="type">Typ algorytmu wywołującego metodę.</param>
         /// <param name="time">Czas obliczeń danego algorytmu.</param>
         /// <param name="memory">Tablica zawierająca pamięć używaną przez aplikację podczas działania algorytmu.</param>
-        public GraphStat(string fileName, int n, int type, TimeSpan time, IEnumerable<double> memory)
+        public GraphStat(string fileName, int n, double density, int type, TimeSpan time, IEnumerable<double> memory)
         {
             FileName = fileName;
             VerticesCount = n;
+            Density = density;
 
             GpuTime = new List<TimeSpan>();
             CpuTableTime = new List<TimeSpan>();
@@ -256,7 +261,7 @@ namespace GraphColoring.Structures
             var dnLine = Environment.NewLine + Environment.NewLine;
             var nLine = Environment.NewLine;
 
-            var message = "______________________" + FileName + "______________________" + dnLine;
+            var message = nLine + "______________________" + FileName + "______________________" + dnLine;
             message += "Czasy dla obliczeń dla różnych wersji:" + nLine;
             if (GpuTime.Count != 0)
             {
@@ -272,7 +277,7 @@ namespace GraphColoring.Structures
                 var first = _memoryGpuUsage.First();
                 message += string.Format("{0}" + nLine, first);
                 message += "Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: ";
-                message = _memoryGpuUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", m - first));
+                message = _memoryGpuUsage.Aggregate(message, (current, m) => current + string.Format("{0} / ", m - first));
                 message += nLine + "Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: ";
                 message += string.Format("{0}" + nLine, _memoryGpuUsage.Last() - first) + nLine;
             }
@@ -290,7 +295,7 @@ namespace GraphColoring.Structures
                 var first = _memoryCpuTableUsage.First();
                 message += string.Format("{0}" + nLine, first);
                 message += "Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: ";
-                message = _memoryCpuTableUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", m - first));
+                message = _memoryCpuTableUsage.Aggregate(message, (current, m) => current + string.Format("{0} / ", m - first));
                 message += nLine + "Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: ";
                 message += string.Format("{0}" + nLine, _memoryCpuTableUsage.Last() - first) + nLine;
             }
@@ -308,7 +313,7 @@ namespace GraphColoring.Structures
                 var first = _memoryCpuBitUsage.First();
                 message += string.Format("{0}" + nLine, first);
                 message += "Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: ";
-                message = _memoryCpuBitUsage.Aggregate(message, (current, m) => current + string.Format("{0} ", m - first));
+                message = _memoryCpuBitUsage.Aggregate(message, (current, m) => current + string.Format("{0} / ", m - first));
                 message += nLine + "Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: ";
                 message += string.Format("{0}" + nLine, _memoryCpuBitUsage.Last() - first) + nLine;
             }
