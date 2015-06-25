@@ -262,7 +262,7 @@ namespace GraphColoring.Structures
             var nLine = Environment.NewLine;
 
             var message = nLine + "______________________" + FileName + "______________________" + dnLine;
-            message += "Czasy dla obliczeń dla różnych wersji:" + nLine;
+            message += "Czasy obliczeń dla różnych wersji:" + nLine;
             if (GpuTime.Count != 0)
             {
                 message += "a) GPU" + nLine + "Czasy pojedyncze:" + nLine;

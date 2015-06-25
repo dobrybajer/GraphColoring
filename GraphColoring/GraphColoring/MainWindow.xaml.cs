@@ -269,7 +269,7 @@ namespace GraphColoring
 
         #endregion
 
-        // 0 TODO sprawdzenie czy działa wszystko dla GPU na kompie z GPU; dodanie blokowania uruchomienia (tylko dla GPU); limity pamięci wirtualnej; poprawic tak zeby pamiec GPU i CPU miala tyle samo pkt na wykresie
+        // 0 TODO dodanie blokowania uruchomienia (tylko dla GPU)
         #region Funkcje uruchamiające obliczanie algorytmu różnymi metodami
 
         /// <summary>
@@ -378,13 +378,20 @@ namespace GraphColoring
                 PredictTime(g, type);
                     
                 var wynik = new int[g.VerticesCount];
-                var pamiec = new double[g.VerticesCount + 4];
+                var pamiec = new double[g.VerticesCount + 3];
 
                 var watch = Stopwatch.StartNew();
 
                 token.ThrowIfCancellationRequested();
                 FindChromaticNumberGPU(wynik, pamiec, g.Vertices, g.NeighboursCount, g.VerticesCount, g.AllVerticesCount);
                 token.ThrowIfCancellationRequested();
+
+                if (pamiec[0] == -666)
+                {
+                    watch.Stop();
+                    WriteMessageUi(new[] { Messages.GraphRunErrorNoSpaceAvailable, pamiec[2].ToString(CultureInfo.InvariantCulture), Messages.GraphRunErrorNoSpaceRequired, pamiec[1].ToString(CultureInfo.InvariantCulture), Messages.GraphRunErrorNoSpaceEndLine }, new[] { _cNormal, _cError, _cNormal, _cError, _cNormal });
+                    return;
+                }
 
                 var wynikk = -2;
 
@@ -405,7 +412,7 @@ namespace GraphColoring
             }
             catch (Exception e)
             {
-                WriteMessageUi(new[] { Messages.GraphGPU + Messages.GraphRunErrorPartOne, path, Messages.GraphRunErrorPartTwo, e.Message }, new[] { _cNormal, _cError, _cNormal, _cError });
+                WriteMessageUi(new[] { Messages.GraphGPU + Messages.GraphRunErrorPartOne, path, Messages.GraphRunErrorPartTwo, e.Message, Messages.GraphRunErrorPartThree }, new[] { _cNormal, _cError, _cNormal, _cError, _cWarning });
             }
         }
 
@@ -426,7 +433,7 @@ namespace GraphColoring
 
                 PredictTime(g, type);
 
-                var pamiec = new double[g.VerticesCount + 2];
+                var pamiec = new double[g.VerticesCount + 3];
 
                 var watch = Stopwatch.StartNew();
 
@@ -468,7 +475,7 @@ namespace GraphColoring
 
                 g = FileProcessing.ConvertToBitVersion(g);
 
-                var pamiec = new double[g.VerticesCount + 2];
+                var pamiec = new double[g.VerticesCount + 3];
 
                 var watch = Stopwatch.StartNew();
 
@@ -764,7 +771,7 @@ namespace GraphColoring
             if ((string) TileCharts.Tag == Pressed && type) return;
 
             TileStats.IsEnabled = value;
-            //TileStart.IsEnabled = value;
+            TileStart.IsEnabled = value;
         }
 
         /// <summary>

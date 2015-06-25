@@ -390,16 +390,20 @@ namespace version_cpu
 			
 			if (s <= 0) continue;
 
+			memoryUsage[n + 1] = getUsedMemory();
+
 			delete[] independentSets;
 
-			memoryUsage[n + 1] = getUsedMemory();
+			memoryUsage[n + 2] = getUsedMemory();
 
 			return k;
 		}
 
+		memoryUsage[n + 1] = getUsedMemory();
+
 		delete[] independentSets;
 
-		memoryUsage[n + 1] = getUsedMemory();
+		memoryUsage[n + 2] = getUsedMemory();
 
 		return -1;
 	}

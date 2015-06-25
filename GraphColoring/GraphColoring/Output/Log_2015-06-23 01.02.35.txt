@@ -1,0 +1,35 @@
+2015-06-23 01:02:42 > Automatycznie utworzono plik logu: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\GraphColoring\GraphColoring\Output\Log_2015-06-23 01.02.35.txt
+2015-06-23 01:02:42 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample17.txt
+2015-06-23 01:02:43 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample17.txt
+Liczba wierzchołków grafu: 17
+Gęstość grafu: 100%
+2015-06-23 01:02:43 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-23 01:02:43 > Przetwarzanie metodą CPU Table 
+2015-06-23 01:02:44 > Liczba chromatyczna grafu wynosi: 17.
+Czas obliczeń: 00:00:00.9128015
+2015-06-23 01:02:44 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-23 01:02:44 > Przetwarzanie metodą CPU Bit 
+2015-06-23 01:02:45 > Liczba chromatyczna grafu wynosi: 17.
+Czas obliczeń: 00:00:00.8983765
+2015-06-23 01:02:45 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-23 01:02:45 > Przetwarzanie metodą GPU 
+2015-06-23 01:02:46 > Liczba chromatyczna grafu wynosi: 17.
+Czas obliczeń: 00:00:00.4348389
+2015-06-23 01:03:11 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt
+2015-06-23 01:03:12 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt
+Liczba wierzchołków grafu: 22
+Gęstość grafu: 100%
+2015-06-23 01:03:12 > Przewidywany czas wykonywania obliczeń: 29,21s
+2015-06-23 01:03:12 > Przetwarzanie metodą CPU Table 
+2015-06-23 01:03:45 > Liczba chromatyczna grafu wynosi: 22.
+Czas obliczeń: 00:00:32.0985424
+2015-06-23 01:03:45 > Przewidywany czas wykonywania obliczeń: 28,748s
+2015-06-23 01:03:45 > Przetwarzanie metodą CPU Bit 
+2015-06-23 01:04:18 > Liczba chromatyczna grafu wynosi: 22.
+Czas obliczeń: 00:00:33.6543047
+2015-06-23 01:04:18 > Przewidywany czas wykonywania obliczeń: 13,915s
+2015-06-23 01:04:18 > Przetwarzanie metodą GPU 
+2015-06-23 01:04:22 > Liczba chromatyczna grafu wynosi: 22.
+Czas obliczeń: 00:00:03.5361463

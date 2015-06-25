@@ -1,0 +1,72 @@
+
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample17.txt______________________
+
+Czasy dla obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:00.4348389
+
+Czas średni: 00:00:00.4348389
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 56,6328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 1 / 2 / 3 / 4 / 3 / 3 / 4 / 4 / 4 / 4 / 3 / 4 / 4 / 3 / 2 / 1 / 0 / 0 / -2 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -2
+
+b) CPU TABLE
+Czasy pojedyncze:
+1: 00:00:00.9128015
+
+Czas średni: 00:00:00.9128015
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 82,125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 0,50390625 / 0,50390625 / 0,51171875 / 0,6015625 / 1,15234375 / 2,359375 / 3,45703125 / 3,9609375 / 3,9609375 / 2,67578125 / 2,6953125 / 1,078125 / 1,078125 / 1,078125 / 1,078125 / 1,078125 / 1,078125 / 0,43359375 / -0,0703125 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -0,0703125
+
+c) CPU BIT
+Czasy pojedyncze:
+1: 00:00:00.8983765
+
+Czas średni: 00:00:00.8983765
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 82,78125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 0,51171875 / 0,53515625 / 0,6875 / 0,93359375 / 1,484375 / 2,484375 / 3,10546875 / 3,1796875 / 3,1796875 / 3,1796875 / 3,19921875 / 3,19921875 / 3,19921875 / 3,19921875 / 3,19921875 / 3,19921875 / 3,19921875 / 3,19921875 / 2,6953125 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 2,6953125
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: 2,099172
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: 2,065999
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: 1,016057
+######################################################################
+
+
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt______________________
+
+Czasy dla obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:03.5361463
+
+Czas średni: 00:00:03.5361463
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 56,6328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 16 / 17 / 19 / 19 / 19,75 / 23,375 / 31,5 / 44,25 / 59,875 / 72,875 / 78 / 72,875 / 59,875 / 44,25 / 31,5 / 23,375 / 19,75 / 19 / 19 / 17 / 16 / 16 / 15 / -1 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -1
+
+b) CPU TABLE
+Czasy pojedyncze:
+1: 00:00:32.0985424
+
+Czas średni: 00:00:32.0985424
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 118,67578125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 16,03515625 / 16,03515625 / 16,046875 / 17,15625 / 21,83984375 / 32,76953125 / 53,1640625 / 80,69921875 / 111,37890625 / 133,38671875 / 138,4453125 / 124,0546875 / 95,46875 / 65,4765625 / 41,0625 / 26,94140625 / 20,51171875 / 16,60546875 / 16,13671875 / 16,13671875 / 16,13671875 / 16,13671875 / 16,08984375 / 0,05859375 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 0,05859375
+
+c) CPU BIT
+Czasy pojedyncze:
+1: 00:00:33.6543047
+
+Czas średni: 00:00:33.6543047
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 118,890625
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 16,03125 / 16,03125 / 16,03125 / 16,12890625 / 16,72265625 / 17,37890625 / 18,6015625 / 19,7890625 / 21,03515625 / 21,828125 / 21,828125 / 21,03515625 / 19,7890625 / 18,54296875 / 17,3203125 / 16,66796875 / 16,66796875 / 16,671875 / 16,671875 / 16,671875 / 16,671875 / 16,671875 / 15,875 / -0,16015625 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -0,16015625
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: 9,077266
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: 9,517226
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: 0,9537722
+######################################################################
+

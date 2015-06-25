@@ -1,0 +1,18 @@
+
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample7.txt______________________
+
+Czasy obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:00.4568050
+
+Czas średni: 00:00:00.4568050
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 55,6328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 0 / 0 / 0 / 0 / 0 / 0 / 0 / 0 / 0 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 0
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: Brak informacji.
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: Brak informacji.
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: Brak informacji.
+######################################################################
+

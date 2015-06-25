@@ -282,4 +282,8 @@ Liczba wierzchołków grafu: </value>
     <value>
 Gęstość grafu: </value>
   </data>
+  <data name="GraphRunErrorPartThree" xml:space="preserve">
+    <value>
+Upewnij się, że Twoja maszyna posiada kartę NVIDIA, która wspiera technologię CUDA.</value>
+  </data>
 </root>

@@ -1,0 +1,54 @@
+
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample6.txt______________________
+
+Czasy obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:00.7379757
+
+Czas średni: 00:00:00.7379757
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 55,6328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 0 / 0 / 0 / 0 / 0 / 0 / 0 / -1 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -1
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: Brak informacji.
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: Brak informacji.
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: Brak informacji.
+######################################################################
+
+
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample18.txt______________________
+
+Czasy obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:00.2168868
+
+Czas średni: 00:00:00.2168868
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 56,6328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 1 / 2 / 3 / 4 / 4 / 4 / 4,375 / 5,125 / 5,5 / 5,125 / 4,375 / 4 / 4 / 4 / 3 / 2 / 1 / 1 / 0 / -1 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -1
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: Brak informacji.
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: Brak informacji.
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: Brak informacji.
+######################################################################
+
+
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt______________________
+
+Czasy obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:03.5489276
+
+Czas średni: 00:00:03.5489276
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 56,6328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 16 / 17 / 19 / 19 / 19,75 / 23,375 / 31,5 / 44,25 / 59,875 / 72,875 / 78 / 72,875 / 59,875 / 44,25 / 31,5 / 23,375 / 19,75 / 19 / 19 / 17 / 16 / 16 / 15 / -1 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -1
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: Brak informacji.
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: Brak informacji.
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: Brak informacji.
+######################################################################
+

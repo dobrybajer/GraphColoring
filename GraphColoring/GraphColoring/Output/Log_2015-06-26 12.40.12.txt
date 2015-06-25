@@ -1,0 +1,57 @@
+2015-06-26 00:40:47 > Automatycznie utworzono plik logu: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\GraphColoring\GraphColoring\Output\Log_2015-06-26 12.40.12.txt
+2015-06-26 00:40:47 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample6.txt
+2015-06-26 00:40:48 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample6.txt
+Liczba wierzchołków grafu: 6
+Gęstość grafu: 100%
+2015-06-26 00:40:48 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-26 00:40:48 > Przetwarzanie metodą GPU 
+2015-06-26 00:40:49 > Liczba chromatyczna grafu wynosi: 6.
+Czas obliczeń: 00:00:00.7379757
+2015-06-26 00:40:53 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample18.txt
+2015-06-26 00:40:54 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample18.txt
+Liczba wierzchołków grafu: 18
+Gęstość grafu: 100%
+2015-06-26 00:40:54 > Przewidywany czas wykonywania obliczeń: 3022,748s
+2015-06-26 00:40:54 > Przetwarzanie metodą GPU 
+2015-06-26 00:40:54 > Liczba chromatyczna grafu wynosi: 18.
+Czas obliczeń: 00:00:00.2168868
+2015-06-26 00:41:02 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt
+2015-06-26 00:41:02 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt
+Liczba wierzchołków grafu: 22
+Gęstość grafu: 100%
+2015-06-26 00:41:02 > Przewidywany czas wykonywania obliczeń: 3,47s
+2015-06-26 00:41:02 > Przetwarzanie metodą GPU 
+2015-06-26 00:41:06 > Liczba chromatyczna grafu wynosi: 22.
+Czas obliczeń: 00:00:03.5489276
+2015-06-26 00:41:15 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample27.txt
+2015-06-26 00:41:16 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample27.txt
+Liczba wierzchołków grafu: 27
+Gęstość grafu: 100%
+2015-06-26 00:41:16 > Przewidywany czas wykonywania obliczeń: 113,566s
+2015-06-26 00:41:16 > Przetwarzanie metodą GPU 
+2015-06-26 00:41:16 > Nie udało się wykonać obliczeń.
+Przewidywana ilość pamięci RAM potrzebna do wykonania obliczeń: 969.3671875 MB, 
+pamięć dostępna (wirtualna): 2730.97392272949 MB.
+Zadanie zakończone niepowodzeniem.
+2015-06-26 00:41:35 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample26.txt
+2015-06-26 00:41:37 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample26.txt
+Liczba wierzchołków grafu: 26
+Gęstość grafu: 100%
+2015-06-26 00:41:37 > Przewidywany czas wykonywania obliczeń: 56,783s
+2015-06-26 00:41:37 > Przetwarzanie metodą GPU 
+2015-06-26 00:41:37 > Nie udało się wykonać obliczeń.
+Przewidywana ilość pamięci RAM potrzebna do wykonania obliczeń: 969.3671875 MB, 
+pamięć dostępna (wirtualna): 1327.2287902832 MB.
+Zadanie zakończone niepowodzeniem.
+2015-06-26 00:41:47 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample25.txt
+2015-06-26 00:41:49 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample25.txt
+Liczba wierzchołków grafu: 25
+Gęstość grafu: 100%
+2015-06-26 00:41:49 > Przewidywany czas wykonywania obliczeń: 28,391s
+2015-06-26 00:41:49 > Przetwarzanie metodą GPU 

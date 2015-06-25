@@ -1,0 +1,31 @@
+2015-06-22 23:55:31 > Automatycznie utworzono plik logu: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\GraphColoring\GraphColoring\Output\Log_2015-06-22 11.55.03.txt
+2015-06-22 23:55:31 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt
+2015-06-22 23:55:34 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt
+Liczba wierzchołków grafu: 22
+Gęstość grafu: 100%
+2015-06-22 23:55:34 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-22 23:55:34 > Przetwarzanie metodą CPU Table 
+2015-06-22 23:55:34 > CPU Table Nieoczekiwany błąd, plik C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt nie został przetworzony.
+Kod błędu: Nie można załadować biblioteki DLL 'GraphColoringCPU.dll': Nie można odnaleźć określonego modułu. (Wyjątek od HRESULT: 0x8007007E)
+2015-06-22 23:55:34 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-22 23:55:34 > Przetwarzanie metodą CPU Bit 
+2015-06-22 23:55:34 > CPU Bit Nieoczekiwany błąd, plik C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt nie został przetworzony.
+Kod błędu: Nie można załadować biblioteki DLL 'GraphColoringCPU.dll': Nie można odnaleźć określonego modułu. (Wyjątek od HRESULT: 0x8007007E)
+2015-06-22 23:55:34 > Nie znaleziono pliku DLL w podanej lokalizacji: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\GraphColoring\GraphColoring\DLL\GraphColoringGPU.dll
+2015-06-22 23:57:26 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt
+Liczba wierzchołków grafu: 22
+Gęstość grafu: 100%
+2015-06-22 23:57:26 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-22 23:57:26 > Przetwarzanie metodą CPU Table 
+2015-06-22 23:57:59 > Liczba chromatyczna grafu wynosi: 22.
+Czas obliczeń: 00:00:32.4425652
+2015-06-22 23:57:59 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-22 23:57:59 > Przetwarzanie metodą CPU Bit 
+2015-06-22 23:58:33 > Liczba chromatyczna grafu wynosi: 22.
+Czas obliczeń: 00:00:34.4253153
+2015-06-22 23:58:33 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-22 23:58:34 > Przetwarzanie metodą GPU 
+2015-06-22 23:58:39 > GPU Nieoczekiwany błąd, plik C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt nie został przetworzony.
+Kod błędu: Indeks wykraczał poza granice tablicy.

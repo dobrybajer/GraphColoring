@@ -1,0 +1,42 @@
+
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample5.txt______________________
+
+Czasy dla obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:00.4492541
+2: 00:00:00.0037489
+3: 00:00:00.0052448
+
+Czas średni: 00:00:00.1527492
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 55,6328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 0 / 0 / 0 / 0 / 0 / 0 / -1 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -1
+
+b) CPU TABLE
+Czasy pojedyncze:
+1: 00:00:00.0094757
+2: 00:00:00.0001834
+3: 00:00:00.0001838
+
+Czas średni: 00:00:00.0032809
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 109,11328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 0 / 0 / 0 / 0 / 0 / 0 / 0 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 0
+
+c) CPU BIT
+Czasy pojedyncze:
+1: 00:00:00.0001167
+2: 00:00:00.0001582
+3: 00:00:00.0001522
+
+Czas średni: 00:00:00.0001423
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 109,1328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 0 / 0 / 0 / 0 / 0 / 0 / 0 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 0
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: 0,021479
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: 0,0009315924
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: 23,05622
+######################################################################
+

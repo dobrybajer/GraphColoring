@@ -1,0 +1,61 @@
+2015-06-23 01:00:41 > Automatycznie utworzono plik logu: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\GraphColoring\GraphColoring\Output\Log_2015-06-23 12.59.16.txt
+2015-06-23 01:00:41 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample5.txt
+2015-06-23 01:00:42 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample5.txt
+Liczba wierzchołków grafu: 5
+Gęstość grafu: 100%
+2015-06-23 01:00:42 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-23 01:00:42 > Przetwarzanie metodą CPU Table 
+2015-06-23 01:00:42 > Liczba chromatyczna grafu wynosi: 5.
+Czas obliczeń: 00:00:00.0094757
+2015-06-23 01:00:42 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-23 01:00:42 > Przetwarzanie metodą CPU Bit 
+2015-06-23 01:00:42 > Liczba chromatyczna grafu wynosi: 5.
+Czas obliczeń: 00:00:00.0001167
+2015-06-23 01:00:42 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-23 01:00:42 > Przetwarzanie metodą GPU 
+2015-06-23 01:00:43 > Liczba chromatyczna grafu wynosi: 5.
+Czas obliczeń: 00:00:00.4492541
+2015-06-23 01:00:46 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample5.txt
+Liczba wierzchołków grafu: 5
+Gęstość grafu: 100%
+2015-06-23 01:00:46 > Przewidywany czas wykonywania obliczeń: mniej niż sekundę
+2015-06-23 01:00:46 > Przetwarzanie metodą CPU Table 
+2015-06-23 01:00:46 > Liczba chromatyczna grafu wynosi: 5.
+Czas obliczeń: 00:00:00.0001834
+2015-06-23 01:00:46 > Przewidywany czas wykonywania obliczeń: mniej niż sekundę
+2015-06-23 01:00:47 > Przetwarzanie metodą CPU Bit 
+2015-06-23 01:00:47 > Liczba chromatyczna grafu wynosi: 5.
+Czas obliczeń: 00:00:00.0001582
+2015-06-23 01:00:47 > Przewidywany czas wykonywania obliczeń: mniej niż sekundę
+2015-06-23 01:00:47 > Przetwarzanie metodą GPU 
+2015-06-23 01:00:47 > Liczba chromatyczna grafu wynosi: 5.
+Czas obliczeń: 00:00:00.0037489
+2015-06-23 01:01:07 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample5.txt
+Liczba wierzchołków grafu: 5
+Gęstość grafu: 100%
+2015-06-23 01:01:07 > Przewidywany czas wykonywania obliczeń: mniej niż sekundę
+2015-06-23 01:01:07 > Przetwarzanie metodą CPU Table 
+2015-06-23 01:01:07 > Liczba chromatyczna grafu wynosi: 5.
+Czas obliczeń: 00:00:00.0001838
+2015-06-23 01:01:07 > Przewidywany czas wykonywania obliczeń: mniej niż sekundę
+2015-06-23 01:01:07 > Przetwarzanie metodą CPU Bit 
+2015-06-23 01:01:08 > Liczba chromatyczna grafu wynosi: 5.
+Czas obliczeń: 00:00:00.0001522
+2015-06-23 01:01:08 > Przewidywany czas wykonywania obliczeń: mniej niż sekundę
+2015-06-23 01:01:08 > Przetwarzanie metodą GPU 
+2015-06-23 01:01:08 > Liczba chromatyczna grafu wynosi: 5.
+Czas obliczeń: 00:00:00.0052448
+2015-06-23 01:01:13 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt
+2015-06-23 01:01:14 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt
+Liczba wierzchołków grafu: 22
+Gęstość grafu: 100%
+2015-06-23 01:01:14 > Przewidywany czas wykonywania obliczeń: 430,034s
+2015-06-23 01:01:14 > Przetwarzanie metodą CPU Table 
+2015-06-23 01:01:47 > Liczba chromatyczna grafu wynosi: 22.
+Czas obliczeń: 00:00:32.1785072
+2015-06-23 01:01:47 > Przewidywany czas wykonywania obliczeń: 18,652s
+2015-06-23 01:01:47 > Przetwarzanie metodą CPU Bit 

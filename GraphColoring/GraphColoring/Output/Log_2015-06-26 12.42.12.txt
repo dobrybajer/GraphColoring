@@ -1,0 +1,17 @@
+2015-06-26 00:42:23 > Automatycznie utworzono plik logu: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\GraphColoring\GraphColoring\Output\Log_2015-06-26 12.42.12.txt
+2015-06-26 00:42:23 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample23.txt
+2015-06-26 00:42:25 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample23.txt
+Liczba wierzchołków grafu: 23
+Gęstość grafu: 100%
+2015-06-26 00:42:25 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-26 00:42:25 > Przetwarzanie metodą GPU 
+2015-06-26 00:42:33 > Liczba chromatyczna grafu wynosi: 23.
+Czas obliczeń: 00:00:08.1120771
+2015-06-26 00:42:56 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample24.txt
+2015-06-26 00:42:57 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample24.txt
+Liczba wierzchołków grafu: 24
+Gęstość grafu: 100%
+2015-06-26 00:42:57 > Przewidywany czas wykonywania obliczeń: 16,224s
+2015-06-26 00:42:57 > Przetwarzanie metodą GPU 

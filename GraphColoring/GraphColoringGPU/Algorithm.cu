@@ -270,6 +270,20 @@ namespace version_gpu
 		return 1;
 	}
 
+	bool PredictSpace(int n, const double ToMb, double* info)
+	{
+		size_t mem_free = 0;
+
+		cudaMemGetInfo(&mem_free, NULL);
+		info[0] = mem_free / ToMb;
+
+		unsigned int vertices = Combination_n_of_k(n, n / 2);
+        int maxColumnCount = (n + 1) / 2;
+        info[1] = ((1 << n) + 2 * vertices * maxColumnCount + vertices) / ToMb * sizeof(int);
+
+		return info[1] > info[0];
+	}
+
 	// Do sprawdzenia szczególnie kwestia alokowanej i zwalnianej pamięci
 	/// <summary>
 	/// Funkcja uruchamiająca cały przebieg algorytmu. Wykorzystuje pozostałe funkcje w celu obliczenia tablicy
@@ -281,14 +295,26 @@ namespace version_gpu
 	/// <param name="verticesCount">Liczba wierzchołków w grafie.</param>
 	/// <param name="allVerticesCount">Liczba wszystkich sąsiadów każdego z wierzchołków.</param>
 	/// <returns>Status wykonania funkcji na procesorze graficznym.</returns>
-	cudaError_t FindChromaticNumberGPU(int* wynik,int* pamiec, int* vertices, int* offset, int verticesCount, int allVerticesCount)
+	cudaError_t FindChromaticNumberGPU(int* wynik, double* pamiec, int* vertices, int* offset, int verticesCount, int allVerticesCount)
 	{
+		const double ToMb = 1048576;
+
+		double* info = new double[2];
+		if(PredictSpace(verticesCount, ToMb, info))
+		{
+			pamiec[0] = -666;
+			pamiec[1] = info[0];
+			pamiec[2] = info[1];
+
+			return cudaErrorMemoryAllocation;
+		}
+
 		int numSMs;
 		cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, 0);
 
 		int* dev_vertices = 0;
 		int* dev_offset = 0;
-		 int* dev_wynik = 0;
+		int* dev_wynik = 0;
 
 	 	int* dev_independentSet = 0;
 		int* dev_actualVertices = 0;
@@ -298,17 +324,18 @@ namespace version_gpu
 		int actualVerticesRowCount = verticesCount;
 		int actualVerticesColCount = 1;
 		int PowerNumber = 1 << verticesCount;
-		int pamiecCount=0;
+		
 		size_t mem_tot = 0;
 		size_t mem_free = 0;
-		cudaMemGetInfo  (&mem_free, & mem_tot);
-		pamiec[pamiecCount]=mem_tot-mem_free;
-		pamiecCount++;
+		
 		cudaError_t cudaStatus = cudaSuccess;
 
 		gpuErrchk(cudaMalloc((void**)&dev_vertices, allVerticesCount * sizeof(int)));
 		gpuErrchk(cudaMalloc((void**)&dev_offset, verticesCount * sizeof(int)));
 		gpuErrchk(cudaMalloc((void**)&dev_wynik, verticesCount * sizeof( int)));
+
+		cudaMemGetInfo(&mem_free, &mem_tot);
+		pamiec[0] = (mem_tot - mem_free) / ToMb;
 
 		gpuErrchk(cudaMalloc((void**)&dev_independentSet, PowerNumber * sizeof(int)));
 		gpuErrchk(cudaMalloc((void**)&dev_actualVertices, verticesCount * sizeof(int)));
@@ -316,7 +343,7 @@ namespace version_gpu
 		gpuErrchk(cudaMemcpy(dev_vertices, vertices, allVerticesCount * sizeof(int), cudaMemcpyHostToDevice));
 		gpuErrchk(cudaMemcpy(dev_offset, offset, verticesCount * sizeof(int), cudaMemcpyHostToDevice));
 
-    	Init<<<PROCESSORCOUNT_FACTOR*numSMs,BLOCKSIZE_LOOP>>> (dev_independentSet, dev_actualVertices, verticesCount, PowerNumber);
+    	Init<<<PROCESSORCOUNT_FACTOR * numSMs,BLOCKSIZE_LOOP>>> (dev_independentSet, dev_actualVertices, verticesCount, PowerNumber);
 
 		for (int el = 1; el < verticesCount; el++)
 		{	
@@ -337,9 +364,8 @@ namespace version_gpu
 			//fprintf(stderr,"el: %d, before: %s %s %d\n", el, cudaGetErrorString(cudaGetLastError()), __FILE__, __LINE__);
 			BuildIndependentSetGPU<<<gridSize,BLOCKSIZE_LOOP>>> (dev_l_set, verticesCount, dev_vertices, dev_offset, actualVerticesRowCount, actualVerticesColCount, dev_actualVertices, dev_newVertices, dev_independentSet);
 
-			cudaMemGetInfo  (&mem_free, & mem_tot);
-			pamiec[pamiecCount]=mem_tot-mem_free;
-			pamiecCount++;
+			cudaMemGetInfo(&mem_free, &mem_tot);
+			pamiec[el] = (mem_tot - mem_free) / ToMb;
 
 			gpuErrchk(cudaFree(dev_l_set)); 
 			gpuErrchk(cudaFree(dev_actualVertices)); 
@@ -357,26 +383,30 @@ namespace version_gpu
 				actualVerticesRowCount = row;
 				actualVerticesColCount = col;
 			}
-			cudaMemGetInfo  (&mem_free, & mem_tot);
-			pamiec[pamiecCount]=mem_tot-mem_free;
-			pamiecCount++;
+
 			gpuErrchk(cudaFree(dev_newVertices)); 
 		}
 
 		gpuErrchk(cudaFree(dev_vertices));
 		gpuErrchk(cudaFree(dev_offset));
+
+		cudaMemGetInfo(&mem_free, &mem_tot);
+		pamiec[verticesCount] = (mem_tot - mem_free) / ToMb;
 		
 		FindChromaticNumber<<<verticesCount,BLOCKSIZE,verticesCount*BLOCKSIZE*sizeof(unsigned int)>>> (verticesCount, dev_independentSet, dev_wynik);
+
+		cudaMemGetInfo(&mem_free, &mem_tot);
+		pamiec[verticesCount + 1] = (mem_tot - mem_free) / ToMb;
 
 		gpuErrchk(cudaFree(dev_independentSet));
     
 		gpuErrchk(cudaDeviceSynchronize());
 
-		gpuErrchk(cudaMemcpy(wynik, dev_wynik, verticesCount * sizeof( int), cudaMemcpyDeviceToHost))
+		gpuErrchk(cudaMemcpy(wynik, dev_wynik, verticesCount * sizeof(int), cudaMemcpyDeviceToHost))
 		gpuErrchk(cudaFree(dev_wynik));
 
-		cudaMemGetInfo  (&mem_free, & mem_tot);
-		pamiec[pamiecCount]=mem_tot-mem_free;
+		cudaMemGetInfo(&mem_free, &mem_tot);
+		pamiec[verticesCount + 2] = (mem_tot - mem_free) / ToMb;
 
 		return cudaStatus;
 	}

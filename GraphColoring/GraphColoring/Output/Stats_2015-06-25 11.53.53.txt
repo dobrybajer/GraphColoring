@@ -1,0 +1,36 @@
+
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample20.txt______________________
+
+Czasy dla obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:01.2149980
+
+Czas średni: 00:00:01.2149980
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 56,6328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4 / 5 / 6 / 7 / 7 / 8,125 / 11 / 14,75 / 18 / 19,25 / 18 / 14,75 / 11 / 8,125 / 7 / 7 / 6 / 5 / 4 / 3 / 3 / -2 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -2
+
+b) CPU TABLE
+Czasy pojedyncze:
+1: 00:00:07.4309826
+
+Czas średni: 00:00:07.4309826
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 83,81640625
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4,01171875 / 4,01171875 / 4,0234375 / 4,53125 / 7,16796875 / 11,9765625 / 19,3515625 / 27,10546875 / 33,19140625 / 34,2265625 / 30,26171875 / 22,67578125 / 14,77734375 / 8,95703125 / 6,21875 / 4,453125 / 4,453125 / 4,453125 / 4,453125 / 4,453125 / 4,453125 / 0,44140625 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 0,44140625
+
+c) CPU BIT
+Czasy pojedyncze:
+1: 00:00:08.0247572
+
+Czas średni: 00:00:08.0247572
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 84,7109375
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4,01171875 / 4,0546875 / 4,078125 / 4,4453125 / 6,59765625 / 7,32421875 / 7,80859375 / 8,453125 / 9,16015625 / 9,12890625 / 8,421875 / 7,7734375 / 7,7734375 / 7,7734375 / 7,7734375 / 7,7734375 / 7,7734375 / 7,7734375 / 7,7734375 / 7,7734375 / 7,8046875 / 3,79296875 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 3,79296875
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: 6,116045
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: 6,604749
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: 0,9260072
+######################################################################
+

@@ -1,0 +1,36 @@
+
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt______________________
+
+Czasy dla obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:04.9107690
+
+Czas średni: 00:00:04.9107690
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 8,57848198154305E-287
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 8,57848202557995E-287 / 6,00493740567349E-286 / 6,00493740567349E-286 / 1,07662001691937E-285 / 1,34690377512032E-284 / 3,90034067606637E-282 / 2,65534575285661E-278 / 1,39361008116831E-273 / 1,14164538118155E-269 / 3,95612658493985E-268 / 1,14164538290036E-269 / 1,39361008445005E-273 / 2,65534575761787E-278 / 3,90034068448388E-282 / 1,34690377692094E-284 / 1,07662001721295E-285 / 6,00493740665209E-286 / 6,00493740567349E-286 / 8,57848202802644E-287 / 2,20184512208017E-295 / -8,57841653291936E-287 / -8,57848198154305E-287 / -8,57848198154305E-287 / -8,57848198154305E-287 / -8,57848198154305E-287 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -8,57848198154305E-287
+
+b) CPU TABLE
+Czasy pojedyncze:
+1: 00:00:32.4425652
+
+Czas średni: 00:00:32.4425652
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 86,16015625
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 16,0390625 / 16,0390625 / 16,06640625 / 17,4140625 / 22,453125 / 33 / 53,48828125 / 81,16796875 / 111,90625 / 133,8984375 / 138,90625 / 124,3125 / 95,65234375 / 65,57421875 / 40,9765625 / 26,578125 / 20,6953125 / 17,05859375 / 16,4609375 / 16,3359375 / 16,3359375 / 16,3359375 / -0,48828125 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -0,48828125
+
+c) CPU BIT
+Czasy pojedyncze:
+1: 00:00:34.4253153
+
+Czas średni: 00:00:34.4253153
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 85,796875
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 16,03125 / 16,0390625 / 16,0703125 / 17,16796875 / 18,0234375 / 18,74609375 / 20 / 21,23828125 / 22,4921875 / 23,28515625 / 23,28515625 / 22,48828125 / 21,23828125 / 19,984375 / 18,76171875 / 18,109375 / 18,109375 / 18,109375 / 18,109375 / 18,109375 / 18,109375 / 18,109375 / 2,03515625 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 2,03515625
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: 6,606413
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: 7,010168
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: 0,9424043
+######################################################################
+

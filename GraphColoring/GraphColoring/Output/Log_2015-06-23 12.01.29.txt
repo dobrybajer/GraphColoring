@@ -1,0 +1,8 @@
+2015-06-23 00:02:47 > Automatycznie utworzono plik logu: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\GraphColoring\GraphColoring\Output\Log_2015-06-23 12.01.29.txt
+2015-06-23 00:02:47 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample20.txt
+2015-06-23 00:02:51 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample20.txt
+Liczba wierzchołków grafu: 20
+Gęstość grafu: 100%
+2015-06-23 00:02:57 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-23 00:02:57 > Przetwarzanie metodą GPU 

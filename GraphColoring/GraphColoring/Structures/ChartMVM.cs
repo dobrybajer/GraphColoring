@@ -210,12 +210,12 @@ namespace GraphColoring.Structures
         {
             if (pamiec == null || pamiec.Length == 0) return;
 
-            var n = type == 0 ? pamiec.Length - 4 : pamiec.Length - 2;
+            var n = pamiec.Length - 3;
             var predictSpace = PredictSpace((ulong)n, type).ToArray();
 
             var first = pamiec[0];
 
-            for (var i = 0; i < pamiec.Length; ++i)
+            for (var i = 0; i < n + 3; ++i)
             {
                 var pamiecYtmp = pamiec[i] - first;
                 var pamiecY = pamiecYtmp < 0 ? 0 : pamiecYtmp;
@@ -320,9 +320,9 @@ namespace GraphColoring.Structures
         private static IEnumerable<double> PredictSpace(ulong n, int type)
         {
             var powerNumber = (1 << (int)n) / Common.ToMb;
-            var tmp = new double[n + 2];
-            tmp[0] = tmp[n + 1] = 0;
-            tmp[n] = powerNumber;
+            var tmp = new double[n + 3];
+            tmp[0] = tmp[n + 2] = 0;
+            tmp[n] = tmp[n + 1] = powerNumber;
 
             for (ulong i = 1; i < n; ++i)
             {

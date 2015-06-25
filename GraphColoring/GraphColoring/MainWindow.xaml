@@ -27,7 +27,7 @@
 
                 <sparrow:SparrowChart Style="{StaticResource Chart}">
                     <sparrow:SparrowChart.XAxis>
-                        <sparrow:LinearXAxis Interval="1" Header="Iteracje algorytmu (n + 1)"/>
+                        <sparrow:LinearXAxis Interval="1" Header="Iteracje algorytmu (n + 2)"/>
                     </sparrow:SparrowChart.XAxis>
                     <sparrow:SparrowChart.YAxis>
                         <sparrow:LinearYAxis Header="Pamięć RAM [MB]"/>                 

@@ -1,0 +1,278 @@
+2015-06-25 23:57:59 > Automatycznie utworzono plik logu: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\GraphColoring\GraphColoring\Output\Log_2015-06-25 11.57.53.txt
+2015-06-25 23:57:59 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample20.txt
+2015-06-25 23:58:00 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample20.txt
+Liczba wierzchołków grafu: 20
+Gęstość grafu: 100%
+2015-06-25 23:58:00 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-25 23:58:00 > Przetwarzanie metodą CPU Table 
+2015-06-25 23:58:09 > Liczba chromatyczna grafu wynosi: 20.
+Czas obliczeń: 00:00:09.1289943
+2015-06-25 23:58:09 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-25 23:58:09 > Przetwarzanie metodą CPU Bit 
+2015-06-25 23:58:17 > Liczba chromatyczna grafu wynosi: 20.
+Czas obliczeń: 00:00:07.7145787
+2015-06-25 23:58:17 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-25 23:58:17 > Przetwarzanie metodą GPU 
+2015-06-25 23:58:19 > Liczba chromatyczna grafu wynosi: 20.
+Czas obliczeń: 00:00:01.3486351
+2015-06-25 23:58:57 > 
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample20.txt______________________
+
+Czasy dla obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:01.3486351
+
+Czas średni: 00:00:01.3486351
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 56,6328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4 / 5 / 6 / 7 / 7 / 8,125 / 11 / 14,75 / 18 / 19,25 / 18 / 14,75 / 11 / 8,125 / 7 / 7 / 6 / 5 / 4 / 3 / 3 / -1 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -1
+
+b) CPU TABLE
+Czasy pojedyncze:
+1: 00:00:09.1289943
+
+Czas średni: 00:00:09.1289943
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 84,4375
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4,0078125 / 4,01171875 / 4,01171875 / 4,48828125 / 7,140625 / 12,0703125 / 19,19921875 / 27,109375 / 33,140625 / 34,19140625 / 30,22265625 / 22,64453125 / 14,7265625 / 9,265625 / 6,16796875 / 4,65234375 / 4,109375 / 4,04296875 / 4,04296875 / 4,04296875 / 4,04296875 / 0,03515625 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 0,03515625
+
+c) CPU BIT
+Czasy pojedyncze:
+1: 00:00:07.7145787
+
+Czas średni: 00:00:07.7145787
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 85,0078125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4,01171875 / 4,01171875 / 4,1015625 / 4,93359375 / 6,859375 / 7,86328125 / 8,3515625 / 8,99609375 / 9,703125 / 9,671875 / 8,96484375 / 8,3203125 / 8,3203125 / 8,3203125 / 8,33984375 / 8,33984375 / 8,33984375 / 8,33984375 / 8,33984375 / 8,33984375 / 8,33984375 / 4,33203125 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 4,33203125
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: 6,769062
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: 5,720286
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: 1,183343
+######################################################################
+
+
+2015-06-25 23:59:02 > 
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample20.txt______________________
+
+Czasy dla obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:01.3486351
+
+Czas średni: 00:00:01.3486351
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 56,6328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4 / 5 / 6 / 7 / 7 / 8,125 / 11 / 14,75 / 18 / 19,25 / 18 / 14,75 / 11 / 8,125 / 7 / 7 / 6 / 5 / 4 / 3 / 3 / -1 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -1
+
+b) CPU TABLE
+Czasy pojedyncze:
+1: 00:00:09.1289943
+
+Czas średni: 00:00:09.1289943
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 84,4375
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4,0078125 / 4,01171875 / 4,01171875 / 4,48828125 / 7,140625 / 12,0703125 / 19,19921875 / 27,109375 / 33,140625 / 34,19140625 / 30,22265625 / 22,64453125 / 14,7265625 / 9,265625 / 6,16796875 / 4,65234375 / 4,109375 / 4,04296875 / 4,04296875 / 4,04296875 / 4,04296875 / 0,03515625 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 0,03515625
+
+c) CPU BIT
+Czasy pojedyncze:
+1: 00:00:07.7145787
+
+Czas średni: 00:00:07.7145787
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 85,0078125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4,01171875 / 4,01171875 / 4,1015625 / 4,93359375 / 6,859375 / 7,86328125 / 8,3515625 / 8,99609375 / 9,703125 / 9,671875 / 8,96484375 / 8,3203125 / 8,3203125 / 8,3203125 / 8,33984375 / 8,33984375 / 8,33984375 / 8,33984375 / 8,33984375 / 8,33984375 / 8,33984375 / 4,33203125 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 4,33203125
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: 6,769062
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: 5,720286
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: 1,183343
+######################################################################
+
+
+2015-06-25 23:59:03 > 
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample20.txt______________________
+
+Czasy dla obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:01.3486351
+
+Czas średni: 00:00:01.3486351
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 56,6328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4 / 5 / 6 / 7 / 7 / 8,125 / 11 / 14,75 / 18 / 19,25 / 18 / 14,75 / 11 / 8,125 / 7 / 7 / 6 / 5 / 4 / 3 / 3 / -1 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -1
+
+b) CPU TABLE
+Czasy pojedyncze:
+1: 00:00:09.1289943
+
+Czas średni: 00:00:09.1289943
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 84,4375
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4,0078125 / 4,01171875 / 4,01171875 / 4,48828125 / 7,140625 / 12,0703125 / 19,19921875 / 27,109375 / 33,140625 / 34,19140625 / 30,22265625 / 22,64453125 / 14,7265625 / 9,265625 / 6,16796875 / 4,65234375 / 4,109375 / 4,04296875 / 4,04296875 / 4,04296875 / 4,04296875 / 0,03515625 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 0,03515625
+
+c) CPU BIT
+Czasy pojedyncze:
+1: 00:00:07.7145787
+
+Czas średni: 00:00:07.7145787
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 85,0078125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4,01171875 / 4,01171875 / 4,1015625 / 4,93359375 / 6,859375 / 7,86328125 / 8,3515625 / 8,99609375 / 9,703125 / 9,671875 / 8,96484375 / 8,3203125 / 8,3203125 / 8,3203125 / 8,33984375 / 8,33984375 / 8,33984375 / 8,33984375 / 8,33984375 / 8,33984375 / 8,33984375 / 4,33203125 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 4,33203125
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: 6,769062
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: 5,720286
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: 1,183343
+######################################################################
+
+
+2015-06-25 23:59:18 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample20.txt
+Liczba wierzchołków grafu: 20
+Gęstość grafu: 100%
+2015-06-25 23:59:18 > Przewidywany czas wykonywania obliczeń: 9,129s
+2015-06-25 23:59:18 > Przetwarzanie metodą CPU Table 
+2015-06-25 23:59:26 > Liczba chromatyczna grafu wynosi: 20.
+Czas obliczeń: 00:00:07.9157021
+2015-06-25 23:59:26 > Przewidywany czas wykonywania obliczeń: 7,715s
+2015-06-25 23:59:26 > Przetwarzanie metodą CPU Bit 
+2015-06-25 23:59:35 > Liczba chromatyczna grafu wynosi: 20.
+Czas obliczeń: 00:00:09.1590802
+2015-06-25 23:59:35 > Przewidywany czas wykonywania obliczeń: 1,349s
+2015-06-25 23:59:35 > Przetwarzanie metodą GPU 
+2015-06-25 23:59:36 > Liczba chromatyczna grafu wynosi: 20.
+Czas obliczeń: 00:00:00.8030870
+2015-06-25 23:59:42 > 
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample20.txt______________________
+
+Czasy dla obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:01.3486351
+2: 00:00:00.8030870
+
+Czas średni: 00:00:01.0758610
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 56,6328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4 / 5 / 6 / 7 / 7 / 8,125 / 11 / 14,75 / 18 / 19,25 / 18 / 14,75 / 11 / 8,125 / 7 / 7 / 6 / 5 / 4 / 4 / 3 / -1 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -1
+
+b) CPU TABLE
+Czasy pojedyncze:
+1: 00:00:09.1289943
+2: 00:00:07.9157021
+
+Czas średni: 00:00:08.5223482
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 120,76171875
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4,01171875 / 4,01171875 / 4,01171875 / 4,2578125 / 6,296875 / 11,34375 / 18,703125 / 26,359375 / 32,30078125 / 33,43359375 / 29,30859375 / 22,046875 / 14,13671875 / 8,6015625 / 6,2890625 / 4,08984375 / 4,08984375 / 4,08984375 / 4,08984375 / 4,08984375 / 4,08984375 / 0,078125 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 0,078125
+
+c) CPU BIT
+Czasy pojedyncze:
+1: 00:00:07.7145787
+2: 00:00:09.1590802
+
+Czas średni: 00:00:08.4368294
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 121,0703125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4,07421875 / 4,12890625 / 4,375 / 5,10546875 / 6 / 6,33203125 / 6,7578125 / 7,40234375 / 7,58984375 / 7,58984375 / 7,37109375 / 6,7265625 / 6,234375 / 6,234375 / 6,234375 / 5,12109375 / 5,12109375 / 5,12109375 / 5,12109375 / 5,12109375 / 5,12109375 / 1,109375 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 1,109375
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: 7,921421
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: 7,841933
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: 1,010136
+######################################################################
+
+
+2015-06-26 00:00:31 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt
+2015-06-26 00:00:32 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt
+Liczba wierzchołków grafu: 22
+Gęstość grafu: 100%
+2015-06-26 00:00:32 > Przewidywany czas wykonywania obliczeń: 34,089s
+2015-06-26 00:00:32 > Przetwarzanie metodą CPU Table 
+2015-06-26 00:01:07 > Liczba chromatyczna grafu wynosi: 22.
+Czas obliczeń: 00:00:34.8294162
+2015-06-26 00:01:07 > Przewidywany czas wykonywania obliczeń: 33,747s
+2015-06-26 00:01:07 > Przetwarzanie metodą CPU Bit 
+2015-06-26 00:01:43 > Liczba chromatyczna grafu wynosi: 22.
+Czas obliczeń: 00:00:35.1649220
+2015-06-26 00:01:43 > Przewidywany czas wykonywania obliczeń: 4,303s
+2015-06-26 00:01:43 > Przetwarzanie metodą GPU 
+2015-06-26 00:01:47 > Liczba chromatyczna grafu wynosi: 22.
+Czas obliczeń: 00:00:03.5343700
+2015-06-26 00:02:22 > 
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample20.txt______________________
+
+Czasy dla obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:01.3486351
+2: 00:00:00.8030870
+
+Czas średni: 00:00:01.0758610
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 56,6328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4 / 5 / 6 / 7 / 7 / 8,125 / 11 / 14,75 / 18 / 19,25 / 18 / 14,75 / 11 / 8,125 / 7 / 7 / 6 / 5 / 4 / 4 / 3 / -1 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -1
+
+b) CPU TABLE
+Czasy pojedyncze:
+1: 00:00:09.1289943
+2: 00:00:07.9157021
+
+Czas średni: 00:00:08.5223482
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 120,76171875
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4,01171875 / 4,01171875 / 4,01171875 / 4,2578125 / 6,296875 / 11,34375 / 18,703125 / 26,359375 / 32,30078125 / 33,43359375 / 29,30859375 / 22,046875 / 14,13671875 / 8,6015625 / 6,2890625 / 4,08984375 / 4,08984375 / 4,08984375 / 4,08984375 / 4,08984375 / 4,08984375 / 0,078125 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 0,078125
+
+c) CPU BIT
+Czasy pojedyncze:
+1: 00:00:07.7145787
+2: 00:00:09.1590802
+
+Czas średni: 00:00:08.4368294
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 121,0703125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 4,07421875 / 4,12890625 / 4,375 / 5,10546875 / 6 / 6,33203125 / 6,7578125 / 7,40234375 / 7,58984375 / 7,58984375 / 7,37109375 / 6,7265625 / 6,234375 / 6,234375 / 6,234375 / 5,12109375 / 5,12109375 / 5,12109375 / 5,12109375 / 5,12109375 / 5,12109375 / 1,109375 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 1,109375
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: 7,921421
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: 7,841933
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: 1,010136
+######################################################################
+
+
+______________________C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample22.txt______________________
+
+Czasy dla obliczeń dla różnych wersji:
+a) GPU
+Czasy pojedyncze:
+1: 00:00:03.5343700
+
+Czas średni: 00:00:03.5343700
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 56,6328125
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 16 / 17 / 19 / 19 / 19,75 / 23,375 / 31,5 / 44,25 / 59,875 / 72,875 / 78 / 72,875 / 59,875 / 44,25 / 31,5 / 23,375 / 19,75 / 19 / 19 / 17 / 16 / 16 / 15 / -1 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: -1
+
+b) CPU TABLE
+Czasy pojedyncze:
+1: 00:00:34.8294162
+
+Czas średni: 00:00:34.8294162
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 127,140625
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 16,06640625 / 16,0703125 / 16,1015625 / 17,7578125 / 22,71875 / 33,59375 / 53,91796875 / 81,3203125 / 112,2109375 / 134,18359375 / 139,23828125 / 124,7265625 / 96,1171875 / 66,1484375 / 41,984375 / 27,36328125 / 21,671875 / 17,3125 / 17,3125 / 17,3125 / 17,3125 / 17,3125 / 17,2109375 / 1,17578125 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 1,17578125
+
+c) CPU BIT
+Czasy pojedyncze:
+1: 00:00:35.1649220
+
+Czas średni: 00:00:35.1649220
+Zużycie pamięci RAM na początku algorytmu (włącznie z danymi aplikacji) [MB]: 128,23046875
+Zużycie pamięci RAM w punktach pośrednich algorytmu (tylko algorytm) [MB]: 0 / 16,03515625 / 16,03515625 / 16,03515625 / 16,03515625 / 17,69921875 / 18,35546875 / 19,546875 / 20,796875 / 22,00390625 / 22,7890625 / 22,76953125 / 21,96875 / 20,71875 / 19,46875 / 18,24609375 / 17,59375 / 17,59375 / 17,59375 / 17,59375 / 17,59375 / 17,59375 / 17,59375 / 17,046875 / 1,01171875 / 
+Zużycie pamięci RAM na końcu algorytmu (tylko algorytm) [MB]: 1,01171875
+
+Współczynnik zmiany czasu obliczeń cpu_table/gpu: 9,854491
+Współczynnik zmiany czasu obliczeń cpu_bit/gpu: 9,949417
+Współczynnik zmiany czasu obliczeń cpu_table/cpu_bit: 0,9904591
+######################################################################
+
+
