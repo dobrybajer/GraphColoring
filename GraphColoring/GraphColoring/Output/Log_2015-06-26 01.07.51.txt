@@ -1,0 +1,16 @@
+2015-06-26 01:07:58 > Automatycznie utworzono plik logu: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\GraphColoring\GraphColoring\Output\Log_2015-06-26 01.07.51.txt
+2015-06-26 01:07:58 > Wybrany folder zawierający pliki DLL to: C:\Users\Moniczka-mąka\Desktop\dll
+2015-06-26 01:08:00 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample8.txt
+2015-06-26 01:08:01 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample8.txt
+Liczba wierzchołków grafu: 8
+Gęstość grafu: 100%
+2015-06-26 01:08:01 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-26 01:08:01 > Przetwarzanie metodą CPU Table 
+2015-06-26 01:08:01 > CPU Table Nieoczekiwany błąd, plik C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample8.txt nie został przetworzony.
+Kod błędu: Nie można załadować biblioteki DLL 'GraphColoringCPU.dll': Nie można odnaleźć określonego modułu. (Wyjątek od HRESULT: 0x8007007E)
+2015-06-26 01:08:01 > Niestety nie można było estymować czasu potrzebnego na wykonanie obliczeń - za mało danych.
+2015-06-26 01:08:01 > Przetwarzanie metodą CPU Bit 
+2015-06-26 01:08:01 > CPU Bit Nieoczekiwany błąd, plik C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample8.txt nie został przetworzony.
+Kod błędu: Nie można załadować biblioteki DLL 'GraphColoringCPU.dll': Nie można odnaleźć określonego modułu. (Wyjątek od HRESULT: 0x8007007E)
+2015-06-26 01:08:01 > Nie znaleziono pliku DLL w podanej lokalizacji: C:\Users\Moniczka-mąka\Desktop\dll\GraphColoringGPU.dll

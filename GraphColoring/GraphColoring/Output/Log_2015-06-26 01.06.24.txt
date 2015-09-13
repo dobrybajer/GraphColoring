@@ -1,0 +1,10 @@
+2015-06-26 01:06:29 > Automatycznie utworzono plik logu: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\GraphColoring\GraphColoring\Output\Log_2015-06-26 01.06.24.txt
+2015-06-26 01:06:29 > Wybrany folder zawierający pliki DLL to: C:\Users\Moniczka-mąka\Desktop\dll
+2015-06-26 01:06:33 > Wybrany plik: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample13.txt
+2015-06-26 01:06:37 > 
+Rozpoczynam obliczenia dla pliku: C:\Users\Moniczka-mąka\Documents\GitHub\GraphColoring\Dane testowe\TestFull\GraphExample13.txt
+Liczba wierzchołków grafu: 13
+Gęstość grafu: 100%
+2015-06-26 01:06:37 > Nie znaleziono pliku DLL w podanej lokalizacji: C:\Users\Moniczka-mąka\Desktop\dllGraphColoringCPU.dll
+2015-06-26 01:06:37 > Nie znaleziono pliku DLL w podanej lokalizacji: C:\Users\Moniczka-mąka\Desktop\dllGraphColoringCPU.dll
+2015-06-26 01:06:37 > Nie znaleziono pliku DLL w podanej lokalizacji: C:\Users\Moniczka-mąka\Desktop\dllGraphColoringGPU.dll

@@ -352,7 +352,7 @@ namespace GraphColoring
         /// <returns>True - plik istnieje, false - plik nie istnieje.</returns>
         private bool CheckDll(int type)
         {
-            var dllFile = type == 0 ? "GraphColoringGPU.dll" : "GraphColoringCPU.dll";
+            var dllFile = type == 0 ? "\\GraphColoringGPU.dll" : "\\GraphColoringCPU.dll";
 
             if(File.Exists(DllFolder + dllFile)) return false;
 
