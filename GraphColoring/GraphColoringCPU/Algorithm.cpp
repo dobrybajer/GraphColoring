@@ -33,14 +33,14 @@ namespace version_cpu
 		if (n <= 0) return 1;
 		if (n == 1) return a;
 		if (a <= 0) return 0;
-
+		
 		unsigned int result = 1;
 
 		while (n)
 		{
 			if (n & 1)
 				result *= a;
-			
+		
 			n >>= 1;
 			a *= a;
 		}
@@ -106,15 +106,12 @@ namespace version_cpu
 	{
 		if(n <= 0) return 0;
 
-		unsigned int cnt = BitCount(n);
-		unsigned int c = 0, i = 0;
-		while (c != cnt)
-		{
-			if (n & (1 << i))
-				c++;
-			i++;
-		}
-		return i - 1 > 0 ? i - 1 : 0;
+		int ret = 0;
+
+		while (n >>= 1)
+    		ret++;
+		
+		return ret;
 	}
 
 	/// <summary>
@@ -159,6 +156,14 @@ namespace version_cpu
 		return nVertices;
 	}
 
+	void DeleteVertices(int** tab, int rowCount)
+	{
+		for (int i = 0; i < rowCount; ++i)
+			delete[] tab[i];
+		
+		delete[] tab;
+	}
+
 	/// <summary>
 	/// Funckja tworząca tablicę zbiorów niezależnych dla podanego grafu wejściowego. Wersja bitowa,
 	/// tj. informacja o sąsiadach danego wierzchołka przechowywana jest w samej liczbie, poprzez
@@ -180,10 +185,8 @@ namespace version_cpu
 
 		int actualRow = n;
 
-		// Inicjalizacja macierzy o rozmiarze 2^N (wartoci początkowe 0)
 		independentSets = new int[1 << n]();
 
-		// Krok 1 algorytmu: przypisanie wartoci 1 (iloć niezależnych zbiorów) dla podzbiorów 1-elementowych, oraz dodanie ich do aktualnie przetwarzanych elementów (1 poziom tworzenia wszystkich podzbiorów)
 		actualVertices = new int[n]();
 		newVertices = new int[1]();
 
@@ -193,8 +196,6 @@ namespace version_cpu
 			actualVertices[i] |= (1 << i);
 		}
 
-		// Główna funkcja tworząca tablicę licznoci zbiorów niezależnych dla wszystkich podzbiorów zbioru N-elementowego.
-		// Zaczynamy od 1, bo krok pierwszy wykonany wyżej.
 		for (int el = 1; el < n; el++)
 		{
 			int row = Combination_n_of_k(n, el + 1);
@@ -204,14 +205,12 @@ namespace version_cpu
 
 			for (int i = 0; i < actualRow; ++i)
 			{
-				// Sprawdzenie indeksu poporzedniego zbioru dla rozpatrywanego podzbioru
 				unsigned int lastIndex = GetBitPosition(actualVertices[i], el);
 
 				for (int j = GetFirstBitPosition(actualVertices[i]) + 1; j < n; ++j)
 				{
 					unsigned int lastIndex2 = lastIndex;
 
-					// Sprawdzenie indeksu poprzedniego zbioru dla rozpatrywanego podzbioru \ {i}
 					for (int ns = 0, no = 0; ns < BitCount(vertices[j]); no++)
 					{
 						if ((vertices[j] & (1 << no)))
@@ -225,7 +224,6 @@ namespace version_cpu
 
 					int nextIndex = lastIndex + (1 << j);
 
-					// Liczba zbiorów niezależnych w aktualnie przetwarzanym podzbiorze
 					independentSets[nextIndex] = independentSets[lastIndex] + independentSets[lastIndex2] + 1;
 
 					newVertices[l] = actualVertices[i];
@@ -242,7 +240,6 @@ namespace version_cpu
 
 			if (el != n - 1)
 				actualVertices = newVertices;
-			
 		}
 		
 		delete[] newVertices;
@@ -271,10 +268,7 @@ namespace version_cpu
 		int actualVerticesRowCount;
 		int actualVerticesColCount;
 
-		// Inicjalizacja macierzy o rozmiarze 2^N (wartoci początkowe 0)
 		independentSets = new int[1 << n] ();
-
-		// Krok 1 algorytmu: przypisanie wartoci 1 (iloć niezależnych zbiorów) dla podzbiorów 1-elementowych, oraz dodanie ich do aktualnie przetwarzanych elementów (1 poziom tworzenia wszystkich podzbiorów)
 		actualVertices = CreateVertices(n, 1);
 		newVertices = CreateVertices(1, 1);
 
@@ -287,8 +281,6 @@ namespace version_cpu
 			actualVertices[i][0] = i;
 		}
 
-		// Główna funkcja tworząca tablicę licznoci zbiorów niezależnych dla wszystkich podzbiorów zbioru N-elementowego.
-		// Zaczynamy od 1, bo krok pierwszy wykonany wyżej.
 		for (int el = 1; el < n; el++)
 		{
 			int col = el + 1;
@@ -301,7 +293,6 @@ namespace version_cpu
 			{
 				int lastIndex = 0;
 
-				// Sprawdzenie indeksu poporzedniego zbioru dla rozpatrywanego podzbioru
 				for (int index = 0; index < actualVerticesColCount; ++index)
 					lastIndex += (1 << actualVertices[i][index]);
 
@@ -309,7 +300,6 @@ namespace version_cpu
 				{
 					int lastIndex2 = lastIndex;
 
-					// Sprawdzenie indeksu poprzedniego zbioru dla rozpatrywanego podzbioru \ {i}
 					for (int ns = offset[j - 1]; ns < offset[j]; ++ns)
 					{
 						for (int q = 0; q < actualVerticesColCount; ++q)
@@ -324,7 +314,6 @@ namespace version_cpu
 
 					int nextIndex = lastIndex + (1 << j);
 
-					// Liczba zbiorów niezależnych w aktualnie przetwarzanym podzbiorze
 					independentSets[nextIndex] = independentSets[lastIndex] + independentSets[lastIndex2] + 1;
 
 					for (int k = 0; k < el; ++k)
@@ -338,11 +327,7 @@ namespace version_cpu
 
 			memory[el] = getUsedMemory();
 
-			for (int i = 0; i < actualVerticesRowCount; ++i)
-			{
-				delete[] actualVertices[i];
-			}
-			delete[] actualVertices;
+			DeleteVertices(actualVertices, actualVerticesRowCount);
 
 			if (el != n - 1)
 				actualVertices = newVertices;
@@ -351,7 +336,7 @@ namespace version_cpu
 			actualVerticesColCount = col;
 		}
 
-		delete[] newVertices;
+		DeleteVertices(newVertices, actualVerticesRowCount);
 
 		memory[n] = getUsedMemory();
 
